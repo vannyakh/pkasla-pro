@@ -1,0 +1,245 @@
+'use client'
+
+import React, { useState } from 'react'
+import { CreditCard, QrCode, Camera, Upload, X, FileText } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer'
+
+interface GiftFormData {
+  paymentMethod: 'cash' | 'khqr'
+  currency: 'khr' | 'usd'
+  amount: string
+  note: string
+  file: File | null
+}
+
+interface GiftPaymentDrawerProps {
+  guestName: string
+  guestId: string
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onSave: (formData: GiftFormData) => void
+  trigger?: React.ReactNode
+}
+
+export default function GiftPaymentDrawer({
+  guestName,
+  guestId,
+  open,
+  onOpenChange,
+  onSave,
+  trigger,
+}: GiftPaymentDrawerProps) {
+  const [giftForm, setGiftForm] = useState<GiftFormData>({
+    paymentMethod: 'cash',
+    currency: 'khr',
+    amount: '',
+    note: '',
+    file: null,
+  })
+
+  const handleSave = () => {
+    if (!giftForm.amount) return
+    onSave(giftForm)
+    setGiftForm({
+      paymentMethod: 'cash',
+      currency: 'khr',
+      amount: '',
+      note: '',
+      file: null,
+    })
+    onOpenChange(false)
+  }
+
+  const handleFileSelect = (isCamera: boolean) => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    if (isCamera) {
+      input.capture = 'environment'
+    }
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) setGiftForm({ ...giftForm, file })
+    }
+    input.click()
+  }
+
+  return (
+    <Drawer open={open} onOpenChange={onOpenChange} direction="right">
+      {trigger && <DrawerTrigger asChild>{trigger}</DrawerTrigger>}
+      <DrawerContent className="max-h-screen h-full w-full sm:max-w-lg">
+        <DrawerHeader className="border-b">
+          <div className="flex items-center justify-between">
+            <div>
+              <DrawerTitle className="text-lg font-semibold text-black">ចំណងដៃថ្មី</DrawerTitle>
+              <DrawerDescription className="text-sm text-gray-600 mt-1">
+                ឈ្មោះ {guestName}
+              </DrawerDescription>
+            </div>
+            <DrawerClose asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                <X className="h-4 w-4" />
+              </Button>
+            </DrawerClose>
+          </div>
+        </DrawerHeader>
+        <div className="px-4 py-6 overflow-y-auto flex-1 space-y-6">
+          {/* Payment Method Selection */}
+          <div>
+            <Label className="text-sm font-semibold text-black mb-3 block">វិធីសាស្ត្រទូទាត់</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setGiftForm({ ...giftForm, paymentMethod: 'cash' })}
+                className={`p-4 border-2 rounded-lg text-center transition-colors ${
+                  giftForm.paymentMethod === 'cash'
+                    ? 'border-black bg-gray-100'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <CreditCard className="h-6 w-6 mx-auto mb-2 text-gray-600" />
+                <p className="text-sm font-semibold text-black">សាច់ប្រាក់</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setGiftForm({ ...giftForm, paymentMethod: 'khqr' })}
+                className={`p-4 border-2 rounded-lg text-center transition-colors ${
+                  giftForm.paymentMethod === 'khqr'
+                    ? 'border-black bg-gray-100'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <QrCode className="h-6 w-6 mx-auto mb-2 text-gray-600" />
+                <p className="text-sm font-semibold text-black">KHQR</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Currency Selection */}
+          <div>
+            <Label className="text-sm font-semibold text-black mb-3 block">រូបិយប័ណ្ណ</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setGiftForm({ ...giftForm, currency: 'khr' })}
+                className={`p-4 border-2 rounded-lg text-center transition-colors ${
+                  giftForm.currency === 'khr'
+                    ? 'border-black bg-gray-100'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <p className="text-sm font-semibold text-black">រៀល</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setGiftForm({ ...giftForm, currency: 'usd' })}
+                className={`p-4 border-2 rounded-lg text-center transition-colors ${
+                  giftForm.currency === 'usd'
+                    ? 'border-black bg-gray-100'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <p className="text-sm font-semibold text-black">ដុល្លារ</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Amount Input */}
+          <div>
+            <Label htmlFor={`amount-${guestId}`} className="text-sm font-semibold text-black mb-2 block">
+              ចំនួនទឹកប្រាក់ *
+            </Label>
+            <Input
+              id={`amount-${guestId}`}
+              type="number"
+              placeholder="ចំនួនទឹកប្រាក់ក្នុងសំបុត្រ"
+              value={giftForm.amount}
+              onChange={(e) => setGiftForm({ ...giftForm, amount: e.target.value })}
+              className="h-10"
+              required
+            />
+          </div>
+
+          {/* Note Input */}
+          <div>
+            <Label htmlFor={`note-${guestId}`} className="text-sm font-semibold text-black mb-2 block">
+              កត់ចំណាំ
+            </Label>
+            <Textarea
+              id={`note-${guestId}`}
+              placeholder="កត់ចំណាំ"
+              value={giftForm.note}
+              onChange={(e) => setGiftForm({ ...giftForm, note: e.target.value })}
+              rows={3}
+              className="resize-none"
+            />
+          </div>
+
+          {/* File Upload Buttons */}
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10"
+              onClick={() => handleFileSelect(true)}
+            >
+              <Camera className="h-4 w-4 mr-2" />
+              ថតរូប
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-10"
+              onClick={() => handleFileSelect(false)}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              ជ្រើសរើសឯកសារ
+            </Button>
+          </div>
+
+          {giftForm.file && (
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-700 truncate">{giftForm.file.name}</p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0"
+                  onClick={() => setGiftForm({ ...giftForm, file: null })}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="px-4 py-4 border-t">
+          <Button
+            className="w-full bg-black hover:bg-gray-800 text-white h-11"
+            onClick={handleSave}
+            disabled={!giftForm.amount}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            រក្សាទុក
+          </Button>
+        </div>
+      </DrawerContent>
+    </Drawer>
+  )
+}
+
+export type { GiftFormData }
+
