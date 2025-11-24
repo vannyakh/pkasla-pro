@@ -1,0 +1,8 @@
+name = "pkasla"
+compatibility_date = "2024-11-24"
+
+pages_build_output_dir = ".next"
+
+[env.production]
+pages_build_output_dir = ".next"
+
