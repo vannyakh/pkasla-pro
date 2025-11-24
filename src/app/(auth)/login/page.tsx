@@ -148,23 +148,31 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-white px-4 py-8">
-        <Card className="max-w-sm w-full border border-gray-200 shadow-sm">
-          <CardHeader className="pb-4 space-y-1">
-            <CardTitle className="text-xl text-center text-black">Welcome Back</CardTitle>
-            <CardDescription className="text-xs text-center text-gray-500">
+      <div className="w-full lg:w-1/2 flex items-center justify-center bg-gray-50 px-4 py-8 lg:bg-white relative overflow-hidden">
+        {/* Pattern Background */}
+        <div className="absolute inset-0 opacity-[0.02]">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v22H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z'/%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundSize: '40px 40px'
+          }}></div>
+        </div>
+        
+        <Card className="max-w-md w-full p-0 shadow-none bg-transparent relative z-10">
+          <CardHeader className="pb-6 pt-8 px-8 space-y-2">
+            <CardTitle className="text-2xl font-bold text-center text-black">Welcome Back</CardTitle>
+            <CardDescription className="text-sm text-center text-gray-500">
               Sign in to your account to continue
             </CardDescription>
           </CardHeader>
-          <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <CardContent className="px-8 pb-8">
+          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             {/* Email Field */}
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs text-black">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Email Address
               </Label>
               <div className="relative">
-                <Mail className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   ref={emailInputRef}
                   id="email"
@@ -174,8 +182,8 @@ export default function LoginPage() {
                   onBlur={() => validateEmail(email)}
                   placeholder="email@example.com"
                   className={cn(
-                    "h-9 text-xs border-gray-200 pl-8",
-                    emailError && "border-red-300 focus-visible:ring-red-200"
+                    "h-11 text-sm border-gray-300 pl-10 pr-4 focus:border-black focus:ring-1 focus:ring-black transition-all",
+                    emailError && "border-red-400 focus:border-red-400 focus:ring-red-400"
                   )}
                   required
                   aria-invalid={!!emailError}
@@ -183,27 +191,27 @@ export default function LoginPage() {
                 />
               </div>
               {emailError && (
-                <p id="email-error" className="text-xs text-red-600 mt-0.5">
+                <p id="email-error" className="text-xs text-red-600 mt-1">
                   {emailError}
                 </p>
               )}
             </div>
 
             {/* Password Field */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-xs text-black">
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                   Password
                 </Label>
                 <Link 
                   href="/forgot-password" 
-                  className="text-xs text-gray-600 hover:text-black hover:underline"
+                  className="text-xs text-gray-600 hover:text-black hover:underline transition-colors"
                 >
-                  Forgot?
+                  Forgot password?
                 </Link>
               </div>
               <div className="relative">
-                <Lock className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -212,8 +220,8 @@ export default function LoginPage() {
                   onBlur={() => validatePassword(password)}
                   placeholder="Enter your password"
                   className={cn(
-                    "h-9 text-xs border-gray-200 pl-8 pr-9",
-                    passwordError && "border-red-300 focus-visible:ring-red-200"
+                    "h-11 text-sm border-gray-300 pl-10 pr-11 focus:border-black focus:ring-1 focus:ring-black transition-all",
+                    passwordError && "border-red-400 focus:border-red-400 focus:ring-red-400"
                   )}
                   required
                   aria-invalid={!!passwordError}
@@ -222,18 +230,18 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none transition-colors"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-3.5 w-3.5" />
+                    <EyeOff className="h-4 w-4" />
                   ) : (
-                    <Eye className="h-3.5 w-3.5" />
+                    <Eye className="h-4 w-4" />
                   )}
                 </button>
               </div>
               {passwordError && (
-                <p id="password-error" className="text-xs text-red-600 mt-0.5">
+                <p id="password-error" className="text-xs text-red-600 mt-1">
                   {passwordError}
                 </p>
               )}
@@ -245,10 +253,11 @@ export default function LoginPage() {
                 id="remember"
                 checked={rememberMe}
                 onCheckedChange={(checked) => setRememberMe(checked === true)}
+                className="border-gray-300"
               />
               <Label
                 htmlFor="remember"
-                className="text-xs text-gray-600 cursor-pointer font-normal"
+                className="text-sm text-gray-600 cursor-pointer font-normal"
               >
                 Remember me
               </Label>
@@ -257,7 +266,7 @@ export default function LoginPage() {
             {/* Error Message */}
             {error && (
               <div 
-                className="text-xs text-red-600 bg-red-50 border border-red-200 rounded p-2.5 animate-in fade-in-0"
+                className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg p-3 animate-in fade-in-0"
                 role="alert"
               >
                 <p className="font-medium">{error}</p>
@@ -268,11 +277,11 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading || isSubmitting}
-              className="w-full h-9 text-xs bg-black hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="w-full h-11 text-sm font-medium bg-black hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
             >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...
                 </>
               ) : (
@@ -282,30 +291,30 @@ export default function LoginPage() {
           </form>
 
           {/* Register Link */}
-          <div className="mt-5 text-center text-xs">
-            <span className="text-gray-600">Don&apos;t have an account? </span>
+          <div className="mt-6 text-center">
+            <span className="text-sm text-gray-600">Don&apos;t have an account? </span>
             <Link 
               href="/register" 
-              className="text-black hover:underline font-medium transition-colors"
+              className="text-sm text-black hover:underline font-semibold transition-colors"
             >
               Create account
             </Link>
           </div>
 
           {/* Test Accounts (Collapsible) */}
-          <details className="mt-5 pt-4 border-t border-gray-200">
-            <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700 list-none">
+          <details className="mt-6 pt-6 border-t border-gray-200">
+            <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700 list-none transition-colors">
               <span className="select-none">Test Accounts</span>
             </summary>
-            <div className="mt-3 text-xs text-gray-600 space-y-2">
-              <div className="p-2 bg-gray-50 rounded border border-gray-100">
-                <p className="font-medium text-gray-700 mb-1">Admin Accounts:</p>
-                <p className="font-mono text-[10px]">admin@pkasla.com / admin123</p>
-                <p className="font-mono text-[10px] mt-1">demo@pkasla.com / demo123</p>
+            <div className="mt-4 text-xs text-gray-600 space-y-3">
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="font-semibold text-gray-800 mb-2">Admin Accounts:</p>
+                <p className="font-mono text-[11px] text-gray-700">admin@pkasla.com / admin123</p>
+                <p className="font-mono text-[11px] text-gray-700 mt-1">demo@pkasla.com / demo123</p>
               </div>
-              <div className="p-2 bg-gray-50 rounded border border-gray-100">
-                <p className="font-medium text-gray-700 mb-1">User Account:</p>
-                <p className="font-mono text-[10px]">sarah.smith@example.com / password123</p>
+              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <p className="font-semibold text-gray-800 mb-2">User Account:</p>
+                <p className="font-mono text-[11px] text-gray-700">sarah.smith@example.com / password123</p>
               </div>
             </div>
           </details>
