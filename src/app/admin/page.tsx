@@ -5,9 +5,7 @@ import Link from 'next/link'
 import { Users, Settings, CreditCard, MessageSquare, ShoppingCart, UserCheck } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { ChartContainer, ChartTooltip } from '@/components/ui/chart'
-import { CustomChartTooltipContent } from '@/components/charts/CustomChartTooltip'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, PieChart, Pie, Cell, BarChart, Bar, Tooltip, ResponsiveContainer } from 'recharts'
 
 export default function AdminPage() {
   // KPI Data
@@ -112,44 +110,46 @@ export default function AdminPage() {
           <CardTitle className="text-sm font-semibold text-black">Expected vs Actual</CardTitle>
         </CardHeader>
         <CardContent className="p-3 md:p-6">
-          <ChartContainer config={lineChartConfig} className="h-[250px] md:h-[300px] w-full">
-            <LineChart data={lineChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200" />
-                <XAxis 
-                  dataKey="day" 
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tick={{ fontSize: 10 }}
-                  className="text-xs"
-                />
-                <YAxis 
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tick={{ fontSize: 10 }}
-                  className="text-xs"
-                  width={40}
-                />
-                <ChartTooltip content={<CustomChartTooltipContent />} />
-                <Line 
-                  type="monotone" 
-                  dataKey="expected" 
-                  stroke="hsl(var(--chart-1))" 
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                  name="Expected"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="actual" 
-                  stroke="hsl(var(--chart-2))" 
-                  strokeWidth={2}
-                  dot={{ r: 3 }}
-                  name="Actual"
-                />
-              </LineChart>
-            </ChartContainer>
+          <div className="h-[250px] md:h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={lineChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200" />
+                  <XAxis 
+                    dataKey="day" 
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    tick={{ fontSize: 10 }}
+                    className="text-xs"
+                  />
+                  <YAxis 
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={8}
+                    tick={{ fontSize: 10 }}
+                    className="text-xs"
+                    width={40}
+                  />
+                  <Tooltip />
+                  <Line 
+                    type="monotone" 
+                    dataKey="expected" 
+                    stroke="hsl(var(--chart-1))" 
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    name="Expected"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="actual" 
+                    stroke="hsl(var(--chart-2))" 
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    name="Actual"
+                  />
+                </LineChart>
+            </ResponsiveContainer>
+          </div>
         </CardContent>
       </Card>
 
@@ -161,37 +161,39 @@ export default function AdminPage() {
             <CardTitle className="text-sm font-semibold text-black">Performance Overview</CardTitle>
           </CardHeader>
           <CardContent className="p-3 md:p-6">
-            <ChartContainer config={radarConfig} className="h-[200px] md:h-[250px] w-full">
-              <RadarChart data={radarData} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
-                  <PolarGrid className="stroke-gray-200" />
-                  <PolarAngleAxis 
-                    dataKey="subject" 
-                    tick={{ fontSize: 9 }}
-                    className="text-xs"
-                  />
-                  <PolarRadiusAxis 
-                    angle={90} 
-                    domain={[0, 150]}
-                    tick={{ fontSize: 9 }}
-                    className="text-xs"
-                  />
-                  <Radar 
-                    name="Current" 
-                    dataKey="A" 
-                    stroke="hsl(var(--chart-1))" 
-                    fill="hsl(var(--chart-1))" 
-                    fillOpacity={0.6}
-                  />
-                  <Radar 
-                    name="Target" 
-                    dataKey="B" 
-                    stroke="hsl(var(--chart-2))" 
-                    fill="hsl(var(--chart-2))" 
-                    fillOpacity={0.6}
-                  />
-                  <ChartTooltip content={<CustomChartTooltipContent />} />
-                </RadarChart>
-            </ChartContainer>
+            <div className="h-[200px] md:h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart data={radarData} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+                    <PolarGrid className="stroke-gray-200" />
+                    <PolarAngleAxis 
+                      dataKey="subject" 
+                      tick={{ fontSize: 9 }}
+                      className="text-xs"
+                    />
+                    <PolarRadiusAxis 
+                      angle={90} 
+                      domain={[0, 150]}
+                      tick={{ fontSize: 9 }}
+                      className="text-xs"
+                    />
+                    <Radar 
+                      name="Current" 
+                      dataKey="A" 
+                      stroke="hsl(var(--chart-1))" 
+                      fill="hsl(var(--chart-1))" 
+                      fillOpacity={0.6}
+                    />
+                    <Radar 
+                      name="Target" 
+                      dataKey="B" 
+                      stroke="hsl(var(--chart-2))" 
+                      fill="hsl(var(--chart-2))" 
+                      fillOpacity={0.6}
+                    />
+                    <Tooltip />
+                  </RadarChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
 
@@ -201,24 +203,26 @@ export default function AdminPage() {
             <CardTitle className="text-sm font-semibold text-black">Distribution</CardTitle>
           </CardHeader>
           <CardContent className="p-3 md:p-6">
-            <ChartContainer config={{}} className="h-[200px] md:h-[250px] w-full">
-              <PieChart>
-                <Pie
-                  data={donutData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={40}
-                  outerRadius={70}
-                  paddingAngle={2}
-                  dataKey="value"
-                >
-                  {donutData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <ChartTooltip content={<CustomChartTooltipContent />} />
-              </PieChart>
-            </ChartContainer>
+            <div className="h-[200px] md:h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={donutData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={40}
+                    outerRadius={70}
+                    paddingAngle={2}
+                    dataKey="value"
+                  >
+                    {donutData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
             <div className="flex flex-wrap justify-center gap-2 md:gap-4 mt-3 md:mt-4">
               {donutData.map((item, index) => (
                 <div key={index} className="flex items-center gap-1.5 md:gap-2">
@@ -239,33 +243,35 @@ export default function AdminPage() {
             <CardTitle className="text-sm font-semibold text-black">Monthly Trends</CardTitle>
           </CardHeader>
           <CardContent className="p-3 md:p-6">
-            <ChartContainer config={barChartConfig} className="h-[200px] md:h-[250px] w-full">
-              <BarChart data={barChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200" />
-                  <XAxis 
-                    dataKey="name" 
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tick={{ fontSize: 10 }}
-                    className="text-xs"
-                  />
-                  <YAxis 
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tick={{ fontSize: 10 }}
-                    className="text-xs"
-                    width={40}
-                  />
-                  <ChartTooltip content={<CustomChartTooltipContent />} />
-                  <Bar 
-                    dataKey="value" 
-                    fill="hsl(var(--chart-1))" 
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-            </ChartContainer>
+            <div className="h-[200px] md:h-[250px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={barChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200" />
+                    <XAxis 
+                      dataKey="name" 
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      tick={{ fontSize: 10 }}
+                      className="text-xs"
+                    />
+                    <YAxis 
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      tick={{ fontSize: 10 }}
+                      className="text-xs"
+                      width={40}
+                    />
+                    <Tooltip />
+                    <Bar 
+                      dataKey="value" 
+                      fill="hsl(var(--chart-1))" 
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
       </div>
