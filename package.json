@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "deploy": "npx wrangler pages deploy .next --project-name=pkasla"
+    "deploy": "npx wrangler pages deploy .next"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
