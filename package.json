@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "deploy": "npx wrangler pages deploy .next",
-    "pages:deploy": "npx wrangler pages deploy .next"
+    "pages:deploy": "npx wrangler pages deploy .next",
+    "cf:deploy": "npx wrangler pages deploy .next"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
