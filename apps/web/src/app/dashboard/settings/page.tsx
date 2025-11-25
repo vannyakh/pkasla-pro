@@ -1,11 +1,6 @@
-import React from 'react'
+import { redirect } from 'next/navigation'
 
-function SettingsPage() {
-  return (
-    <div>
-      <h1>Settings</h1>
-    </div>
-  )
+export default function SettingsPage() {
+  // Redirect to profile by default
+  redirect('/dashboard/settings/profile')
 }
-
-export default SettingsPage
