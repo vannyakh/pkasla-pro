@@ -83,7 +83,7 @@ export default function SecurityPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-2xl">
       {/* Change Password */}
       <Card className="border border-gray-200">
         <CardHeader>

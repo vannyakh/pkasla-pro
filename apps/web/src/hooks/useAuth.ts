@@ -7,15 +7,7 @@ import { findUserByEmail, verifyPassword, getUserWithoutPassword, sampleUsers } 
 
 const AUTH_STORAGE_KEY = 'pkasla_auth_user'
 
-/**
- * Authentication hook - Client-side only
- * 
- * TODO: When API is ready, replace client-side logic with API calls:
- * - login() -> POST /api/auth/login
- * - register() -> POST /api/auth/register
- * - checkAuth() -> GET /api/auth/me
- * - Store JWT token in httpOnly cookies instead of localStorage
- */
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)

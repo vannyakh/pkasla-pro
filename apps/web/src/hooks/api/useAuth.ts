@@ -20,7 +20,7 @@ export function useMe() {
   return useQuery<User, Error>({
     queryKey: authKeys.me(),
     queryFn: async (): Promise<User> => {
-      const response = await api.get<User>('/auth/me');
+      const response = await api.get<User>('/users/me');
       if (!response.success) {
         throw new Error(response.error || 'Failed to fetch user');
       }

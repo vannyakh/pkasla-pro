@@ -51,5 +51,5 @@ router.post(
   asyncHandler(disableTwoFactorHandler),
 );
 
-export const authRouter = router;
+export const authRouter : Router = router;
 

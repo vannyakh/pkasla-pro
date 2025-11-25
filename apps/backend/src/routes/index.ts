@@ -21,5 +21,5 @@ router.use('/applications', applicationRouter);
 router.use('/admin', adminRouter);
 router.use('/privacy', privacyRouter);
 
-export const apiRouter = router;
+export const apiRouter: Router = router;
 

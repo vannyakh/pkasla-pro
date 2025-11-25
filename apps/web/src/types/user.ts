@@ -2,11 +2,13 @@ export type UserRole = 'admin' | 'user';
 
 export interface User {
   id: string;
+  avatar?: string;
+  phone?: string;
   email: string;
   name: string;
   role: UserRole;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AuthTokens {

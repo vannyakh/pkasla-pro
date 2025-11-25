@@ -10,7 +10,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         showSpinner: false,
       }}
       height="4px"
-      color="#FFFFFFFF"
+      color="#FA6DECFF"
       shallowRouting
     >
       {children}

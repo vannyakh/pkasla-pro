@@ -14,11 +14,13 @@ declare module 'next-auth' {
 
   interface User {
     id: string;
-    email: string;
+    email?: string;
+    phone?: string;
+    avatar?: string;
     name: string;
     role: UserRole;
-    createdAt: Date | string;
-    updatedAt: Date | string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
     accessToken?: string;
     refreshToken?: string;
   }
@@ -80,6 +82,8 @@ export const authConfig: NextAuthConfig = {
           return {
             id: user.id,
             email: user.email,
+            phone: user.phone,
+            avatar: user.avatar,
             name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
             role: user.role,
             createdAt: user.createdAt,

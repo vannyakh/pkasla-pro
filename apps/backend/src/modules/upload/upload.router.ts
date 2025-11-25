@@ -52,5 +52,5 @@ router.delete('/:id', deleteFileById);
 // Delete file by key
 router.delete('/key/:key', deleteFile);
 
-export const uploadRouter = router;
+export const uploadRouter: Router = router;
 
