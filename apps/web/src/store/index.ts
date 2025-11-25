@@ -1,2 +1,2 @@
-export { useAuthStore } from './auth';
+export { useAuthStore, useIsAuthenticated } from './auth';
 

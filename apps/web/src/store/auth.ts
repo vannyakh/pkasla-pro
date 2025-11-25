@@ -34,13 +34,9 @@ function clearTokens(): void {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
       tokens: null,
-      // Computed property - derived from user state
-      get isAuthenticated() {
-        return get().user !== null;
-      },
       setAuth: (user, tokens) => {
         storeTokens(tokens);
         set({ user, tokens });
@@ -63,9 +59,16 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         tokens: state.tokens,
-        // isAuthenticated is computed, so we don't need to persist it
       }),
     }
   )
 );
+
+/**
+ * Computed selector for authentication status
+ * Use this instead of accessing isAuthenticated directly from the store
+ */
+export const useIsAuthenticated = () => {
+  return useAuthStore((state) => state.user !== null);
+};
 

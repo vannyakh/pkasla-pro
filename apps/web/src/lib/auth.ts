@@ -36,17 +36,20 @@ export const authConfig: NextAuthConfig = {
       },
       async authorize(credentials) {
         if (!credentials?.emailOrPhone || !credentials?.password) {
-          return null;
+          throw new Error('Email and password are required');
         }
 
         try {
+          // Map emailOrPhone to email for backend API
+          const email = credentials.emailOrPhone;
+          
           const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              emailOrPhone: credentials.emailOrPhone,
+              email: email,
               password: credentials.password,
             }),
           });
@@ -54,15 +57,23 @@ export const authConfig: NextAuthConfig = {
           const data = await response.json();
 
           if (!response.ok || !data.success) {
-            return null;
+            // Provide more specific error message
+            const errorMessage = data.message || data.error || 'Invalid email or password';
+            throw new Error(errorMessage);
           }
 
           const authData = data.data;
+          
+          // Handle 2FA requirement
+          if (authData.requiresTwoFactor) {
+            throw new Error('Two-factor authentication is required. Please use the API directly.');
+          }
+
           const user = authData.user;
           const tokens = authData.tokens;
 
           if (!user || !tokens) {
-            return null;
+            throw new Error('Invalid response from authentication server');
           }
 
           // Return user with tokens
@@ -78,7 +89,11 @@ export const authConfig: NextAuthConfig = {
           };
         } catch (error) {
           console.error('Auth error:', error);
-          return null;
+          // Re-throw to provide error message to NextAuth
+          if (error instanceof Error) {
+            throw error;
+          }
+          throw new Error('Authentication failed');
         }
       },
     }),

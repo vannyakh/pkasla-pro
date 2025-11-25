@@ -29,18 +29,12 @@ export function LoginForm() {
   });
   const hasLoadedRef = useRef(false);
 
-  // Load remembered email after hydration (client-side only)
-  // Using useLayoutEffect to sync before paint and avoid hydration mismatch
-  // Note: setState in effect is necessary here to avoid hydration mismatch between server/client
   useLayoutEffect(() => {
     if (hasLoadedRef.current) return;
     hasLoadedRef.current = true;
     
     const rememberedEmail = localStorage.getItem('rememberedEmail');
     if (rememberedEmail) {
-      // Use startTransition to mark this as non-urgent update
-      // This is necessary to load localStorage data after hydration
-      // to avoid server/client mismatch
       startTransition(() => {
         setFormData({
           email: rememberedEmail,
@@ -123,19 +117,25 @@ export function LoginForm() {
       });
 
       if (!nextAuthResult?.ok) {
-        throw new Error(nextAuthResult?.error || 'Invalid email or password');
+        // Map NextAuth error codes to user-friendly messages
+        const errorMessages: Record<string, string> = {
+          CredentialsSignin: 'Invalid email or password. Please check your credentials and try again.',
+          Configuration: 'There is a problem with the server configuration.',
+          AccessDenied: 'Access denied. Please contact support.',
+          Verification: 'The verification token has expired or has already been used.',
+        };
+        
+        const errorMessage = errorMessages[nextAuthResult.error || ''] || 
+          nextAuthResult.error || 
+          'Invalid email or password';
+        throw new Error(errorMessage);
       }
-
-      // Also update Zustand store for API token management
-      // This ensures both NextAuth session and Zustand store are synchronized
       try {
         await loginMutation.mutateAsync({
           email: formData.email,
           password: formData.password,
         });
       } catch (zustandError) {
-        // If Zustand update fails, log but don't block login
-        // NextAuth session is already established
         console.warn('Failed to update Zustand store:', zustandError);
       }
 
