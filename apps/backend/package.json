@@ -1,5 +1,5 @@
 {
-  "name": "invitetion-api",
+  "name": "@repo/backend",
   "version": "1.0.0",
   "description": "Invitetion API built with Express, TypeScript, and MongoDB",
   "main": "dist/server.js",

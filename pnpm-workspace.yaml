@@ -1,3 +1,9 @@
+# PNPM Workspace Configuration
+# This file defines the workspace structure for the monorepo
+
 packages:
+  # Applications - Frontend and Backend
   - "apps/*"
+  
+  # Shared Packages - Reusable code, configs, and utilities
   - "packages/*"
