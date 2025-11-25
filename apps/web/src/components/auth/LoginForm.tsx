@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { ROUTES } from '@/constants';
 import type { LoginDto } from '@/types';
 import { useLogin } from '@/hooks/api/useAuth';
+import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,18 +29,12 @@ export function LoginForm() {
   });
   const hasLoadedRef = useRef(false);
 
-  // Load remembered email after hydration (client-side only)
-  // Using useLayoutEffect to sync before paint and avoid hydration mismatch
-  // Note: setState in effect is necessary here to avoid hydration mismatch between server/client
   useLayoutEffect(() => {
     if (hasLoadedRef.current) return;
     hasLoadedRef.current = true;
     
     const rememberedEmail = localStorage.getItem('rememberedEmail');
     if (rememberedEmail) {
-      // Use startTransition to mark this as non-urgent update
-      // This is necessary to load localStorage data after hydration
-      // to avoid server/client mismatch
       startTransition(() => {
         setFormData({
           email: rememberedEmail,
@@ -114,10 +109,35 @@ export function LoginForm() {
     try {
       const callbackUrl = searchParams.get('callbackUrl') || '/';
 
-      await loginMutation.mutateAsync({
-        email: formData.email,
+      // Sign in with NextAuth first (required for middleware and ProtectedRoute)
+      const nextAuthResult = await signIn('credentials', {
+        emailOrPhone: formData.email,
         password: formData.password,
+        redirect: false,
       });
+
+      if (!nextAuthResult?.ok) {
+        // Map NextAuth error codes to user-friendly messages
+        const errorMessages: Record<string, string> = {
+          CredentialsSignin: 'Invalid email or password. Please check your credentials and try again.',
+          Configuration: 'There is a problem with the server configuration.',
+          AccessDenied: 'Access denied. Please contact support.',
+          Verification: 'The verification token has expired or has already been used.',
+        };
+        
+        const errorMessage = errorMessages[nextAuthResult.error || ''] || 
+          nextAuthResult.error || 
+          'Invalid email or password';
+        throw new Error(errorMessage);
+      }
+      try {
+        await loginMutation.mutateAsync({
+          email: formData.email,
+          password: formData.password,
+        });
+      } catch (zustandError) {
+        console.warn('Failed to update Zustand store:', zustandError);
+      }
 
       // Handle remember me
       if (formData.rememberMe) {

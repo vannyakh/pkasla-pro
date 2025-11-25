@@ -1,32 +1,29 @@
 'use client'
 
 import React, { useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import UserSidebar from '@/components/layout/Sidebar'
 import Topbar from '@/components/layout/Topbar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import { useAuth } from '@/hooks/useAuth'
+import type { User } from '@/types'
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { user, loading, isAuthenticated } = useAuth()
+  const { data: session, status } = useSession()
   const router = useRouter()
+  const user = session?.user as User | undefined
 
   useEffect(() => {
-    if (!loading) {
-      if (!isAuthenticated) {
-        router.push('/login')
-      } else if (user?.role === 'admin') {
-        // Admins can access both, but default to admin panel
-        // You can change this behavior if needed
-      }
+    if (status !== 'loading' && !user) {
+      router.push('/login')
     }
-  }, [loading, isAuthenticated, user, router])
+  }, [status, user, router])
 
-  if (loading) {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -35,10 +32,6 @@ export default function DashboardLayout({
         </div>
       </div>
     )
-  }
-
-  if (!isAuthenticated) {
-    return null
   }
 
   return (

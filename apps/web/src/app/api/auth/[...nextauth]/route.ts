@@ -1,5 +1,7 @@
-import NextAuthHandler from '@/lib/auth';
+import { handlers } from "@/lib/auth";
 
-export const GET = NextAuthHandler;
-export const POST = NextAuthHandler;
+if (!handlers) {
+  throw new Error("NextAuth handlers are not properly initialized. Please check your NEXTAUTH_SECRET environment variable.");
+}
 
+export const { GET, POST } = handlers;

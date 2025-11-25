@@ -3,14 +3,16 @@
 import React from 'react'
 import Link from 'next/link'
 import { Calendar, Users, CreditCard, TrendingUp, Plus, AlertCircle } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useAuth } from '@/hooks/useAuth'
+import type { User } from '@/types'
 import { Billing } from '@/types/billing'
 
 export default function DashboardPage() {
-  const { user } = useAuth()
+  const { data: session } = useSession()
+  const user = session?.user as User | undefined
   
   // Sample subscription data - TODO: Replace with API call
   const currentSubscription: Billing | null = {
@@ -73,7 +75,7 @@ export default function DashboardPage() {
             {user?.role === 'admin' ? 'Admin - Full Access' : 'Normal User - Manage Your Events'}
           </p>
         </div>
-        <Link href="/dashbord/event/new">
+        <Link href="/dashboard/events/new">
           <Button size="sm" className="text-xs">
             <Plus className="h-3 w-3 mr-1.5" />
             New Event
@@ -155,7 +157,7 @@ export default function DashboardPage() {
                 </p>
               </div>
               <div className="flex items-end">
-                <Link href="/dashbord/billing" className="w-full">
+                <Link href="/dashboard/billing" className="w-full">
                   <Button variant="outline" className="w-full text-xs h-8" size="sm">
                     Manage Subscription
                   </Button>
@@ -166,7 +168,7 @@ export default function DashboardPage() {
             <div className="text-center py-4">
               <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
               <p className="text-xs text-gray-600 mb-3">No active subscription</p>
-              <Link href="/dashbord/billing">
+              <Link href="/dashboard/billing">
                 <Button variant="outline" className="text-xs h-8" size="sm">
                   Subscribe Now
                 </Button>
@@ -198,17 +200,17 @@ export default function DashboardPage() {
             <CardTitle className="text-sm font-semibold text-black">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1.5">
-            <Link href="/dashbord/event/new" className="block">
+            <Link href="/dashboard/events/new" className="block">
               <Button variant="outline" className="w-full justify-start text-xs h-8" size="sm">
                 Create Event
               </Button>
             </Link>
-            <Link href="/dashbord/guest" className="block">
+            <Link href="/dashboard/guests" className="block">
               <Button variant="outline" className="w-full justify-start text-xs h-8" size="sm">
                 Manage Guests
               </Button>
             </Link>
-            <Link href="/dashbord/report" className="block">
+            <Link href="/dashboard/reports" className="block">
               <Button variant="outline" className="w-full justify-start text-xs h-8" size="sm">
                 View Reports
               </Button>

@@ -54,7 +54,7 @@ class AuthService {
   }
 
   async login(payload: LoginInput, req: Request) {
-    const userWithTwoFactor = await userService.findByEmailOrPhoneWithTwoFactor(payload.emailOrPhone);
+    const userWithTwoFactor = await userService.findByEmailWithTwoFactor(payload.email);
     if (!userWithTwoFactor) {
       throw new AppError('Invalid credentials', httpStatus.UNAUTHORIZED);
     }
@@ -265,7 +265,7 @@ class AuthService {
   }
 
   async providerLogin(payload: ProviderLoginInput, req: Request) {
-    const { provider, providerId, accessToken, email, firstName, lastName, avatar } = payload;
+    const { provider, providerId, accessToken, email, name, avatar } = payload;
 
     // Verify the access token with the provider (this is a simplified version)
     // In production, you should verify the token with the actual OAuth provider
@@ -300,35 +300,22 @@ class AuthService {
 
       // Create new user with OAuth provider
       const newUser = await userService.create({
-        firstName,
-        lastName,
+        name,
         email,
-        role: 'job_seeker', // Default role for OAuth users
+        role: 'user', // Default role for OAuth users
         provider: provider as OAuthProvider,
         providerId,
       });
 
       // Update profile with avatar if provided
       if (avatar) {
-        await userService.updateProfile(newUser.id, {
-          profile: {
-            avatarUrl: avatar,
-          },
+        await userRepository.updateById(newUser.id, {
+          avatar: avatar,
         });
       }
 
-      user = await userService.findById(newUser.id);
-    } else {
-      // Update profile avatar if provided and different
-      if (avatar && user.profile?.avatarUrl !== avatar) {
-        await userService.updateProfile(user.id, {
-          profile: {
-            ...user.profile,
-            avatarUrl: avatar,
-          },
-        });
-        user = await userService.findById(user.id);
-      }
+      // Assign the newly created user
+      user = newUser;
     }
 
     if (!user) {

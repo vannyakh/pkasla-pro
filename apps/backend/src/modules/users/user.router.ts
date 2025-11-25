@@ -22,5 +22,5 @@ router.patch(
 
 router.get('/', authenticate, authorize('admin'), asyncHandler(listUsersHandler));
 
-export const userRouter = router;
+export const userRouter: Router = router;
 

@@ -1,5 +1,8 @@
-import NextAuth, { type DefaultSession, type NextAuthOptions } from 'next-auth';
+import NextAuth, { type DefaultSession, type NextAuthConfig } from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
+import Google from 'next-auth/providers/google';
+import GitHub from 'next-auth/providers/github';
+import LinkedIn from 'next-auth/providers/linkedin';
 import type { User, UserRole } from '@/types';
 
 declare module 'next-auth' {
@@ -23,7 +26,7 @@ declare module 'next-auth' {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
-export const authConfig: NextAuthOptions = {
+export const authConfig: NextAuthConfig = {
   providers: [
     Credentials({
       name: 'Credentials',
@@ -33,17 +36,20 @@ export const authConfig: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.emailOrPhone || !credentials?.password) {
-          return null;
+          throw new Error('Email and password are required');
         }
 
         try {
+          // Map emailOrPhone to email for backend API
+          const email = credentials.emailOrPhone;
+          
           const response = await fetch(`${API_BASE_URL}/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              emailOrPhone: credentials.emailOrPhone,
+              email: email,
               password: credentials.password,
             }),
           });
@@ -51,15 +57,23 @@ export const authConfig: NextAuthOptions = {
           const data = await response.json();
 
           if (!response.ok || !data.success) {
-            return null;
+            // Provide more specific error message
+            const errorMessage = data.message || data.error || 'Invalid email or password';
+            throw new Error(errorMessage);
           }
 
           const authData = data.data;
+          
+          // Handle 2FA requirement
+          if (authData.requiresTwoFactor) {
+            throw new Error('Two-factor authentication is required. Please use the API directly.');
+          }
+
           const user = authData.user;
           const tokens = authData.tokens;
 
           if (!user || !tokens) {
-            return null;
+            throw new Error('Invalid response from authentication server');
           }
 
           // Return user with tokens
@@ -75,9 +89,28 @@ export const authConfig: NextAuthOptions = {
           };
         } catch (error) {
           console.error('Auth error:', error);
-          return null;
+          // Re-throw to provide error message to NextAuth
+          if (error instanceof Error) {
+            throw error;
+          }
+          throw new Error('Authentication failed');
         }
       },
+    }),
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
+    }),
+    GitHub({
+      clientId: process.env.GITHUB_CLIENT_ID,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
+    }),
+    LinkedIn({
+      clientId: process.env.LINKEDIN_CLIENT_ID,
+      clientSecret: process.env.LINKEDIN_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   callbacks: {
@@ -124,15 +157,16 @@ export const authConfig: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: '/auth/login',
-    error: '/auth/error',
+    signIn: '/login',
+    error: '/error',
   },
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-key-for-development-only',
 };
 
-export default NextAuth(authConfig);
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);
+
 

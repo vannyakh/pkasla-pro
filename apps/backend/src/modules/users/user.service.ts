@@ -1,12 +1,11 @@
 import httpStatus from 'http-status';
 import { AppError } from '@/common/errors/app-error';
 import { userRepository } from './user.repository';
-import type { UserDocument, UserProfile } from './user.model';
+import type { UserDocument } from './user.model';
 import type { UserRole, UserStatus, OAuthProvider } from './user.types';
 
 export interface CreateUserInput {
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   password?: string; // Optional for OAuth users
   role?: UserRole;
@@ -15,21 +14,17 @@ export interface CreateUserInput {
 }
 
 export interface UpdateUserInput {
-  firstName?: string;
-  lastName?: string;
+  name?: string;
   phone?: string;
-  profile?: UserProfile;
 }
 
 export interface UserResponse {
   id: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   phone?: string;
   role: UserRole;
   status: UserStatus;
-  profile?: UserProfile;
   provider?: OAuthProvider;
   providerId?: string;
   createdAt: Date;
@@ -149,12 +144,8 @@ class UserService {
     // Build update object with proper merging for nested profile
     const updateData: Record<string, any> = {};
     
-    if (payload.firstName !== undefined) {
-      updateData.firstName = payload.firstName;
-    }
-    
-    if (payload.lastName !== undefined) {
-      updateData.lastName = payload.lastName;
+    if (payload.name !== undefined) {
+      updateData.name = payload.name;
     }
     
     if (payload.phone !== undefined) {
@@ -168,17 +159,6 @@ class UserService {
       updateData.phone = payload.phone || null;
     }
     
-    // Merge profile fields properly using dot notation
-    if (payload.profile) {
-      Object.keys(payload.profile).forEach((key) => {
-        const value = (payload.profile as any)[key];
-        if (value !== undefined) {
-          // Allow empty strings to clear the field
-          updateData[`profile.${key}`] = value === '' ? null : value;
-        }
-      });
-    }
-
     const updated = await userRepository.updateById(id, { $set: updateData });
     if (!updated) {
       throw new AppError('User not found', httpStatus.NOT_FOUND);

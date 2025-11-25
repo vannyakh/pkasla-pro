@@ -127,7 +127,7 @@ export function RegisterForm() {
       });
 
       toast.success('Registration successful! Welcome!');
-      router.push(ROUTES.PROFILE || '/dashbord');
+      router.push(ROUTES.HOME);
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Registration failed');

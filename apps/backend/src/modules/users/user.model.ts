@@ -1,55 +1,27 @@
 import { Schema, model, type Document, type Model, Types } from 'mongoose';
-import { USER_ROLES, USER_STATUSES, OAUTH_PROVIDERS, type UserRole, type UserStatus, type CompanyApprovalStatus, type OAuthProvider } from './user.types';
+import { USER_ROLES, USER_STATUSES, OAUTH_PROVIDERS, type UserRole, type UserStatus, type OAuthProvider } from './user.types';
 
-export interface UserProfile {
-  title?: string;
-  bio?: string;
-  location?: string;
-  website?: string;
-  avatarUrl?: string;
-  company?: string;
-}
 
 export interface UserDocument extends Document {
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   phone?: string;
   password?: string; // Optional for OAuth users
   role: UserRole;
   status: UserStatus;
-  profile?: UserProfile;
   twoFactorSecret?: string;
   twoFactorEnabled: boolean;
   twoFactorBackupCodes?: string[];
   // OAuth provider fields
   provider?: OAuthProvider;
   providerId?: string;
-  // Company registration approval (for recruiters)
-  companyApprovalStatus?: CompanyApprovalStatus;
-  approvedBy?: Types.ObjectId;
-  approvedAt?: Date;
-  rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-const userProfileSchema = new Schema<UserProfile>(
-  {
-    title: String,
-    bio: String,
-    location: String,
-    website: String,
-    avatarUrl: String,
-    company: String,
-  },
-  { _id: false },
-);
-
 const userSchema = new Schema<UserDocument>(
   {
-    firstName: { type: String, required: true, trim: true },
-    lastName: { type: String, required: true, trim: true },
+    name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, index: true },
     phone: { type: String, unique: true, sparse: true, index: true, trim: true },
     password: { 
@@ -59,27 +31,14 @@ const userSchema = new Schema<UserDocument>(
       }, 
       select: false 
     },
-    role: { type: String, enum: USER_ROLES, default: 'candidate' },
+    role: { type: String, enum: USER_ROLES, default: 'user' },
     status: { type: String, enum: USER_STATUSES, default: 'active' },
-    profile: { type: userProfileSchema, default: {} },
     twoFactorSecret: { type: String, select: false },
     twoFactorEnabled: { type: Boolean, default: false },
     twoFactorBackupCodes: { type: [String], select: false, default: [] },
     // OAuth provider fields
     provider: { type: String, enum: OAUTH_PROVIDERS, index: true },
     providerId: { type: String, index: true },
-    // Company registration approval
-    companyApprovalStatus: {
-      type: String,
-      enum: ['pending', 'approved', 'rejected'],
-      default: function(this: UserDocument) {
-        return this.role === 'recruiter' ? 'pending' : undefined;
-      },
-      index: true,
-    },
-    approvedBy: { type: Schema.Types.ObjectId, ref: 'User' },
-    approvedAt: { type: Date },
-    rejectionReason: { type: String, maxlength: 500 },
   },
   { timestamps: true },
 );
