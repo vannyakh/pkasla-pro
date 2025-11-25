@@ -50,7 +50,6 @@ export function useLogin() {
         throw new Error(response.error || 'Login failed');
       }
       
-      // Response structure: { success: true, data: { user, tokens } }
       const authData = response.data as AuthResponse;
       return authData;
     },

@@ -1,4 +1,5 @@
-export type UserRole = 'admin' | 'user';
+export type UserRole = 'admin' | 'user' | 'recruiter' | 'candidate';
+export type UserStatus = 'active' | 'pending' | 'suspended';
 
 export interface User {
   id: string;
@@ -7,6 +8,7 @@ export interface User {
   email: string;
   name: string;
   role: UserRole;
+  status?: UserStatus;
   createdAt?: string;
   updatedAt?: string;
 }

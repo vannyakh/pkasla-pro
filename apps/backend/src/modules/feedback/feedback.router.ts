@@ -59,5 +59,5 @@ router
     asyncHandler(respondToFeedbackHandler),
   );
 
-export const feedbackRouter = router;
+export const feedbackRouter : Router = router;
 

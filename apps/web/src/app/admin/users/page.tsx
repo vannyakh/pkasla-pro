@@ -1,10 +1,10 @@
 'use client'
 
-import React from 'react'
-import { Users as UsersIcon, Search } from 'lucide-react'
+import React, { useState, useMemo } from 'react'
+import { Search, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -13,77 +13,82 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { User } from '@/types/user'
-
-// Sample users data - TODO: Replace with API call
-const sampleUsers: User[] = [
-  {
-    id: '1',
-    email: 'admin@pkasla.com',
-    name: 'Admin User',
-    role: 'admin',
-    createdAt: '2024-01-15T10:00:00Z',
-    updatedAt: '2024-01-15T10:00:00Z',
-  },
-  {
-    id: '2',
-    email: 'john.doe@example.com',
-    name: 'John Doe',
-    role: 'admin',
-    createdAt: '2024-02-20T14:30:00Z',
-    updatedAt: '2024-02-20T14:30:00Z',
-  },
-  {
-    id: '3',
-    email: 'sarah.smith@example.com',
-    name: 'Sarah Smith',
-    role: 'user',
-    createdAt: '2024-03-10T09:15:00Z',
-    updatedAt: '2024-03-10T09:15:00Z',
-  },
-  {
-    id: '4',
-    email: 'demo@pkasla.com',
-    name: 'Demo User',
-    role: 'admin',
-    createdAt: '2024-03-25T11:45:00Z',
-    updatedAt: '2024-03-25T11:45:00Z',
-  },
-  {
-    id: '5',
-    email: 'mary.johnson@example.com',
-    name: 'Mary Johnson',
-    role: 'user',
-    createdAt: '2024-04-05T16:20:00Z',
-    updatedAt: '2024-04-05T16:20:00Z',
-  },
-  {
-    id: '6',
-    email: 'david.brown@example.com',
-    name: 'David Brown',
-    role: 'user',
-    createdAt: '2024-04-12T08:30:00Z',
-    updatedAt: '2024-04-12T08:30:00Z',
-  },
-]
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useAdminUsers, useUpdateUserStatus, useUpdateUserRole } from '@/hooks/api/useAdmin'
 
 export default function AdminUsersPage() {
-  const [searchTerm, setSearchTerm] = React.useState('')
-  const [users] = React.useState<User[]>(sampleUsers)
+  const [page, setPage] = useState(1)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [roleFilter, setRoleFilter] = useState<string>('all')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const limit = 20
 
-  const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  // Debounce search term
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm)
+      setPage(1) // Reset to first page when search changes
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchTerm])
 
-  const formatDate = (dateString: string) => {
+  // Build filters
+  const filters = useMemo(() => {
+    const filter: {
+      page: number
+      limit: number
+      search?: string
+      role?: string
+      status?: string
+    } = {
+      page,
+      limit,
+    }
+    if (debouncedSearch) filter.search = debouncedSearch
+    if (roleFilter !== 'all') filter.role = roleFilter
+    if (statusFilter !== 'all') filter.status = statusFilter
+    return filter
+  }, [page, debouncedSearch, roleFilter, statusFilter])
+
+  const { data, isLoading, error, refetch } = useAdminUsers(filters)
+  const updateStatusMutation = useUpdateUserStatus()
+  const updateRoleMutation = useUpdateUserRole()
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'N/A'
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     })
   }
+
+  const handleStatusChange = async (userId: string, status: 'active' | 'pending' | 'suspended') => {
+    try {
+      await updateStatusMutation.mutateAsync({ userId, status })
+    } catch (error) {
+      console.error('Failed to update user status:', error)
+    }
+  }
+
+  const handleRoleChange = async (userId: string, role: 'admin' | 'user') => {
+    try {
+      await updateRoleMutation.mutateAsync({ userId, role })
+    } catch (error) {
+      console.error('Failed to update user role:', error)
+    }
+  }
+
+  const totalPages = data?.meta ? Math.ceil(data.meta.total / limit) : 0
+  const hasNextPage = data?.meta?.hasNextPage || false
+  const hasPrevPage = data?.meta?.hasPrevPage || false
 
   return (
     <div>
@@ -94,8 +99,11 @@ export default function AdminUsersPage() {
 
       <Card className="border border-gray-200">
         <CardHeader className="pb-3">
+          <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle className="text-sm font-semibold text-black">All Users ({filteredUsers.length})</CardTitle>
+              <CardTitle className="text-sm font-semibold text-black">
+                All Users {data?.meta ? `(${data.meta.total})` : ''}
+              </CardTitle>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
@@ -105,10 +113,57 @@ export default function AdminUsersPage() {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-8 h-9 text-xs border-gray-200"
               />
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-full sm:w-40 h-9 text-xs">
+                  <SelectValue placeholder="Filter by role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="user">User</SelectItem>
+                  <SelectItem value="recruiter">Recruiter</SelectItem>
+                  <SelectItem value="candidate">Candidate</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full sm:w-40 h-9 text-xs">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              <span className="ml-2 text-xs text-gray-600">Loading users...</span>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <p className="text-xs text-red-600 mb-4">
+                {error instanceof Error ? error.message : 'Failed to load users'}
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
+                className="text-xs h-8"
+              >
+                Retry
+              </Button>
+            </div>
+          ) : (
+            <>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -116,46 +171,124 @@ export default function AdminUsersPage() {
                   <TableHead className="text-xs font-semibold text-black">Name</TableHead>
                   <TableHead className="text-xs font-semibold text-black">Email</TableHead>
                   <TableHead className="text-xs font-semibold text-black">Role</TableHead>
+                      <TableHead className="text-xs font-semibold text-black">Status</TableHead>
                   <TableHead className="text-xs font-semibold text-black">Registered</TableHead>
                   <TableHead className="text-xs font-semibold text-black">Last Updated</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredUsers.length === 0 ? (
+                    {!data?.data || data.data.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-xs text-gray-500">
+                        <TableCell colSpan={6} className="text-center py-8 text-xs text-gray-500">
                       No users found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredUsers.map((user) => (
-                    <TableRow key={user.id} className="border-gray-200">
+                      data.data.map((user) => {
+                        const userId = (user as { id?: string; _id?: string }).id || (user as { id?: string; _id?: string })._id || ''
+                        const userRole = (user as { role?: string }).role || 'user'
+                        const userStatus = (user as { status?: string }).status || 'active'
+                        const userName = (user as { name?: string }).name || 'N/A'
+                        const userEmail = (user as { email?: string }).email || 'N/A'
+                        const createdAt = (user as { createdAt?: string }).createdAt
+                        const updatedAt = (user as { updatedAt?: string }).updatedAt
+                        
+                        return (
+                        <TableRow key={userId} className="border-gray-200">
                       <TableCell className="text-xs text-black font-medium">
-                        {user.name}
+                            {userName}
                       </TableCell>
                       <TableCell className="text-xs text-gray-600">
-                        {user.email}
+                            {userEmail}
+                          </TableCell>
+                          <TableCell>
+                            <Select
+                              value={userRole}
+                              onValueChange={(value) =>
+                                handleRoleChange(userId, value as 'admin' | 'user')
+                              }
+                              disabled={updateRoleMutation.isPending}
+                            >
+                              <SelectTrigger className="w-24 h-6 text-xs border-gray-200">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="user">User</SelectItem>
+                                <SelectItem value="recruiter">Recruiter</SelectItem>
+                                <SelectItem value="candidate">Candidate</SelectItem>
+                              </SelectContent>
+                            </Select>
                       </TableCell>
                       <TableCell>
-                        <Badge
-                          variant={user.role === 'admin' ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {user.role}
-                        </Badge>
+                            <Select
+                              value={userStatus}
+                              onValueChange={(value) =>
+                                handleStatusChange(
+                                  userId,
+                                  value as 'active' | 'pending' | 'suspended'
+                                )
+                              }
+                              disabled={updateStatusMutation.isPending}
+                            >
+                              <SelectTrigger className="w-28 h-6 text-xs border-gray-200">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="suspended">Suspended</SelectItem>
+                              </SelectContent>
+                            </Select>
                       </TableCell>
                       <TableCell className="text-xs text-gray-600">
-                        {formatDate(user.createdAt)}
+                            {formatDate(createdAt)}
                       </TableCell>
                       <TableCell className="text-xs text-gray-600">
-                        {formatDate(user.updatedAt)}
+                            {formatDate(updatedAt)}
                       </TableCell>
                     </TableRow>
-                  ))
+                        )
+                      })
                 )}
               </TableBody>
             </Table>
           </div>
+              {data?.meta && data.meta.total > 0 && (
+                <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3">
+                  <div className="text-xs text-gray-600">
+                    Showing {(page - 1) * limit + 1} to {Math.min(page * limit, data.meta.total)} of{' '}
+                    {data.meta.total} users
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={!hasPrevPage || isLoading}
+                      className="h-8 text-xs"
+                    >
+                      <ChevronLeft className="h-3 w-3" />
+                      Previous
+                    </Button>
+                    <span className="text-xs text-gray-600">
+                      Page {page} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((p) => p + 1)}
+                      disabled={!hasNextPage || isLoading}
+                      className="h-8 text-xs"
+                    >
+                      Next
+                      <ChevronRight className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </CardContent>
       </Card>
     </div>
