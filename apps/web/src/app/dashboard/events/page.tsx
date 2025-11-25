@@ -21,7 +21,7 @@ import {
   DrawerTrigger,
 } from '@/components/ui/drawer'
 import CountdownTimer from '@/components/CountdownTimer'
-import CreateEventForm from '@/components/events/CreateEventForm'
+import { CreateEventForm } from '@/components/events/index'
 import { Event } from '@/types/event'
 
 // Sample events with background images
@@ -154,7 +154,7 @@ function EventCard({ event }: { event: typeof sampleEvents[0] }) {
         
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
-          <Link href={`/dashbord/events/${event.id}`} className="flex-1">
+          <Link href={`/dashboard/events/${event.id}`} className="flex-1">
             <Button variant="outline" className="w-full text-xs h-8 border-gray-300 hover:bg-gray-50" size="sm">
               <Eye className="h-3.5 w-3.5 mr-1.5" />
               View

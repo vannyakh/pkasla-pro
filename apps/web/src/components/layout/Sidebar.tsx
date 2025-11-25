@@ -27,12 +27,12 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 
 const menuItems = [
-  { href: '/dashbord', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashbord/events', label: 'Events', icon: Calendar },
-  { href: '/dashbord/guests', label: 'Guests', icon: Users },
-  { href: '/dashbord/billing', label: 'Billing', icon: CreditCard },
-  { href: '/dashbord/reports', label: 'Reports', icon: FileText },
-  { href: '/dashbord/settings', label: 'Settings', icon: Settings },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/events', label: 'Events', icon: Calendar },
+  { href: '/dashboard/guests', label: 'Guests', icon: Users },
+  { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
+  { href: '/dashboard/reports', label: 'Reports', icon: FileText },
+  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ]
 
 export default function UserSidebar() {

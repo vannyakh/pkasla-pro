@@ -59,7 +59,7 @@ export default function CreateEventPage() {
 
       const result = await createEvent(eventData)
       if (result.success) {
-        router.push('/dashbord/events')
+        router.push('/dashboard/events')
       }
     } catch (error) {
       console.error('Error creating event:', error)

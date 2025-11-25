@@ -26,7 +26,7 @@ export default function AdminLayout({
         router.push('/login')
       } else if (user?.role !== 'admin') {
         // Regular users should go to dashboard
-        router.push('/dashbord')
+        router.push('/dashboard')
       }
     }
   }, [loading, isAuthenticated, user, router, isAdminRoute])

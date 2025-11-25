@@ -25,7 +25,7 @@ interface CreateEventFormProps {
   onSuccess?: () => void
 }
 
-export default function CreateEventForm({ onSuccess }: CreateEventFormProps) {
+export function CreateEventForm({ onSuccess }: CreateEventFormProps) {
   const { createEvent } = useEvent()
   const [formData, setFormData] = useState({
     eventType: '',
