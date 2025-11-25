@@ -1,38 +1,39 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import AdminSidebar from '@/components/layout/AdminSidebar'
 import Topbar from '@/components/layout/Topbar'
-import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
-import { useAuth } from '@/hooks/useAuth'
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import type { User } from '@/types'
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const { user, loading, isAuthenticated } = useAuth()
+  const { data: session, status } = useSession()
   const router = useRouter()
-  const pathname = usePathname()
-
-  // Admin panel routes
-  const isAdminRoute = pathname.startsWith('/admin')
+  const user = session?.user as User | undefined
 
   useEffect(() => {
-    if (!loading && isAdminRoute) {
-      // Only allow admin role to access admin panel routes
-      if (!isAuthenticated) {
+    if (status !== 'loading') {
+      // If not authenticated, redirect to login
+      if (!user) {
         router.push('/login')
-      } else if (user?.role !== 'admin') {
-        // Regular users should go to dashboard
+        return
+      }
+      // If authenticated but not admin, redirect to dashboard
+      if (user.role !== 'admin') {
         router.push('/dashboard')
+        return
       }
     }
-  }, [loading, isAuthenticated, user, router, isAdminRoute])
+  }, [status, user, router])
 
-  // Show loading only for protected admin routes
-  if (loading && isAdminRoute) {
+  // Show loading state while checking authentication
+  if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -44,7 +45,7 @@ export default function AdminLayout({
   }
 
   // Protect admin routes - only admins can access
-  if (isAdminRoute && (!isAuthenticated || user?.role !== 'admin')) {
+  if (!user || user.role !== 'admin') {
     return null
   }
 

@@ -24,7 +24,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-import { useAuth } from '@/hooks/useAuth'
 
 const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -37,7 +36,6 @@ const menuItems = [
 
 export default function UserSidebar() {
   const pathname = usePathname()
-  const { logout } = useAuth()
 
   return (
     <Sidebar collapsible="icon">
@@ -71,17 +69,6 @@ export default function UserSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={logout} tooltip="Logout">
-              <LogOut className="h-4 w-4 shrink-0" />
-              <span>Logout</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
     </Sidebar>
   )
 }

@@ -54,8 +54,6 @@ axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => {
     // If response already has success field, wrap data properly
     if (response.data?.success !== undefined) {
-      // API returns { success: true, data: {...} }
-      // Transform to { success: true, data: {...}, message: ... }
       return {
         ...response,
         data: {

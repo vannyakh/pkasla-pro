@@ -1,7 +1,4 @@
 import { UserModel } from '@/modules/users/user.model';
-import { ApplicationModel } from '@/modules/applications/application.model';
-import { JobModel } from '@/modules/jobs/job.model';
-import { BlogModel } from '@/modules/blog/blog.model';
 import { AppError } from '@/common/errors/app-error';
 import httpStatus from 'http-status';
 

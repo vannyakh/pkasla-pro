@@ -35,7 +35,7 @@ export const updateUserStatusSchema = z.object({
     id: z.string().min(1),
   }),
   body: z.object({
-    status: z.enum(['active', 'pending', 'suspended']),
+    status: z.enum(['active', 'pending', 'suspended', 'deleted']),
   }),
 });
 
@@ -44,7 +44,7 @@ export const updateUserRoleSchema = z.object({
     id: z.string().min(1),
   }),
   body: z.object({
-    role: z.enum(['admin', 'recruiter', 'candidate']),
+    role: z.enum(['admin', 'recruiter', 'candidate', 'user']),
   }),
 });
 

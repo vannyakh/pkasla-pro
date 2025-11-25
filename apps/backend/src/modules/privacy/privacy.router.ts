@@ -35,5 +35,5 @@ router
   .route('/request-deletion')
   .post(asyncHandler(requestDataDeletionHandler));
 
-export const privacyRouter = router;
+export const privacyRouter : Router = router;
 
