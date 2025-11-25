@@ -1,13 +1,11 @@
 'use client'
 
-import React from 'react'
 import { Bell, Search } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
 import { Input } from '@/components/ui/input'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import ProfileMenu from './ProfileMenu'
 
 export default function Topbar() {
-  const { user } = useAuth()
 
   return (
     <div className="h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4">
@@ -26,12 +24,11 @@ export default function Topbar() {
       </div>
 
       <div className="flex items-center gap-2">
-        <button className="p-1.5 hover:bg-gray-100 rounded">
+        <button className="p-1.5 hover:bg-gray-100 rounded transition-colors">
           <Bell className="h-4 w-4 text-gray-600" />
         </button>
-        <div className="h-7 w-7 bg-gray-200 rounded-full flex items-center justify-center text-xs text-black font-medium">
-          {user?.name?.charAt(0).toUpperCase() || 'U'}
-        </div>
+        
+        <ProfileMenu />
       </div>
     </div>
   )
