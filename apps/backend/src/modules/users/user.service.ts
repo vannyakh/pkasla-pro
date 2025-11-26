@@ -17,6 +17,7 @@ export interface CreateUserInput {
 export interface UpdateUserInput {
   name?: string;
   phone?: string;
+  avatar?: string;
 }
 
 export interface UserResponse {
@@ -24,6 +25,7 @@ export interface UserResponse {
   name: string;
   email: string;
   phone?: string;
+  avatar?: string;
   role: UserRole;
   status: UserStatus;
   provider?: OAuthProvider;
@@ -34,6 +36,18 @@ export interface UserResponse {
 
 type UserSource = UserDocument | (Record<string, any> & { _id?: unknown }) | null;
 
+/**
+ * Generates a default avatar URL using the user's name or email
+ */
+const getDefaultAvatarUrl = (name?: string, email?: string): string => {
+  const username = name 
+    ? encodeURIComponent(name.trim().replace(/\s+/g, ''))
+    : email 
+    ? encodeURIComponent(email.split('@')[0])
+    : 'user';
+  return `https://avatar.iran.liara.run/public/?username=${username}`;
+};
+
 const sanitizeUser = (user: UserSource): UserResponse | null => {
   if (!user) {
     return null;
@@ -43,10 +57,17 @@ const sanitizeUser = (user: UserSource): UserResponse | null => {
       ? (user as UserDocument).toObject()
       : user;
   const { _id, password, __v, ...rest } = userObj as Record<string, any>;
-  return {
-    ...(rest as Omit<UserResponse, 'id'>),
+  const sanitized = {
+    ...(rest as Omit<UserResponse, 'id' | 'avatar'>),
     id: (_id ?? (rest as Record<string, any>).id).toString(),
-  };
+  } as UserResponse;
+  
+  // Set default avatar if not provided or empty
+  if (!sanitized.avatar || sanitized.avatar.trim() === '') {
+    sanitized.avatar = getDefaultAvatarUrl(sanitized.name, sanitized.email);
+  }
+  
+  return sanitized;
 };
 
 class UserService {
@@ -158,6 +179,10 @@ class UserService {
         }
       }
       updateData.phone = payload.phone || null;
+    }
+    
+    if (payload.avatar !== undefined) {
+      updateData.avatar = payload.avatar || null;
     }
     
     const updated = await userRepository.updateById(id, { $set: updateData });

@@ -266,24 +266,7 @@ class AuthService {
 
   async providerLogin(payload: ProviderLoginInput, req: Request) {
     const { provider, providerId, accessToken, email, name, avatar } = payload;
-
-    console.log('[AuthService] 🔄 Starting provider login:', {
-      provider,
-      providerId,
-      email,
-      name,
-      hasAccessToken: !!accessToken,
-      hasAvatar: !!avatar,
-    });
-
-    // Verify the access token with the provider (this is a simplified version)
-    // In production, you should verify the token with the actual OAuth provider
-    // For now, we'll trust the token if it's provided (NextAuth.js handles verification)
-    
-    // Try to find existing user by provider
-    console.log('[AuthService] 🔍 Searching for user by provider:', { provider, providerId });
     let user = await userService.findByProvider(provider, providerId);
-    console.log('[AuthService] 🔍 User found by provider:', user ? { id: user.id, email: user.email } : null);
 
     // If user not found by provider, try to find by email (account linking)
     if (!user) {

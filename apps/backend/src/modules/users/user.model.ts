@@ -7,6 +7,7 @@ export interface UserDocument extends Document {
   email: string;
   phone?: string;
   password?: string; // Optional for OAuth users
+  avatar?: string;
   role: UserRole;
   status: UserStatus;
   twoFactorSecret?: string;
@@ -31,6 +32,7 @@ const userSchema = new Schema<UserDocument>(
       }, 
       select: false 
     },
+    avatar: { type: String },
     role: { type: String, enum: USER_ROLES, default: 'user' },
     status: { type: String, enum: USER_STATUSES, default: 'active' },
     twoFactorSecret: { type: String, select: false },
