@@ -9,6 +9,7 @@ export interface CreateUserInput {
   name: string;
   email: string;
   password?: string; // Optional for OAuth users
+  avatar?: string;
   role?: UserRole;
   provider?: OAuthProvider;
   providerId?: string;
