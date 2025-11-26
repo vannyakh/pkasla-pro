@@ -87,14 +87,14 @@ export function useRefreshToken() {
   
   return useMutation({
     mutationFn: async (refreshToken: string) => {
-      const response = await api.post<{ data: { tokens: { accessToken: string; refreshToken: string } } }>(
+      const response = await api.post<{ tokens: { accessToken: string; refreshToken: string } }>(
         '/auth/refresh',
         { refreshToken }
       );
       if (!response.success) throw new Error(response.error);
       
       // Response structure may vary, adjust based on your API
-      const tokens = (response.data as unknown as { tokens: { accessToken: string; refreshToken: string } }).tokens || (response.data as unknown as { data: { tokens: { accessToken: string; refreshToken: string } } }).data?.tokens;
+      const tokens = (response.data as any).tokens || (response.data as any).data?.tokens;
       return tokens;
     },
     onSuccess: (tokens) => {

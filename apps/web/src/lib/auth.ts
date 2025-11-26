@@ -34,11 +34,11 @@ export const authConfig: NextAuthConfig = {
     Credentials({
       name: 'Credentials',
       credentials: {
-        emailOrPhone: { label: 'Email or Phone', type: 'text' },
+        email: { label: 'Email', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.emailOrPhone || !credentials?.password) {
+        if (!credentials?.email || !credentials?.password) {
           return null;
         }
 
@@ -49,7 +49,7 @@ export const authConfig: NextAuthConfig = {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              emailOrPhone: credentials.emailOrPhone,
+              email: credentials.email,
               password: credentials.password,
             }),
           });

@@ -79,7 +79,8 @@ export function LoginForm() {
         password: formData.password,
         redirect: false,
       });
-
+      console.log("🚀 ~ handleSubmit ~ result:", result)
+      
       if (result?.error) {
         toast.error(result.error === 'CredentialsSignin' ? 'Invalid email/phone or password' : result.error);
         setIsLoading(false);
