@@ -55,7 +55,35 @@ export const logoutHandler = async (req: Request, res: Response) => {
 };
 
 export const providerLoginHandler = async (req: Request, res: Response) => {
-  const result = await authService.providerLogin(req.body, req);
-  return res.status(httpStatus.OK).json(buildSuccessResponse(result));
+  console.log('[AuthController] 📥 OAuth provider login request received');
+  console.log('[AuthController] 📋 Request body:', {
+    provider: req.body.provider,
+    providerId: req.body.providerId,
+    email: req.body.email,
+    name: req.body.name,
+    hasAccessToken: !!req.body.accessToken,
+    hasAvatar: !!req.body.avatar,
+  });
+  
+  try {
+    const result = await authService.providerLogin(req.body, req);
+    console.log('[AuthController] ✅ Provider login successful:', {
+      userId: result.user.id,
+      email: result.user.email,
+      role: result.user.role,
+      provider: result.user.provider,
+      hasTokens: !!(result.tokens?.accessToken && result.tokens?.refreshToken),
+    });
+    return res.status(httpStatus.OK).json(buildSuccessResponse(result));
+  } catch (error) {
+    console.error('[AuthController] ❌ Provider login error:', error);
+    if (error instanceof Error) {
+      console.error('[AuthController] ❌ Error details:', {
+        message: error.message,
+        stack: error.stack,
+      });
+    }
+    throw error;
+  }
 };
 

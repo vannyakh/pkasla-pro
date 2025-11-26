@@ -148,11 +148,12 @@ export function LoginForm() {
     setOauthLoading(provider);
     try {
       const callbackUrl = searchParams.get('callbackUrl') || '/';
-      await signIn(provider, {
+      signIn(provider, {
         callbackUrl: callbackUrl,
         redirect: true,
       });
-    } catch {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
       toast.error(`Failed to sign in with ${provider}`);
       setOauthLoading(null);
     }

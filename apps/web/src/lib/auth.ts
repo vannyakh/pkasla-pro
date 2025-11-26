@@ -108,35 +108,52 @@ export const authConfig: NextAuthConfig = {
     async signIn({ user, account }) {
       // Handle OAuth sign-in - link with backend API
       if (account && account.provider !== 'credentials' && user.email) {
-        try {
-          // Split name into firstName and lastName for OAuth providers
-          const nameParts = (user.name || user.email).split(/\s+/);
-          const firstName = nameParts[0] || '';
-          const lastName = nameParts.slice(1).join(' ') || '';
+  
+        // Ensure provider name matches backend expectations (lowercase)
+        const normalizedProvider = account.provider.toLowerCase();
 
-          // Call backend API to register/login with OAuth
-          const response = await fetch(`${API_BASE_URL}/auth/oauth`, {
+        const requestPayload = {
+          email: user.email,
+          name: user.name || user.email.split('@')[0], // Fallback to email prefix if no name
+          provider: normalizedProvider,
+          providerId: account.providerAccountId || account.id_token || user.id, // Fallback if providerAccountId missing
+          accessToken: account.access_token || account.id_token || 'oauth-token', // Fallback if access_token missing
+          avatar: user.image,
+        };
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/auth/login/oauth`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              email: user.email,
-              firstName,
-              lastName,
-              provider: account.provider,
-              providerId: account.providerAccountId,
-              accessToken: account.access_token,
-              avatar: user.image,
-            }),
+            body: JSON.stringify(requestPayload),
           });
+          // Read response as text first to see raw response
+          const responseText = await response.text();
 
-          const data = await response.json();
+          let data;
+          try {
+            data = JSON.parse(responseText);
+          } catch (parseError) {
+            console.error('[NextAuth] ❌ Failed to parse response as JSON:', parseError);
+            console.error('[NextAuth] ❌ Raw response:', responseText);
+            throw new Error(`Invalid JSON response from backend: ${responseText.substring(0, 200)}`);
+          }
+          
+          console.log('[NextAuth] 📦 Backend response data:', {
+            success: data.success,
+            hasData: !!data.data,
+            error: data.error,
+            message: data.message,
+            fullData: data,
+          });
 
           if (response.ok && data.success) {
             const authData = data.data;
             const apiUser = authData.user;
             const tokens = authData.tokens;
+
 
             // Update user object with API response
             user.id = apiUser.id;
@@ -147,19 +164,28 @@ export const authConfig: NextAuthConfig = {
             user.updatedAt = apiUser.updatedAt;
             (user as User & { accessToken?: string; refreshToken?: string }).accessToken = tokens.accessToken;
             (user as User & { accessToken?: string; refreshToken?: string }).refreshToken = tokens.refreshToken;
+            console.log('[NextAuth] ✅ Allowing sign-in');
             return true;
           } else {
             // OAuth API call failed - log error and prevent sign-in
-            console.error('OAuth API error:', data.error || data.message || 'Unknown error');
+            // Log validation errors if present
+            if (data.errors) {
+              console.error('[NextAuth] ❌ Validation errors:', data.errors);
+            }
+            
             return false; // Prevent sign-in if backend API fails
           }
         } catch (error) {
           // Network or other error - prevent sign-in
-          console.error('OAuth error:', error);
+          console.error('[NextAuth] ❌ OAuth network/request error:', error);
           return false; // Prevent sign-in on error
         }
       }
+      
       // For credentials provider, always allow
+      if (account?.provider === 'credentials') {
+        console.log('[NextAuth] ✅ Credentials provider - allowing sign-in');
+      }
       return true;
     },
     async redirect({ url, baseUrl }) {

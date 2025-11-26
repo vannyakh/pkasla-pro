@@ -267,38 +267,62 @@ class AuthService {
   async providerLogin(payload: ProviderLoginInput, req: Request) {
     const { provider, providerId, accessToken, email, name, avatar } = payload;
 
+    console.log('[AuthService] 🔄 Starting provider login:', {
+      provider,
+      providerId,
+      email,
+      name,
+      hasAccessToken: !!accessToken,
+      hasAvatar: !!avatar,
+    });
+
     // Verify the access token with the provider (this is a simplified version)
     // In production, you should verify the token with the actual OAuth provider
     // For now, we'll trust the token if it's provided (NextAuth.js handles verification)
     
     // Try to find existing user by provider
+    console.log('[AuthService] 🔍 Searching for user by provider:', { provider, providerId });
     let user = await userService.findByProvider(provider, providerId);
+    console.log('[AuthService] 🔍 User found by provider:', user ? { id: user.id, email: user.email } : null);
 
     // If user not found by provider, try to find by email (account linking)
     if (!user) {
+      console.log('[AuthService] 🔍 User not found by provider, searching by email:', email);
       const existingUser = await userService.findByEmail(email);
+      console.log('[AuthService] 🔍 User found by email:', existingUser ? { 
+        id: existingUser.id, 
+        email: existingUser.email,
+        provider: existingUser.provider 
+      } : null);
+      
       if (existingUser && !existingUser.provider) {
         // Link the provider to existing account (only if account doesn't have a provider)
+        console.log('[AuthService] 🔗 Linking provider to existing account');
         await userRepository.updateById(existingUser.id, {
           provider: provider as OAuthProvider,
           providerId,
         });
         user = await userService.findById(existingUser.id);
+        console.log('[AuthService] ✅ Provider linked successfully');
       } else if (existingUser && existingUser.provider) {
         // Account already has a different provider
+        console.log('[AuthService] ❌ Account already has a different provider:', existingUser.provider);
         throw new AppError('Email already registered with a different provider', httpStatus.CONFLICT);
       }
     }
 
     // If still no user, create a new one
     if (!user) {
+      console.log('[AuthService] 👤 No existing user found, creating new user');
       // Check if email already exists
       const existingEmailUser = await userService.findByEmail(email);
       if (existingEmailUser) {
+        console.log('[AuthService] ❌ Email already exists:', email);
         throw new AppError('Email already registered. Please use email/password login or link your account.', httpStatus.CONFLICT);
       }
 
       // Create new user with OAuth provider
+      console.log('[AuthService] ➕ Creating new user with OAuth provider');
       const newUser = await userService.create({
         name,
         email,
@@ -306,9 +330,11 @@ class AuthService {
         provider: provider as OAuthProvider,
         providerId,
       });
+      console.log('[AuthService] ✅ New user created:', { id: newUser.id, email: newUser.email });
 
       // Update profile with avatar if provided
       if (avatar) {
+        console.log('[AuthService] 🖼️ Updating user avatar');
         await userRepository.updateById(newUser.id, {
           avatar: avatar,
         });
