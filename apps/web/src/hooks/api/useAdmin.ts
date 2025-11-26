@@ -25,7 +25,7 @@ export interface UserListResponse {
   items: User[];
   total: number;
   page: number;
-  limit: number;
+  pageSize: number;
 }
 
 export interface SiteMetrics {
@@ -108,7 +108,7 @@ export function useUpdateUserStatus() {
 export function useUpdateUserRole() {
   const queryClient = useQueryClient();
 
-  return useMutation<User, Error, { userId: string; role: 'admin' | 'recruiter' | 'candidate' | 'user' }>({
+  return useMutation<User, Error, { userId: string; role: 'admin' | 'user' }>({
     mutationFn: async ({ userId, role }) => {
       const response = await api.patch<User>(`/admin/users/${userId}/role`, { role });
       if (!response.success) {

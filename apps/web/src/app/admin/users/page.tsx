@@ -86,9 +86,12 @@ export default function AdminUsersPage() {
     }
   }
 
-  const totalPages = data?.meta ? Math.ceil(data.meta.total / limit) : 0
-  const hasNextPage = data?.meta?.hasNextPage || false
-  const hasPrevPage = data?.meta?.hasPrevPage || false
+  // Calculate pagination from new API structure
+  const totalPages = data?.total ? Math.ceil(data.total / (data.pageSize || limit)) : 0
+  const currentPage = data?.page || page
+  const pageSize = data?.pageSize || limit
+  const hasNextPage = data ? currentPage * pageSize < data.total : false
+  const hasPrevPage = data ? currentPage > 1 : false
 
   return (
     <div>
@@ -102,7 +105,7 @@ export default function AdminUsersPage() {
           <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <CardTitle className="text-sm font-semibold text-black">
-                All Users {data?.meta ? `(${data.meta.total})` : ''}
+                All Users {data?.total ? `(${data.total})` : ''}
               </CardTitle>
             <div className="relative w-full sm:w-64">
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -124,8 +127,6 @@ export default function AdminUsersPage() {
                   <SelectItem value="all">All Roles</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="user">User</SelectItem>
-                  <SelectItem value="recruiter">Recruiter</SelectItem>
-                  <SelectItem value="candidate">Candidate</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -177,21 +178,21 @@ export default function AdminUsersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                    {!data?.data || data.data.length === 0 ? (
+                    {!data?.items || data.items.length === 0 ? (
                   <TableRow>
                         <TableCell colSpan={6} className="text-center py-8 text-xs text-gray-500">
                       No users found
                     </TableCell>
                   </TableRow>
                 ) : (
-                      data.data.map((user) => {
-                        const userId = (user as { id?: string; _id?: string }).id || (user as { id?: string; _id?: string })._id || ''
-                        const userRole = (user as { role?: string }).role || 'user'
-                        const userStatus = (user as { status?: string }).status || 'active'
-                        const userName = (user as { name?: string }).name || 'N/A'
-                        const userEmail = (user as { email?: string }).email || 'N/A'
-                        const createdAt = (user as { createdAt?: string }).createdAt
-                        const updatedAt = (user as { updatedAt?: string }).updatedAt
+                      data.items.map((user) => {
+                        const userId = user.id
+                        const userRole = user.role || 'user'
+                        const userStatus = user.status || 'active'
+                        const userName = user.name || 'N/A'
+                        const userEmail = user.email || 'N/A'
+                        const createdAt = user.createdAt
+                        const updatedAt = user.updatedAt
                         
                         return (
                         <TableRow key={userId} className="border-gray-200">
@@ -215,8 +216,6 @@ export default function AdminUsersPage() {
                               <SelectContent>
                                 <SelectItem value="admin">Admin</SelectItem>
                                 <SelectItem value="user">User</SelectItem>
-                                <SelectItem value="recruiter">Recruiter</SelectItem>
-                                <SelectItem value="candidate">Candidate</SelectItem>
                               </SelectContent>
                             </Select>
                       </TableCell>
@@ -254,11 +253,11 @@ export default function AdminUsersPage() {
               </TableBody>
             </Table>
           </div>
-              {data?.meta && data.meta.total > 0 && (
+              {data && data.total > 0 && (
                 <div className="flex items-center justify-between border-t border-gray-200 px-4 py-3">
                   <div className="text-xs text-gray-600">
-                    Showing {(page - 1) * limit + 1} to {Math.min(page * limit, data.meta.total)} of{' '}
-                    {data.meta.total} users
+                    Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, data.total)} of{' '}
+                    {data.total} users
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -272,7 +271,7 @@ export default function AdminUsersPage() {
                       Previous
                     </Button>
                     <span className="text-xs text-gray-600">
-                      Page {page} of {totalPages}
+                      Page {currentPage} of {totalPages}
                     </span>
                     <Button
                       variant="outline"
