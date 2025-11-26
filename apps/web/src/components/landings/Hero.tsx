@@ -4,10 +4,16 @@ import React, { useEffect, useRef } from 'react'
 import { gsap } from 'gsap'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { ROUTES } from '@/constants'
+import type { User } from '@/types'
 
 export function Hero() {
+  const { data: session } = useSession()
+  const user = session?.user as User | undefined
+  const isAuthenticated = !!user
+
   const heroRef = useRef<HTMLDivElement>(null)
   const headerRef = useRef<HTMLParagraphElement>(null)
   const titleRef = useRef<HTMLHeadingElement>(null)
@@ -277,13 +283,25 @@ export function Hero() {
 
           {/* CTA Button */}
           <div ref={buttonsRef} className="mb-5">
-            <Button
-              size="lg"
-              className="bg-linear-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white rounded-lg px-5 py-4 text-sm font-medium shadow-lg"
-              asChild
-            >
-              <Link href={ROUTES.REGISTER}>ចាប់ផ្តើមឥឡូវនេះ</Link>
-            </Button>
+            {isAuthenticated ? (
+              <Button
+                size="lg"
+                className="bg-linear-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white rounded-lg px-5 py-4 text-sm font-medium shadow-lg"
+                asChild
+              >
+                <Link href={user?.role === 'admin' ? ROUTES.ADMIN : ROUTES.DASHBOARD}>
+                  ទៅកាន់ផ្ទាំងគ្រប់គ្រង
+                </Link>
+              </Button>
+            ) : (
+              <Button
+                size="lg"
+                className="bg-linear-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white rounded-lg px-5 py-4 text-sm font-medium shadow-lg"
+                asChild
+              >
+                <Link href={ROUTES.REGISTER}>ចាប់ផ្តើមឥឡូវនេះ</Link>
+              </Button>
+            )}
           </div>
 
           {/* Statistics */}

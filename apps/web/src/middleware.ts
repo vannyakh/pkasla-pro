@@ -84,14 +84,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages to their role-based dashboard
   if (authPages.some((route) => pathname.startsWith(route)) && user) {
-    const redirectPath = user.role === 'admin' ? ROUTES.ADMIN : ROUTES.DASHBOARD;
-    return NextResponse.redirect(new URL(redirectPath, request.url));
-  }
-  
-  // Redirect authenticated users from home to their role-based dashboard
-  if (pathname === ROUTES.HOME && user) {
-    const redirectPath = user.role === 'admin' ? ROUTES.ADMIN : ROUTES.DASHBOARD;
-    return NextResponse.redirect(new URL(redirectPath, request.url));
+    return NextResponse.redirect(new URL(ROUTES.HOME, request.url));
   }
 
   // Check if route requires authentication

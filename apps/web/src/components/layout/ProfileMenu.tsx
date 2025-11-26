@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import type { User as UserType } from '@/types'
 import toast from 'react-hot-toast'
 import { cn } from '@/lib/utils'
@@ -62,6 +62,9 @@ export default function ProfileMenu({ className }: ProfileMenuProps) {
           aria-label="User menu"
         >
           <Avatar className="h-7 w-7">
+            {user?.avatar && (
+              <AvatarImage src={user.avatar} alt={user.name || user.email} />
+            )}
             <AvatarFallback className="bg-gray-200 text-black text-xs font-medium">
               {getInitials()}
             </AvatarFallback>
