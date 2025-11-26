@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { User, LoginDto, RegisterDto, AuthResponse, AuthTokens } from '@/types';
+import type { User, LoginDto, RegisterDto, AuthResponse } from '@/types';
 import { api } from '@/lib/axios-client';
 import { useAuthStore } from '@/store';
 
@@ -17,17 +17,12 @@ export const authKeys = {
 export function useMe() {
   const user = useAuthStore((state) => state.user);
   
-  return useQuery<User, Error>({
+  return useQuery({
     queryKey: authKeys.me(),
-    queryFn: async (): Promise<User> => {
-      const response = await api.get<User>('/users/me');
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to fetch user');
-      }
-      if (!response.data) {
-        throw new Error('User data not found');
-      }
-      return response.data;
+    queryFn: async () => {
+      const response = await api.get<User>('/auth/me');
+      if (!response.success) throw new Error(response.error);
+      return response.data!;
     },
     retry: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -43,14 +38,13 @@ export function useLogin() {
   const queryClient = useQueryClient();
   const setAuth = useAuthStore((state) => state.setAuth);
   
-  return useMutation<AuthResponse, Error, LoginDto>({
+  return useMutation({
     mutationFn: async (credentials: LoginDto) => {
-      const response = await api.post<AuthResponse>('/auth/login', credentials);
-      if (!response.success) {
-        throw new Error(response.error || 'Login failed');
-      }
+      const response = await api.post<{ data: AuthResponse }>('/auth/login', credentials);
+      if (!response.success) throw new Error(response.error);
       
-      const authData = response.data as AuthResponse;
+      // Response structure: { success: true, data: { user, tokens } }
+      const authData = (response.data as unknown as { data: AuthResponse }).data || response.data as unknown as AuthResponse;
       return authData;
     },
     onSuccess: (data) => {
@@ -68,15 +62,13 @@ export function useRegister() {
   const queryClient = useQueryClient();
   const setAuth = useAuthStore((state) => state.setAuth);
   
-  return useMutation<AuthResponse, Error, RegisterDto>({
+  return useMutation({
     mutationFn: async (data: RegisterDto) => {
-      const response = await api.post<AuthResponse>('/auth/register', data);
-      if (!response.success) {
-        throw new Error(response.error || 'Registration failed');
-      }
+      const response = await api.post<{ data: AuthResponse }>('/auth/register', data);
+      if (!response.success) throw new Error(response.error);
       
       // Response structure: { success: true, data: { user, tokens } }
-      const authData = response.data as AuthResponse;
+      const authData = (response.data as unknown as { data: AuthResponse }).data || response.data as unknown as AuthResponse;
       return authData;
     },
     onSuccess: (data) => {
@@ -88,31 +80,22 @@ export function useRegister() {
 }
 
 /**
- * Refresh token response type
- */
-interface RefreshTokenResponse {
-  tokens: AuthTokens;
-}
-
-/**
  * Refresh token mutation
  */
 export function useRefreshToken() {
   const setTokens = useAuthStore((state) => state.setTokens);
   
-  return useMutation<AuthTokens, Error, string>({
+  return useMutation({
     mutationFn: async (refreshToken: string) => {
-      const response = await api.post<RefreshTokenResponse>(
+      const response = await api.post<{ data: { tokens: { accessToken: string; refreshToken: string } } }>(
         '/auth/refresh',
         { refreshToken }
       );
-      if (!response.success) {
-        throw new Error(response.error || 'Token refresh failed');
-      }
+      if (!response.success) throw new Error(response.error);
       
-      // Response structure: { success: true, data: { tokens: { accessToken, refreshToken } } }
-      const responseData = response.data as RefreshTokenResponse;
-      return responseData.tokens;
+      // Response structure may vary, adjust based on your API
+      const tokens = (response.data as unknown as { tokens: { accessToken: string; refreshToken: string } }).tokens || (response.data as unknown as { data: { tokens: { accessToken: string; refreshToken: string } } }).data?.tokens;
+      return tokens;
     },
     onSuccess: (tokens) => {
       setTokens(tokens);
@@ -127,10 +110,11 @@ export function useLogout() {
   const queryClient = useQueryClient();
   const logout = useAuthStore((state) => state.logout);
   
-  return useMutation<void, Error, void>({
+  return useMutation({
     mutationFn: async () => {
       try {
-        await api.post<void>('/auth/logout');
+        const response = await api.post('/auth/logout');
+        return response;
       } catch (error) {
         // Even if logout fails on server, clear local state
         console.error('Logout error:', error);

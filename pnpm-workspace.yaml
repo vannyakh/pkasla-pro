@@ -3,7 +3,8 @@
 
 packages:
   # Applications - Frontend and Backend
-  - "apps/*"
+  - "apps/web"
+  - "apps/backend"
   
   # Shared Packages - Reusable code, configs, and utilities
   - "packages/*"
