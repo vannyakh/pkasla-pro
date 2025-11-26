@@ -3,6 +3,7 @@
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
+import { Header, Footer, Hero } from '@/components/landings/index'
 
 // Register GSAP plugins
 if (typeof window !== 'undefined') {
@@ -13,8 +14,12 @@ function Landing() {
   
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-amber-50">
-      
+    <div className="min-h-screen flex flex-col relative">
+      <Header />
+      <main className="flex-1">
+        <Hero />
+      </main>
+      <Footer />
     </div>
   )
 }
