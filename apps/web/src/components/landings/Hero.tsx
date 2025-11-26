@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { gsap } from 'gsap'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -20,7 +20,14 @@ export function Hero() {
   const overlayImage4Ref = useRef<HTMLDivElement>(null)
   const overlayImage5Ref = useRef<HTMLDivElement>(null)
   const overlayImage6Ref = useRef<HTMLDivElement>(null)
-  const backgroundImages = 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2560&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+  const [current, setCurrent] = useState(0)
+  
+  const backgroundImages = [
+    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2560&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=2560&h=1440&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=2560&h=1440&fit=crop&q=80',
+    'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=2560&h=1440&fit=crop&q=80',
+  ]
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -143,24 +150,45 @@ export function Hero() {
     return () => ctx.revert()
   }, [])
 
+  // Auto-rotate background images with fade effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % backgroundImages.length)
+    }, 10000) // Change image every 10 seconds
+
+    return () => clearInterval(interval)
+  }, [backgroundImages.length])
+
   return (
     <section
       id="home"
       ref={heroRef}
       className="relative min-h-screen flex items-center justify-center pt-16 md:pt-20 pb-12 md:pb-16 overflow-hidden"
     >
-      {/* Background Image */}
-      <div className="absolute inset-0 w-full h-full z-0">
-        <Image
-          src={backgroundImages}
-          alt="Background"
-          fill
-          className="object-cover"
-          priority
-          sizes="100vw"
-        />
+      {/* Background Image Fade Carousel */}
+      <div className="absolute inset-0 w-full h-full z-0 min-h-screen">
+        {backgroundImages.map((image, index) => (
+          <div
+            key={index}
+            className="absolute inset-0 w-full h-full min-h-screen"
+            style={{
+              opacity: current === index ? 1 : 0,
+              transition: 'opacity 1.5s ease-in-out',
+              zIndex: current === index ? 10 : 0,
+            }}
+          >
+            <Image
+              src={image}
+              alt={`Background ${index + 1}`}
+              fill
+              className="object-cover"
+              priority={index === 0}
+              sizes="100vw"
+            />
+          </div>
+        ))}
         {/* Overlay for better text readability */}
-        <div className="absolute inset-0 bg-black/40"></div>
+        <div className="absolute inset-0 bg-black/40 z-20 pointer-events-none"></div>
       </div>
 
       {/* Animated Overlay Images */}
