@@ -44,3 +44,11 @@ export const updateUserRoleHandler = asyncHandler(async (req: Request, res: Resp
   const user = await adminService.updateUserRole(req.params.id, req.body.role);
   return res.status(httpStatus.OK).json(buildSuccessResponse(user));
 });
+
+// Cache Management
+export const clearCacheHandler = asyncHandler(async (req: Request, res: Response) => {
+  const result = await adminService.clearCache();
+  return res.status(httpStatus.OK).json(
+    buildSuccessResponse(result, 'Cache cleared successfully')
+  );
+});

@@ -312,3 +312,38 @@ export function useUserMetrics() {
   });
 }
 
+export interface ClearCacheResponse {
+  redisCleared: number;
+  inMemoryCleared: boolean;
+}
+
+/**
+ * Clear cache mutation
+ */
+export function useClearCache() {
+  const queryClient = useQueryClient();
+
+  return useMutation<ClearCacheResponse, Error>({
+    mutationFn: async (): Promise<ClearCacheResponse> => {
+      const response = await api.post<ClearCacheResponse>('/admin/cache/clear');
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to clear cache');
+      }
+      if (!response.data) {
+        throw new Error('Cache clear response not found');
+      }
+      return response.data;
+    },
+    onSuccess: (data) => {
+      // Clear all React Query cache
+      queryClient.clear();
+      toast.success(
+        `Cache cleared successfully. ${data.redisCleared} Redis keys cleared.`
+      );
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : 'Failed to clear cache');
+    },
+  });
+}
+

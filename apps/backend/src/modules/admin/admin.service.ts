@@ -3,6 +3,8 @@ import { AppError } from '@/common/errors/app-error';
 import { userRepository } from '@/modules/users/user.repository';
 import { UserDocument } from '@/modules/users/user.model';
 import { sanitizeUser } from '@/modules/users/user.service';
+import { cacheService } from '@/common/services/cache.service';
+import { clearSettingsCache } from '@/modules/settings/settings.utils';
 
 class AdminService {
  
@@ -59,6 +61,32 @@ class AdminService {
       page,
       limit,
     };
+  }
+
+  // Cache Management
+  async clearCache() {
+    try {
+      let clearedCount = 0;
+      
+      // Clear Redis cache if enabled
+      if (cacheService.isConnected()) {
+        // Clear all cache keys (you can customize the pattern)
+        clearedCount = await cacheService.delPattern('*');
+      }
+      
+      // Clear in-memory settings cache
+      clearSettingsCache();
+      
+      return {
+        redisCleared: clearedCount,
+        inMemoryCleared: true,
+      };
+    } catch (error) {
+      throw new AppError(
+        'Failed to clear cache',
+        httpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 
 }

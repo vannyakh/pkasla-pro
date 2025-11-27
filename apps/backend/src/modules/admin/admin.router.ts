@@ -8,6 +8,7 @@ import {
   listUsersHandler,
   updateUserStatusHandler,
   updateUserRoleHandler,
+  clearCacheHandler,
 } from './admin.controller';
 import {
   updateUserStatusSchema,
@@ -46,6 +47,9 @@ router
 
 // Settings routes
 router.use('/settings', settingsRouter);
+
+// Cache Management
+router.route('/cache/clear').post(clearCacheHandler);
 
 export const adminRouter : Router = router;
 
