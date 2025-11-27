@@ -161,7 +161,7 @@ function AuthLayout({ children }: { children: React.ReactNode }) {
     <section
     id="home"
     ref={heroRef}
-    className="relative min-h-screen flex items-center justify-center pt-16 md:pt-20 pb-12 md:pb-16 overflow-hidden"
+    className="relative min-h-screen flex items-center justify-center overflow-hidden"
   >
     {/* Background Image Fade Carousel */}
     <div className="absolute inset-0 w-full h-full z-0 min-h-screen">

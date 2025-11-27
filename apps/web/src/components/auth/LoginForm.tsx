@@ -11,12 +11,8 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
-import { Mail, Lock, EyeOff, Eye, Loader2 } from "lucide-react";
+import { EyeOff, Eye, Loader2 } from "lucide-react";
 import { Github, Linkedin } from "lucide-react";
 
 export function LoginForm() {
@@ -49,8 +45,6 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [emailError, setEmailError] = useState<string>("");
-  const [passwordError, setPasswordError] = useState<string>("");
   const emailInputRef = useRef<HTMLInputElement>(null);
 
   // Handle OAuth callback success
@@ -71,11 +65,14 @@ export function LoginForm() {
     // Trim email
     const trimmedEmail = formData.email.trim();
 
-    // Validate form
+    // Validate form - stop at first error to avoid duplicate toasts
     const isEmailValid = validateEmail(trimmedEmail);
-    const isPasswordValid = validatePassword(formData.password);
+    if (!isEmailValid) {
+      return;
+    }
 
-    if (!isEmailValid || !isPasswordValid) {
+    const isPasswordValid = validatePassword(formData.password);
+    if (!isPasswordValid) {
       return;
     }
 
@@ -107,7 +104,7 @@ export function LoginForm() {
           localStorage.removeItem("rememberedEmail");
         }
 
-        toast.success("Login successful!");
+        toast.success("ចុូលប្រព័ន្ធជោគជ័យ!");
 
         // Update session to get latest user data
         await updateSession();
@@ -135,52 +132,44 @@ export function LoginForm() {
         }
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Login failed");
+      toast.error(err instanceof Error ? err.message : "ចុូលប្រព័ន្ធមិនជោគជ័យ!");
       setIsLoading(false);
     }
   };
 
   const validateEmail = useCallback((email: string): boolean => {
     if (!email.trim()) {
-      setEmailError("Email is required");
+      toast.error("សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែលរបស់អ្នក");
       return false;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email.trim())) {
-      setEmailError("Please enter a valid email address");
+      toast.error("សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល");
       return false;
     }
-    setEmailError("");
     return true;
   }, []);
 
   const validatePassword = useCallback((password: string): boolean => {
     if (!password) {
-      setPasswordError("Password is required");
+      toast.error("សូមបញ្ចូលពាក្យសម្ងាត់របស់អ្នក");
       return false;
     }
     if (password.length < 6) {
-      setPasswordError("Password must be at least 6 characters");
+      toast.error("ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ 6 តួអក្សរ");
       return false;
     }
-    setPasswordError("");
     return true;
   }, []);
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFormData({ ...formData, email: value });
-    if (emailError) {
-      validateEmail(value);
-    }
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setFormData({ ...formData, password: value });
-    if (passwordError) {
-      validatePassword(value);
-    }
   };
 
   const handleOAuthSignIn = useCallback(
@@ -196,217 +185,187 @@ export function LoginForm() {
   );
 
   return (
-    <div className="bg-[url('/images/login-background.png')] bg-cover border-0 bg-center">
-      <Card className="p-16 shadow-none bg-transparent  bg-cover border-0 bg-center">
-        <CardContent className="px-8 pb-8">
-          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-            {/* Email Field */}
-            <div className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-sm font-medium text-gray-700"
+    <div className="w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] lg:max-w-[450px] mx-auto">
+      <Card className="p-0 shadow-none bg-transparent border-0">
+        <CardContent className="relative p-0 m-0 sm:p-4 md:p-10 lg:p-12">
+            {/* Header Frame */}
+            <div 
+              className="absolute -top-12 flex items-center justify-center left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] h-44 md:h-64 bg-[url('/images/assets/frame-image-title.png')] bg-no-repeat bg-cover bg-center z-10"
+              style={{
+                backgroundSize: '100% 100%',
+              }}
+            >
+              <h1 className="text-red-800 md:text-3xl text-2xl -translate-y-1  font-moulpali font-bold">ចុូលប្រព័ន្ធ</h1>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 pt-8 sm:pt-10 md:pt-12" noValidate>
+              {/* Email Field */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <div 
+                    className="relative bg-[url('/images/assets/input-frame.png')] bg-no-repeat bg-cover bg-center h-10 sm:h-11 rounded-md"
+                    style={{
+                      backgroundSize: '100% 100%',
+                    }}
+                  >
+                    <input
+                      ref={emailInputRef}
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleEmailChange}
+                      placeholder="អ៊ីមែលរបស់អ្នក"
+                      className="w-full h-full bg-transparent border-0 outline-none text-sm pl-10 sm:pl-12 pr-4 text-white placeholder:text-gray-400 focus:ring-0 focus:outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div className="space-y-2">
+                
+                <div className="relative">
+                  <div 
+                    className="relative bg-[url('/images/assets/input-frame.png')] bg-no-repeat bg-cover bg-center h-10 sm:h-11 rounded-md"
+                    style={{
+                      backgroundSize: '100% 100%',
+                    }}
+                  >
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={handlePasswordChange}
+                      placeholder="បញ្ចូលពាក្យសម្ងាត់របស់អ្នក"
+                      className="w-full h-full bg-transparent ring-0 border-0 outline-none text-sm pl-10 sm:pl-12 pr-11 text-white placeholder:text-gray-400 focus:ring-0 focus:outline-none"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-5 sm:right-6 cursor-pointer top-1/2 transform -translate-y-1/2 text-white hover:text-gray-700 focus:outline-none transition-colors z-10"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-white" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-white" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full h-10 sm:h-11 text-sm font-medium hover:bg-transparent cursor-pointer shadow-none bg-transparent bg-[url('/images/assets/input-frame.png')] bg-no-repeat bg-cover bg-center disabled:opacity-50 disabled:cursor-not-allowed transition-all "
+                style={{
+                  backgroundSize: '100% 100%',
+                }}
               >
-                Email Address
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  ref={emailInputRef}
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleEmailChange}
-                  onBlur={() => validateEmail(formData.email)}
-                  placeholder="email@example.com"
-                  className={cn(
-                    "h-11 text-sm border-gray-300 pl-10 pr-4 focus:border-black focus:ring-1 focus:ring-black transition-all",
-                    emailError &&
-                      "border-red-400 focus:border-red-400 focus:ring-red-400"
-                  )}
-                  required
-                  aria-invalid={!!emailError}
-                  aria-describedby={emailError ? "email-error" : undefined}
-                />
-              </div>
-              {emailError && (
-                <p id="email-error" className="text-xs text-red-600 mt-1">
-                  {emailError}
-                </p>
-              )}
-            </div>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ចុូលប្រព័ន្ធ...
+                  </>
+                ) : (
+                  "ចូល"
+                )}
+              </Button>
+            </form>
 
-            {/* Password Field */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label
-                  htmlFor="password"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Password
-                </Label>
-                <Link
-                  href={ROUTES.FORGOT_PASSWORD}
-                  className="text-xs text-gray-600 hover:text-black hover:underline transition-colors"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={formData.password}
-                  onChange={handlePasswordChange}
-                  onBlur={() => validatePassword(formData.password)}
-                  placeholder="Enter your password"
-                  className={cn(
-                    "h-11 text-sm border-gray-300 pl-10 pr-11 focus:border-black focus:ring-1 focus:ring-black transition-all",
-                    passwordError &&
-                      "border-red-400 focus:border-red-400 focus:ring-red-400"
-                  )}
-                  required
-                  aria-invalid={!!passwordError}
-                  aria-describedby={
-                    passwordError ? "password-error" : undefined
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              {passwordError && (
-                <p id="password-error" className="text-xs text-red-600 mt-1">
-                  {passwordError}
-                </p>
-              )}
-            </div>
-
-            {/* Remember Me Checkbox */}
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="rememberMe"
-                checked={formData.rememberMe}
-                onCheckedChange={(checked) =>
-                  setFormData({ ...formData, rememberMe: checked === true })
-                }
-              />
-              <Label
-                htmlFor="rememberMe"
-                className="text-sm font-normal text-gray-700 cursor-pointer"
+            {/* OAuth Buttons */}
+            <div className="mt-3 sm:mt-4 md:mt-6 gap-4 sm:gap-5 justify-center items-center flex">
+              {/* Google */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOAuthSignIn("google")}
+                disabled={!!oauthLoading || isLoading}
+                className="h-10 sm:h-11 w-10 sm:w-11 p-0 cursor-pointer hover:bg-transparent shadow-none bg-transparent bg-[url('/images/assets/icon-image-circly.png')] bg-no-repeat bg-cover bg-center disabled:opacity-50 disabled:cursor-not-allowed transition-all border-0"
+                style={{
+                  backgroundSize: '100% 100%',
+                }}
               >
-                Remember me
-              </Label>
+                {oauthLoading === "google" ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-white" />
+                ) : (
+                  <svg className="h-5 w-5 text-white" viewBox="0 0 24 24">
+                    <path
+                      fill="currentColor"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                    />
+                    <path
+                      fill="currentColor"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                    />
+                  </svg>
+                )}
+              </Button>
+
+              {/* GitHub */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOAuthSignIn("github")}
+                disabled={!!oauthLoading || isLoading}
+                className="h-10 sm:h-11 w-10 sm:w-11 p-0 cursor-pointer hover:bg-transparent shadow-none bg-transparent bg-[url('/images/assets/icon-image-circly.png')] bg-no-repeat bg-cover bg-center disabled:opacity-50 disabled:cursor-not-allowed transition-all border-0"
+                style={{
+                  backgroundSize: '100% 100%',
+                }}
+              >
+                {oauthLoading === "github" ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-white" />
+                ) : (
+                  <Github className="h-5 w-5 text-white" />
+                )}
+              </Button>
+
+              {/* LinkedIn */}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => handleOAuthSignIn("linkedin")}
+                disabled={!!oauthLoading || isLoading}
+                className="h-10 sm:h-11 w-10 sm:w-11 p-0 cursor-pointer hover:bg-transparent shadow-none bg-transparent bg-[url('/images/assets/icon-image-circly.png')] bg-no-repeat bg-cover bg-center disabled:opacity-50 disabled:cursor-not-allowed transition-all border-0"
+                style={{
+                  backgroundSize: '100% 100%',
+                }}
+              >
+                {oauthLoading === "linkedin" ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-white" />
+                ) : (
+                  <Linkedin className="h-5 w-5 text-white" />
+                )}
+              </Button>
             </div>
 
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-11 text-sm font-medium bg-black hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                "Sign In"
-              )}
-            </Button>
-          </form>
-
-        
-        </CardContent>
-      </Card>
-
-
-          {/* OAuth Buttons */}
-          <div className="grid grid-cols-3 gap-3">
-            {/* Google */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOAuthSignIn("google")}
-              disabled={!!oauthLoading || isLoading}
-              className="h-11 border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {oauthLoading === "google" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <svg className="h-5 w-5" viewBox="0 0 24 24">
-                  <path
-                    fill="currentColor"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                  />
-                  <path
-                    fill="currentColor"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                  />
-                </svg>
-              )}
-            </Button>
-
-            {/* GitHub */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOAuthSignIn("github")}
-              disabled={!!oauthLoading || isLoading}
-              className="h-11 border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {oauthLoading === "github" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Github className="h-5 w-5" />
-              )}
-            </Button>
-
-            {/* LinkedIn */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOAuthSignIn("linkedin")}
-              disabled={!!oauthLoading || isLoading}
-              className="h-11 border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              {oauthLoading === "linkedin" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Linkedin className="h-5 w-5" />
-              )}
-            </Button>
-          </div>
-
-          {/* Register Link */}
-          <div className="mt-6 text-center">
-            <span className="text-sm text-gray-600">
-              Don&apos;t have an account?{" "}
-            </span>
-            <Link
-              href="/register"
-              className="text-sm text-black hover:underline font-semibold transition-colors"
-            >
-              Create account
-            </Link>
-          </div>
-    </div>
+            {/* Register Link */}
+            <div className="mt-3 sm:mt-4 md:mt-6 text-center">
+              <span className="text-xs sm:text-sm text-gray-600">
+                មិនមានគណនីមែនទេ?{" "}
+              </span>
+              <Link
+                href="/register"
+                className="text-xs sm:text-sm text-black hover:underline font-semibold transition-colors"
+              >
+                បង្កើតគណនី
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
   );
 }
