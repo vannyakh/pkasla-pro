@@ -4,16 +4,13 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { Eye, EyeOff, Mail, Lock, User as UserIcon, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ROUTES } from '@/constants';
 import type { RegisterDto, User } from '@/types';
 import { useRegister } from '@/hooks/api/useAuth';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function RegisterForm() {
   const router = useRouter();
@@ -27,86 +24,79 @@ export function RegisterForm() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [nameError, setNameError] = useState<string | null>(null);
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [confirmPasswordError, setConfirmPasswordError] = useState<string | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     nameInputRef.current?.focus();
   }, []);
 
-  const validateName = useCallback((value: string) => {
+  const validateName = useCallback((value: string): boolean => {
     if (!value.trim()) {
-      setNameError('Name is required');
+      toast.error('សូមបញ្ចូលឈ្មោះរបស់អ្នក');
       return false;
     }
     if (value.trim().length < 2) {
-      setNameError('Name must be at least 2 characters');
+      toast.error('ឈ្មោះត្រូវមានយ៉ាងហោចណាស់ 2 តួអក្សរ');
       return false;
     }
-    setNameError(null);
     return true;
   }, []);
 
-  const validateEmail = useCallback((value: string) => {
+  const validateEmail = useCallback((value: string): boolean => {
     if (!value.trim()) {
-      setEmailError('Email is required');
+      toast.error('សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែលរបស់អ្នក');
       return false;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value.trim())) {
-      setEmailError('Please enter a valid email address');
+      toast.error('សូមបញ្ចូលអាសយដ្ឋានអ៊ីមែល');
       return false;
     }
-    setEmailError(null);
     return true;
   }, []);
 
-  const validatePassword = useCallback((value: string) => {
+  const validatePassword = useCallback((value: string): boolean => {
     if (!value) {
-      setPasswordError('Password is required');
+      toast.error('សូមបញ្ចូលពាក្យសម្ងាត់របស់អ្នក');
       return false;
     }
     if (value.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
+      toast.error('ពាក្យសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ 6 តួអក្សរ');
       return false;
     }
-    setPasswordError(null);
     return true;
   }, []);
 
-  const validateConfirmPassword = useCallback((value: string, password: string) => {
+  const validateConfirmPassword = useCallback((value: string, password: string): boolean => {
     if (!value) {
-      setConfirmPasswordError('Please confirm your password');
+      toast.error('សូមបញ្ចូលការបញ្ជាក់ពាក្យសម្ងាត់');
       return false;
     }
     if (value !== password) {
-      setConfirmPasswordError('Passwords do not match');
+      toast.error('ពាក្យសម្ងាត់មិនត្រូវគ្នា');
       return false;
     }
-    setConfirmPasswordError(null);
     return true;
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData({ ...formData, name: value });
+  };
 
-    // Clear errors when user types
-    if (name === 'name' && nameError) {
-      validateName(value);
-    } else if (name === 'email' && emailError) {
-      validateEmail(value);
-    } else if (name === 'password' && passwordError) {
-      validatePassword(value);
-    } else if (name === 'confirmPassword' && confirmPasswordError) {
-      validateConfirmPassword(value, formData.password);
-    }
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData({ ...formData, email: value });
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData({ ...formData, password: value });
+  };
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData({ ...formData, confirmPassword: value });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,12 +110,24 @@ export function RegisterForm() {
       confirmPassword: formData.confirmPassword,
     };
 
+    // Validate form - stop at first error to avoid duplicate toasts
     const isNameValid = validateName(trimmedData.name);
-    const isEmailValid = validateEmail(trimmedData.email);
-    const isPasswordValid = validatePassword(trimmedData.password);
-    const isConfirmPasswordValid = validateConfirmPassword(trimmedData.confirmPassword, trimmedData.password);
+    if (!isNameValid) {
+      return;
+    }
 
-    if (!isNameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid) {
+    const isEmailValid = validateEmail(trimmedData.email);
+    if (!isEmailValid) {
+      return;
+    }
+
+    const isPasswordValid = validatePassword(trimmedData.password);
+    if (!isPasswordValid) {
+      return;
+    }
+
+    const isConfirmPasswordValid = validateConfirmPassword(trimmedData.confirmPassword, trimmedData.password);
+    if (!isConfirmPasswordValid) {
       return;
     }
 
@@ -145,7 +147,7 @@ export function RegisterForm() {
         const sessionData = await sessionResponse.json();
         const user = sessionData?.user as User | undefined;
 
-        toast.success('Registration successful! Welcome!');
+        toast.success('ការចុះឈ្មោះជោគជ័យ! សូមស្វាគមន៍!');
 
         // Redirect based on user role
         const redirectPath = user?.role === 'admin' ? ROUTES.ADMIN : ROUTES.DASHBOARD;
@@ -153,193 +155,185 @@ export function RegisterForm() {
         router.refresh();
       } catch {
         // Fallback redirect
-        toast.success('Registration successful! Welcome!');
+        toast.success('ការចុះឈ្មោះជោគជ័យ! សូមស្វាគមន៍!');
         router.push(ROUTES.HOME);
         router.refresh();
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Registration failed';
+      const errorMessage = err instanceof Error ? err.message : 'ការចុះឈ្មោះមិនជោគជ័យ!';
       toast.error(errorMessage);
     }
   };
 
   return (
-    <Card className="p-0 shadow-none bg-transparent">
-      <CardHeader className="pb-6 pt-8 px-8 space-y-2">
-        <CardTitle className="text-2xl font-bold text-center text-black">Create Account</CardTitle>
-        <CardDescription className="text-sm text-center text-gray-500">
-          Sign up to start creating beautiful wedding invitations
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="px-8 pb-8">
-        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-          {/* Name Field */}
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-              Full Name
-            </Label>
-            <div className="relative">
-              <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                ref={nameInputRef}
-                id="name"
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleChange}
-                onBlur={() => validateName(formData.name)}
-                placeholder="John Doe"
-                className={cn(
-                  'h-11 text-sm border-gray-300 pl-10 pr-4 focus:border-black focus:ring-1 focus:ring-black transition-all',
-                  nameError && 'border-red-400 focus:border-red-400 focus:ring-red-400'
-                )}
-                required
-                aria-invalid={!!nameError}
-                aria-describedby={nameError ? 'name-error' : undefined}
-              />
-            </div>
-            {nameError && (
-              <p id="name-error" className="text-xs text-red-600 mt-1">
-                {nameError}
-              </p>
-            )}
-          </div>
-
-          {/* Email Field */}
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email Address
-            </Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                onBlur={() => validateEmail(formData.email)}
-                placeholder="email@example.com"
-                className={cn(
-                  'h-11 text-sm border-gray-300 pl-10 pr-4 focus:border-black focus:ring-1 focus:ring-black transition-all',
-                  emailError && 'border-red-400 focus:border-red-400 focus:ring-red-400'
-                )}
-                required
-                aria-invalid={!!emailError}
-                aria-describedby={emailError ? 'email-error' : undefined}
-              />
-            </div>
-            {emailError && (
-              <p id="email-error" className="text-xs text-red-600 mt-1">
-                {emailError}
-              </p>
-            )}
-          </div>
-
-          {/* Password Field */}
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Password
-            </Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                id="password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                value={formData.password}
-                onChange={handleChange}
-                onBlur={() => validatePassword(formData.password)}
-                placeholder="Enter your password"
-                className={cn(
-                  'h-11 text-sm border-gray-300 pl-10 pr-11 focus:border-black focus:ring-1 focus:ring-black transition-all',
-                  passwordError && 'border-red-400 focus:border-red-400 focus:ring-red-400'
-                )}
-                required
-                aria-invalid={!!passwordError}
-                aria-describedby={passwordError ? 'password-error' : undefined}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none transition-colors"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {passwordError && (
-              <p id="password-error" className="text-xs text-red-600 mt-1">
-                {passwordError}
-              </p>
-            )}
-          </div>
-
-          {/* Confirm Password Field */}
-          <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-              Confirm Password
-            </Label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type={showConfirmPassword ? 'text' : 'password'}
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                onBlur={() => validateConfirmPassword(formData.confirmPassword, formData.password)}
-                placeholder="Confirm your password"
-                className={cn(
-                  'h-11 text-sm border-gray-300 pl-10 pr-11 focus:border-black focus:ring-1 focus:ring-black transition-all',
-                  confirmPasswordError && 'border-red-400 focus:border-red-400 focus:ring-red-400'
-                )}
-                required
-                aria-invalid={!!confirmPasswordError}
-                aria-describedby={confirmPasswordError ? 'confirm-password-error' : undefined}
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none transition-colors"
-                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-              >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {confirmPasswordError && (
-              <p id="confirm-password-error" className="text-xs text-red-600 mt-1">
-                {confirmPasswordError}
-              </p>
-            )}
-          </div>
-
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            disabled={registerMutation.isPending}
-            className="w-full h-11 text-sm font-medium bg-black hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+    <div className="w-full max-w-[320px] sm:max-w-[380px] md:max-w-[420px] lg:max-w-[450px] mx-auto">
+      <Card className="p-0 shadow-none bg-transparent border-0">
+        <CardContent className="relative p-0 m-0 sm:p-4 md:p-10 lg:p-12">
+          {/* Header Frame */}
+          <div 
+            className="absolute -top-12 flex items-center justify-center left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] h-44 md:h-64 bg-[url('/images/assets/frame-image-title.png')] bg-no-repeat bg-cover bg-center z-10"
+            style={{
+              backgroundSize: '100% 100%',
+            }}
           >
-            {registerMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating account...
-              </>
-            ) : (
-              'Create Account'
-            )}
-          </Button>
-        </form>
+            <h1 className="text-red-800 md:text-3xl text-2xl -translate-y-1 font-moulpali font-bold">ចុះឈ្មោះ</h1>
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 pt-8 sm:pt-10 md:pt-12" noValidate autoComplete="on">
+            {/* Name Field */}
+            <div className="space-y-2">
+              <div className="relative">
+                <div 
+                  className="relative bg-[url('/images/assets/input-frame.png')] bg-no-repeat bg-cover bg-center h-10 sm:h-11 rounded-md"
+                  style={{
+                    backgroundSize: '100% 100%',
+                  }}
+                >
+                  <input
+                    ref={nameInputRef}
+                    id="name"
+                    name="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={handleNameChange}
+                    placeholder="ឈ្មោះពេញរបស់អ្នក"
+                    autoComplete="name"
+                    className="w-full h-full bg-transparent border-0 outline-none text-sm pl-10 sm:pl-12 pr-4 text-white placeholder:text-gray-400 focus:ring-0 focus:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
 
-        {/* Login Link */}
-        <div className="mt-6 text-center">
-          <span className="text-sm text-gray-600">Already have an account? </span>
-          <Link href="/login" className="text-sm text-black hover:underline font-semibold transition-colors">
-            Sign in
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
+            {/* Email Field */}
+            <div className="space-y-2">
+              <div className="relative">
+                <div 
+                  className="relative bg-[url('/images/assets/input-frame.png')] bg-no-repeat bg-cover bg-center h-10 sm:h-11 rounded-md"
+                  style={{
+                    backgroundSize: '100% 100%',
+                  }}
+                >
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleEmailChange}
+                    placeholder="អ៊ីមែលរបស់អ្នក"
+                    autoComplete="email"
+                    className="w-full h-full bg-transparent border-0 outline-none text-sm pl-10 sm:pl-12 pr-4 text-white placeholder:text-gray-400 focus:ring-0 focus:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Password Field */}
+            <div className="space-y-2">
+              <div className="relative">
+                <div 
+                  className="relative bg-[url('/images/assets/input-frame.png')] bg-no-repeat bg-cover bg-center h-10 sm:h-11 rounded-md"
+                  style={{
+                    backgroundSize: '100% 100%',
+                  }}
+                >
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={handlePasswordChange}
+                    placeholder="បញ្ចូលពាក្យសម្ងាត់របស់អ្នក"
+                    autoComplete="new-password"
+                    className="w-full h-full bg-transparent ring-0 border-0 outline-none text-sm pl-10 sm:pl-12 pr-11 text-white placeholder:text-gray-400 focus:ring-0 focus:outline-none"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-5 sm:right-6 cursor-pointer top-1/2 transform -translate-y-1/2 text-white hover:text-gray-700 focus:outline-none transition-colors z-10"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-white" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-white" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Confirm Password Field */}
+            <div className="space-y-2">
+              <div className="relative">
+                <div 
+                  className="relative bg-[url('/images/assets/input-frame.png')] bg-no-repeat bg-cover bg-center h-10 sm:h-11 rounded-md"
+                  style={{
+                    backgroundSize: '100% 100%',
+                  }}
+                >
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={formData.confirmPassword}
+                    onChange={handleConfirmPasswordChange}
+                    placeholder="បញ្ជាក់ពាក្យសម្ងាត់របស់អ្នក"
+                    autoComplete="new-password"
+                    className="w-full h-full bg-transparent ring-0 border-0 outline-none text-sm pl-10 sm:pl-12 pr-11 text-white placeholder:text-gray-400 focus:ring-0 focus:outline-none"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-5 sm:right-6 cursor-pointer top-1/2 transform -translate-y-1/2 text-white hover:text-gray-700 focus:outline-none transition-colors z-10"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4 text-white" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-white" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <Button
+              type="submit"
+              disabled={registerMutation.isPending}
+              className="w-full h-10 sm:h-11 text-sm font-medium hover:bg-transparent cursor-pointer shadow-none bg-transparent bg-[url('/images/assets/input-frame.png')] bg-no-repeat bg-cover bg-center disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              style={{
+                backgroundSize: '100% 100%',
+              }}
+            >
+              {registerMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  កំពុងបង្កើតគណនី...
+                </>
+              ) : (
+                'បង្កើតគណនី'
+              )}
+            </Button>
+          </form>
+
+          {/* Login Link */}
+          <div className="mt-3 sm:mt-4 md:mt-6 text-center">
+            <span className="text-xs sm:text-sm text-gray-600">
+              មានគណនីរួចហើយ?{' '}
+            </span>
+            <Link
+              href="/login"
+              className="text-xs sm:text-sm text-black hover:underline font-semibold transition-colors"
+            >
+              ចូល
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
-
