@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Search, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,44 +17,51 @@ import {
   useAdminUsers,
   useUpdateUserStatus,
   useUpdateUserRole,
+  type UserListFilters,
 } from "@/hooks/api/useAdmin";
+import { useAdminStore } from "@/store/admin";
+import { Spinner } from "@/components/ui/shadcn-io/spinner";
 
 export default function AdminUsersPage() {
-  const [page, setPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const limit = 20;
+  const {
+    filters,
+    setPage,
+    setSearch,
+    setRoleFilter,
+    setStatusFilter,
+  } = useAdminStore();
+
+  // Local search term for debouncing
+  const [searchTerm, setSearchTerm] = useState(filters.search || "");
 
   // Debounce search term
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-      setPage(1); // Reset to first page when search changes
+      setSearch(searchTerm);
     }, 500);
     return () => clearTimeout(timer);
-  }, [searchTerm]);
+  }, [searchTerm, setSearch]);
 
-  // Build filters
-  const filters = useMemo(() => {
-    const filter: {
-      page: number;
-      limit: number;
-      search?: string;
-      role?: string;
-      status?: string;
-    } = {
-      page,
-      limit,
+  // Build filters for React Query
+  const queryFilters: UserListFilters = useMemo(() => {
+    const filter: UserListFilters = {
+      page: filters.page,
+      limit: filters.limit,
     };
-    if (debouncedSearch) filter.search = debouncedSearch;
-    if (roleFilter !== "all") filter.role = roleFilter;
-    if (statusFilter !== "all") filter.status = statusFilter;
+    if (filters.search) filter.search = filters.search;
+    if (filters.role) filter.role = filters.role;
+    if (filters.status) filter.status = filters.status;
     return filter;
-  }, [page, debouncedSearch, roleFilter, statusFilter]);
+  }, [filters]);
 
-  const { data, isLoading, error, refetch } = useAdminUsers(filters);
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+    isFetching,
+    isRefetching,
+  } = useAdminUsers(queryFilters);
   const updateStatusMutation = useUpdateUserStatus();
   const updateRoleMutation = useUpdateUserRole();
 
@@ -77,14 +84,22 @@ export default function AdminUsersPage() {
     }
   };
 
-  // Calculate pagination from new API structure
+  const handlePageChange = (page: number) => {
+    setPage(page);
+  };
+
+  // Calculate pagination from API response
   const totalPages = data?.total
-    ? Math.ceil(data.total / (data.pageSize || limit))
+    ? Math.ceil(data.total / (data.pageSize || filters.limit))
     : 0;
-  const currentPage = data?.page || page;
-  const pageSize = data?.pageSize || limit;
+  const currentPage = data?.page || filters.page;
+  const pageSize = data?.pageSize || filters.limit;
   const hasNextPage = data ? currentPage * pageSize < data.total : false;
   const hasPrevPage = data ? currentPage > 1 : false;
+
+  // Determine loading state (initial load vs refetch)
+  const isInitialLoading = isLoading && !data;
+  const isTableLoading = isFetching || isRefetching;
 
   return (
     <div>
@@ -102,7 +117,11 @@ export default function AdminUsersPage() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex flex-col sm:flex-row gap-3">
-                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <Select
+                  value={filters.role || "all"}
+                  onValueChange={setRoleFilter}
+                  disabled={isTableLoading}
+                >
                   <SelectTrigger className="w-full sm:w-40 h-9 text-xs">
                     <SelectValue placeholder="Filter by role" />
                   </SelectTrigger>
@@ -112,7 +131,11 @@ export default function AdminUsersPage() {
                     <SelectItem value="user">User</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select
+                  value={filters.status || "all"}
+                  onValueChange={setStatusFilter}
+                  disabled={isTableLoading}
+                >
                   <SelectTrigger className="w-full sm:w-40 h-9 text-xs">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
@@ -138,9 +161,9 @@ export default function AdminUsersPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          {isLoading ? (
+          {isInitialLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+             <Spinner />
               <span className="ml-2 text-xs text-gray-600">
                 Loading users...
               </span>
@@ -157,6 +180,7 @@ export default function AdminUsersPage() {
                 size="sm"
                 onClick={() => refetch()}
                 className="text-xs h-8"
+                disabled={isTableLoading}
               >
                 Retry
               </Button>
@@ -164,7 +188,7 @@ export default function AdminUsersPage() {
           ) : (
             <UsersTable
               data={data}
-              isLoading={isLoading}
+              isLoading={isTableLoading}
               onStatusChange={handleStatusChange}
               onRoleChange={handleRoleChange}
               isUpdatingStatus={updateStatusMutation.isPending}
@@ -174,7 +198,7 @@ export default function AdminUsersPage() {
               pageSize={pageSize}
               hasNextPage={hasNextPage}
               hasPrevPage={hasPrevPage}
-              onPageChange={setPage}
+              onPageChange={handlePageChange}
             />
           )}
         </CardContent>

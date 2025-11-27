@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { User } from '@/types';
 import { api } from '@/lib/axios-client';
+import toast from 'react-hot-toast';
 
 /**
  * Query keys for admin
@@ -83,7 +84,12 @@ export function useAdminUsers(filters: UserListFilters = {}) {
 export function useUpdateUserStatus() {
   const queryClient = useQueryClient();
 
-  return useMutation<User, Error, { userId: string; status: 'active' | 'pending' | 'suspended' }>({
+  return useMutation<
+    User,
+    Error,
+    { userId: string; status: 'active' | 'pending' | 'suspended' },
+    { previousQueries: Array<[unknown, unknown]> }
+  >({
     mutationFn: async ({ userId, status }) => {
       const response = await api.patch<User>(`/admin/users/${userId}/status`, { status });
       if (!response.success) {
@@ -94,10 +100,76 @@ export function useUpdateUserStatus() {
       }
       return response.data;
     },
+    onMutate: async ({ userId, status }) => {
+      // Cancel any outgoing refetches for all user list queries
+      await queryClient.cancelQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey;
+          return Array.isArray(key) && key.length >= 2 && key[0] === 'admin' && key[1] === 'users';
+        }
+      });
+
+      // Snapshot the previous value for all user list queries
+      const previousQueries = queryClient.getQueriesData({ 
+        predicate: (query) => {
+          const key = query.queryKey;
+          return Array.isArray(key) && key.length >= 2 && key[0] === 'admin' && key[1] === 'users';
+        }
+      });
+
+      // Optimistically update all user lists
+      queryClient.setQueriesData<UserListResponse>(
+        { 
+          predicate: (query) => {
+            const key = query.queryKey;
+            return Array.isArray(key) && key.length >= 2 && key[0] === 'admin' && key[1] === 'users';
+          }
+        },
+        (old) => {
+          if (!old || !('items' in old)) return old;
+          return {
+            ...old,
+            items: old.items.map((user) =>
+              user.id === userId ? { ...user, status } : user
+            ),
+          };
+        }
+      );
+
+      // Return context with the snapshotted value
+      return { previousQueries };
+    },
+    onError: (err, variables, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousQueries) {
+        context.previousQueries.forEach((entry) => {
+          const [queryKey, data] = entry;
+          if (queryKey && data !== undefined) {
+            queryClient.setQueryData(queryKey as readonly unknown[], data);
+          }
+        });
+      }
+      toast.error(err instanceof Error ? err.message : 'Failed to update user status');
+    },
     onSuccess: (data, variables) => {
-      // Invalidate users list to refetch
-      queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+      // Invalidate all user list queries to ensure we have the latest data
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey;
+          return Array.isArray(key) && key.length >= 2 && key[0] === 'admin' && key[1] === 'users';
+        }
+      });
       queryClient.invalidateQueries({ queryKey: adminKeys.user(variables.userId) });
+      toast.success(`User status updated to ${variables.status}`);
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure consistency
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey;
+          return Array.isArray(key) && key.length >= 2 && key[0] === 'admin' && key[1] === 'users';
+        }
+      });
     },
   });
 }
@@ -108,7 +180,12 @@ export function useUpdateUserStatus() {
 export function useUpdateUserRole() {
   const queryClient = useQueryClient();
 
-  return useMutation<User, Error, { userId: string; role: 'admin' | 'user' }>({
+  return useMutation<
+    User,
+    Error,
+    { userId: string; role: 'admin' | 'user' },
+    { previousQueries: Array<[unknown, unknown]> }
+  >({
     mutationFn: async ({ userId, role }) => {
       const response = await api.patch<User>(`/admin/users/${userId}/role`, { role });
       if (!response.success) {
@@ -119,10 +196,76 @@ export function useUpdateUserRole() {
       }
       return response.data;
     },
+    onMutate: async ({ userId, role }) => {
+      // Cancel any outgoing refetches for all user list queries
+      await queryClient.cancelQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey;
+          return Array.isArray(key) && key.length >= 2 && key[0] === 'admin' && key[1] === 'users';
+        }
+      });
+
+      // Snapshot the previous value for all user list queries
+      const previousQueries = queryClient.getQueriesData({ 
+        predicate: (query) => {
+          const key = query.queryKey;
+          return Array.isArray(key) && key.length >= 2 && key[0] === 'admin' && key[1] === 'users';
+        }
+      });
+
+      // Optimistically update all user lists
+      queryClient.setQueriesData<UserListResponse>(
+        { 
+          predicate: (query) => {
+            const key = query.queryKey;
+            return Array.isArray(key) && key.length >= 2 && key[0] === 'admin' && key[1] === 'users';
+          }
+        },
+        (old) => {
+          if (!old || !('items' in old)) return old;
+          return {
+            ...old,
+            items: old.items.map((user) =>
+              user.id === userId ? { ...user, role } : user
+            ),
+          };
+        }
+      );
+
+      // Return context with the snapshotted value
+      return { previousQueries };
+    },
+    onError: (err, variables, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousQueries) {
+        context.previousQueries.forEach((entry) => {
+          const [queryKey, data] = entry;
+          if (queryKey && data !== undefined) {
+            queryClient.setQueryData(queryKey as readonly unknown[], data);
+          }
+        });
+      }
+      toast.error(err instanceof Error ? err.message : 'Failed to update user role');
+    },
     onSuccess: (data, variables) => {
-      // Invalidate users list to refetch
-      queryClient.invalidateQueries({ queryKey: adminKeys.users() });
+      // Invalidate all user list queries to ensure we have the latest data
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey;
+          return Array.isArray(key) && key.length >= 2 && key[0] === 'admin' && key[1] === 'users';
+        }
+      });
       queryClient.invalidateQueries({ queryKey: adminKeys.user(variables.userId) });
+      toast.success(`User role updated to ${variables.role}`);
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure consistency
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey;
+          return Array.isArray(key) && key.length >= 2 && key[0] === 'admin' && key[1] === 'users';
+        }
+      });
     },
   });
 }

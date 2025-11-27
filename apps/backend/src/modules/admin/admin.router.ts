@@ -14,6 +14,7 @@ import {
   updateUserRoleSchema,
   adminQuerySchema,
 } from './admin.validation';
+import { settingsRouter } from '@/modules/settings';
 
 const router = Router();
 
@@ -42,6 +43,9 @@ router
 router
   .route('/users/:id/role')
   .patch(validateRequest(updateUserRoleSchema), updateUserRoleHandler);
+
+// Settings routes
+router.use('/settings', settingsRouter);
 
 export const adminRouter : Router = router;
 

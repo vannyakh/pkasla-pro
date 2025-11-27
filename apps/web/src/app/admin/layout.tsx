@@ -4,9 +4,10 @@ import React, { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import AdminSidebar from '@/components/layout/AdminSidebar'
-import Topbar from '@/components/layout/Topbar'
+import AdminHeader from '@/components/layout/AdminHeader'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
 import type { User } from '@/types'
+import { Spinner } from '@/components/ui/shadcn-io/spinner'
 
 export default function AdminLayout({
   children,
@@ -37,8 +38,7 @@ export default function AdminLayout({
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-400 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+        <Spinner size={30} />
         </div>
       </div>
     )
@@ -53,7 +53,7 @@ export default function AdminLayout({
     <SidebarProvider>
       <AdminSidebar />
       <SidebarInset>
-        <Topbar />
+        <AdminHeader />
         <main className="flex-1 overflow-y-auto p-6">
           {children}
         </main>

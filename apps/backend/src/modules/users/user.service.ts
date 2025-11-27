@@ -49,7 +49,7 @@ const getDefaultAvatarUrl = (name?: string, email?: string): string => {
   return `https://avatar.iran.liara.run/public/?username=${username}`;
 };
 
-const sanitizeUser = (user: UserSource): UserResponse | null => {
+export const sanitizeUser = (user: UserSource): UserResponse | null => {
   if (!user) {
     return null;
   }

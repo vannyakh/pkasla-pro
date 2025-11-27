@@ -303,23 +303,14 @@ class AuthService {
         console.log('[AuthService] ❌ Email already exists:', email);
         throw new AppError('Email already registered. Please use email/password login or link your account.', httpStatus.CONFLICT);
       }
-
-      // Create new user with OAuth provider and avatar in one operation
-      console.log('[AuthService] ➕ Creating new user with OAuth provider');
       const newUser = await userService.create({
         name,
         email,
-        avatar, // Include avatar in initial creation to avoid separate update
-        role: 'user', // Default role for OAuth users
+        avatar,
+        role: 'user',
         provider: provider as OAuthProvider,
         providerId,
       });
-      console.log('[AuthService] ✅ New user created:', { 
-        id: newUser.id, 
-        email: newUser.email,
-        hasAvatar: !!newUser.avatar,
-      });
-
       // Assign the newly created user
       user = newUser;
     }

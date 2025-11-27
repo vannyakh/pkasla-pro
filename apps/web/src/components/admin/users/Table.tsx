@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/select'
 import type { UserRole, UserStatus } from '@/types'
 import type { UserListResponse } from '@/hooks/api/useAdmin'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 interface UsersTableProps {
   data?: UserListResponse
@@ -67,10 +68,13 @@ export function UsersTable({
         <Table>
           <TableHeader>
             <TableRow className="border-gray-200">
+              <TableHead className="text-xs font-semibold text-black">No</TableHead>
+              <TableHead className="text-xs font-semibold text-black">Avatar</TableHead>
               <TableHead className="text-xs font-semibold text-black">Name</TableHead>
               <TableHead className="text-xs font-semibold text-black">Email</TableHead>
               <TableHead className="text-xs font-semibold text-black">Role</TableHead>
               <TableHead className="text-xs font-semibold text-black">Status</TableHead>
+              <TableHead className="text-xs font-semibold text-black">Provider</TableHead>
               <TableHead className="text-xs font-semibold text-black">Registered</TableHead>
               <TableHead className="text-xs font-semibold text-black">Last Updated</TableHead>
             </TableRow>
@@ -78,12 +82,12 @@ export function UsersTable({
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-xs text-gray-500">
+                <TableCell colSpan={9} className="text-center py-8 text-xs text-gray-500">
                   No users found
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => {
+              users.map((user, index) => {
                 const userId = user.id
                 const userRole = user.role || 'user'
                 const userStatus = user.status || 'active'
@@ -91,15 +95,28 @@ export function UsersTable({
                 const userEmail = user.email || 'N/A'
                 const createdAt = user.createdAt
                 const updatedAt = user.updatedAt
-
+                const userProvider = user.provider || 'N/A'
+                const rowIndex = (currentPage - 1) * pageSize + index + 1
                 return (
                   <TableRow key={userId} className="border-gray-200">
+                    <TableCell className="text-xs text-black font-medium">
+                      {rowIndex}
+                    </TableCell>
+                    <TableCell className="text-xs text-black font-medium">
+                      <Avatar>
+                        <AvatarImage src={user.avatar} />
+                        <AvatarFallback>
+                          {userName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </TableCell>
                     <TableCell className="text-xs text-black font-medium">
                       {userName}
                     </TableCell>
                     <TableCell className="text-xs text-gray-600">
                       {userEmail}
                     </TableCell>
+                    
                     <TableCell>
                       <Select
                         value={userRole}
@@ -117,6 +134,7 @@ export function UsersTable({
                         </SelectContent>
                       </Select>
                     </TableCell>
+                    
                     <TableCell>
                       <Select
                         value={userStatus}
@@ -134,6 +152,9 @@ export function UsersTable({
                           <SelectItem value="suspended">Suspended</SelectItem>
                         </SelectContent>
                       </Select>
+                    </TableCell>
+                    <TableCell className="text-xs text-gray-600">
+                      {userProvider}
                     </TableCell>
                     <TableCell className="text-xs text-gray-600">
                       {formatDate(createdAt)}

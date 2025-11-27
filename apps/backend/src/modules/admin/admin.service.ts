@@ -2,22 +2,7 @@ import httpStatus from 'http-status';
 import { AppError } from '@/common/errors/app-error';
 import { userRepository } from '@/modules/users/user.repository';
 import { UserDocument } from '@/modules/users/user.model';
-
-
-const sanitizeUser = (user: UserDocument): UserDocument | null => {
-  if (!user) {
-    return null;
-  }
-  const userObj =
-    typeof (user as UserDocument).toObject === 'function'
-      ? (user as UserDocument).toObject()
-      : user;
-  const { _id, password, __v, ...rest } = userObj as Record<string, any>;
-  return {
-    ...(rest as Omit<UserDocument, 'id'>),
-    id: (_id ?? (rest as Record<string, any>).id).toString(),
-  };
-};
+import { sanitizeUser } from '@/modules/users/user.service';
 
 class AdminService {
  
