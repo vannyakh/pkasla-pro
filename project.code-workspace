@@ -1,16 +1,23 @@
 {
     "folders": [
       {
+        "name": "root",
+        "path": ".",
+      },
+      {
         "name": "backend",
         "path": "apps/backend",
+        "type": "folder"
       },
       {
         "name": "web",
         "path": "apps/web",
+        "type": "folder"
       },
       {
         "name": "docs",
         "path": "apps/docs",
+        "type": "folder"
       }
     ]
 }
