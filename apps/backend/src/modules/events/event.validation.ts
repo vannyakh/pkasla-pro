@@ -19,10 +19,22 @@ export const createEventSchema = z.object({
       .trim()
       .optional(),
     eventType: eventTypeEnum,
-    date: z
-      .string()
-      .datetime({ message: 'Date must be a valid ISO datetime string' })
-      .or(z.date()),
+    date: z.preprocess(
+      (val) => {
+        if (val instanceof Date) {
+          return val.toISOString();
+        }
+        if (typeof val === 'string') {
+          // If it's a datetime-local format, convert to ISO
+          if (val.includes('T') && !val.includes('Z') && !val.includes('+')) {
+            return new Date(val).toISOString();
+          }
+          return val;
+        }
+        return val;
+      },
+      z.string().datetime({ message: 'Date must be a valid ISO datetime string' })
+    ),
     venue: z
       .string()
       .min(1, { message: 'Venue is required' })
@@ -35,20 +47,37 @@ export const createEventSchema = z.object({
       .or(z.literal('')),
     coverImage: z
       .string()
-      .url({ message: 'Cover image must be a valid URL' })
+      .refine(
+        (val) => !val || val.startsWith('http://') || val.startsWith('https://') || val.startsWith('/uploads/'),
+        { message: 'Cover image must be a valid URL or relative path starting with /uploads/' }
+      )
       .optional()
       .or(z.literal('')),
     khqrUsd: z
       .string()
-      .url({ message: 'KHQR USD must be a valid URL' })
+      .refine(
+        (val) => !val || val.startsWith('http://') || val.startsWith('https://') || val.startsWith('/uploads/'),
+        { message: 'KHQR USD must be a valid URL or relative path starting with /uploads/' }
+      )
       .optional()
       .or(z.literal('')),
     khqrKhr: z
       .string()
-      .url({ message: 'KHQR KHR must be a valid URL' })
+      .refine(
+        (val) => !val || val.startsWith('http://') || val.startsWith('https://') || val.startsWith('/uploads/'),
+        { message: 'KHQR KHR must be a valid URL or relative path starting with /uploads/' }
+      )
       .optional()
       .or(z.literal('')),
-    restrictDuplicateNames: z.boolean().optional().default(false),
+    restrictDuplicateNames: z.preprocess(
+      (val) => {
+        if (typeof val === 'string') {
+          return val === 'true';
+        }
+        return val;
+      },
+      z.boolean().optional().default(false)
+    ),
     status: eventStatusEnum.optional().default('draft'),
   }),
 });
@@ -73,11 +102,22 @@ export const updateEventSchema = z.object({
       .trim()
       .optional(),
     eventType: eventTypeEnum.optional(),
-    date: z
-      .string()
-      .datetime({ message: 'Date must be a valid ISO datetime string' })
-      .or(z.date())
-      .optional(),
+    date: z.preprocess(
+      (val) => {
+        if (val instanceof Date) {
+          return val.toISOString();
+        }
+        if (typeof val === 'string') {
+          // If it's a datetime-local format, convert to ISO
+          if (val.includes('T') && !val.includes('Z') && !val.includes('+')) {
+            return new Date(val).toISOString();
+          }
+          return val;
+        }
+        return val;
+      },
+      z.string().datetime({ message: 'Date must be a valid ISO datetime string' }).optional()
+    ),
     venue: z
       .string()
       .min(1, { message: 'Venue cannot be empty' })
@@ -91,20 +131,37 @@ export const updateEventSchema = z.object({
       .or(z.literal('')),
     coverImage: z
       .string()
-      .url({ message: 'Cover image must be a valid URL' })
+      .refine(
+        (val) => !val || val.startsWith('http://') || val.startsWith('https://') || val.startsWith('/uploads/'),
+        { message: 'Cover image must be a valid URL or relative path starting with /uploads/' }
+      )
       .optional()
       .or(z.literal('')),
     khqrUsd: z
       .string()
-      .url({ message: 'KHQR USD must be a valid URL' })
+      .refine(
+        (val) => !val || val.startsWith('http://') || val.startsWith('https://') || val.startsWith('/uploads/'),
+        { message: 'KHQR USD must be a valid URL or relative path starting with /uploads/' }
+      )
       .optional()
       .or(z.literal('')),
     khqrKhr: z
       .string()
-      .url({ message: 'KHQR KHR must be a valid URL' })
+      .refine(
+        (val) => !val || val.startsWith('http://') || val.startsWith('https://') || val.startsWith('/uploads/'),
+        { message: 'KHQR KHR must be a valid URL or relative path starting with /uploads/' }
+      )
       .optional()
       .or(z.literal('')),
-    restrictDuplicateNames: z.boolean().optional(),
+    restrictDuplicateNames: z.preprocess(
+      (val) => {
+        if (typeof val === 'string') {
+          return val === 'true';
+        }
+        return val;
+      },
+      z.boolean().optional()
+    ),
     status: eventStatusEnum.optional(),
   }),
 });

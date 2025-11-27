@@ -1,14 +1,15 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Calendar, Users, MapPin, Settings, FileText, QrCode, Info, UserCheck, Trash2, Eye, MoreVertical, CheckCircle2, Search, Filter, Plus } from 'lucide-react'
+import React, { useState, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
+import { Calendar, Users, MapPin, Settings, FileText, QrCode, Info, UserCheck, Trash2, Eye, MoreVertical, CheckCircle2, Search, Filter, Plus, Loader2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Checkbox } from '@/components/ui/checkbox'
-import GiftPaymentDrawer, { GiftFormData } from '@/components/guests/GiftPaymentDrawer'
+import GiftPaymentDrawer from '@/components/guests/GiftPaymentDrawer'
 import CreateGuestDrawer from '@/components/guests/CreateGuestDrawer'
 import ViewGiftDrawer from '@/components/guests/ViewGiftDrawer'
 import {
@@ -17,14 +18,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Event } from '@/types/event'
+import { useEvent, useDeleteEvent } from '@/hooks/api/useEvent'
+import { useGuestsByEvent, useCreateGuest, useUpdateGuest, useDeleteGuest } from '@/hooks/api/useGuest'
+import type { Guest as GuestType } from '@/types/guest'
 
-// Sample guest data
-interface Guest {
-  id: string
-  name: string
-  email: string
-  hasGivenGift?: boolean
+// Extended guest interface for UI display (includes gift info)
+interface DisplayGuest extends Omit<GuestType, 'tag'> {
   tag?: {
     label: string
     color: 'red' | 'blue' | 'green'
@@ -39,93 +38,135 @@ interface Guest {
   }
 }
 
-// Sample event data
-const sampleEvent: Event & { image?: string; time?: string; googleMapLink?: string } = {
-  id: '1',
-  title: 'ពិធីភ្ជាប់ពាក្យ',
-  description: 'ពិធីភ្ជាប់ពាក្យ និង',
-  date: '2025-12-27T07:00:00',
-  venue: 'Phnom Penh',
-  guestCount: 0,
-  status: 'published',
-  createdAt: '2024-01-15T10:00:00Z',
-  updatedAt: '2024-01-15T10:00:00Z',
-  time: '07:00 AM',
-  googleMapLink: 'https://maps.google.com/...',
-}
-
-// Sample guests data - TODO: Fetch from API
-const sampleGuests: Guest[] = [
-  { 
-    id: '1', 
-    name: 'Pkasla', 
-    email: 'pkasla@example.com',
-    hasGivenGift: false
-  },
-  { 
-    id: '2', 
-    name: 'Seyha', 
-    email: 'seyha@example.com',
-    hasGivenGift: true,
-    tag: {
-      label: 'ភ្ញៀវកូនក្រមុំ',
-      color: 'red',
-      icon: 'heart'
-    },
-    gift: {
-      id: 'gift2',
-      date: '17 តុលា 2025, 12:32 ល្ងាច',
-      type: 'ប្រភេទ៖ KHQR',
-      amount: 100,
-      currency: 'USD'
-    }
-  },
-  { 
-    id: '3', 
-    name: 'Kim Da', 
-    email: 'kimda@example.com',
-    hasGivenGift: true,
-    tag: {
-      label: 'ភ្ញៀវកូនកំលោះ',
-      color: 'blue',
-      icon: 'diamond'
-    },
-    gift: {
-      id: 'gift3',
-      date: '17 តុលា 2025, 12:27 ល្ងាច',
-      type: 'ប្រភេទ៖ សាច់ប្រាក់',
-      amount: 50,
-      currency: 'USD'
-    }
-  },
-]
-
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const router = useRouter()
   // Unwrap params Promise
   const { id } = React.use(params)
   
-  // TODO: Fetch event data using id
-  const [event] = useState(sampleEvent)
-  const [guests, setGuests] = useState<Guest[]>(sampleGuests)
+  // Fetch event data
+  const { data: event, isLoading: eventLoading, error: eventError } = useEvent(id)
+  const { data: guests = [], isLoading: guestsLoading } = useGuestsByEvent(id)
+  const createGuestMutation = useCreateGuest()
+  const updateGuestMutation = useUpdateGuest()
+  const deleteGuestMutation = useDeleteGuest()
+  const deleteEventMutation = useDeleteEvent()
+  
   const [isGuestDrawerOpen, setIsGuestDrawerOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedGuestForGift, setSelectedGuestForGift] = useState<Guest | null>(null)
-  const [selectedGuestForView, setSelectedGuestForView] = useState<Guest | null>(null)
+  const [selectedGuestForGift, setSelectedGuestForGift] = useState<DisplayGuest | null>(null)
+  const [selectedGuestForView, setSelectedGuestForView] = useState<DisplayGuest | null>(null)
   
-  // Use id to avoid unused variable warning
-  React.useEffect(() => {
-    // Future: Fetch event and guests by id
-  }, [id])
+  // Transform guests for display (add tag and gift info if needed)
+  const displayGuests: DisplayGuest[] = useMemo(() => {
+    return guests.map(guest => {
+      const { tag: tagString, ...restGuest } = guest
+      const displayGuest: DisplayGuest = { ...restGuest }
+      
+      // Map tag string to display format
+      if (tagString) {
+        const tagMap: Record<string, { label: string; color: 'red' | 'blue' | 'green' }> = {
+          'bride': { label: 'ភ្ញៀវកូនក្រមុំ', color: 'red' },
+          'groom': { label: 'ភ្ញៀវកូនកំលោះ', color: 'blue' },
+        }
+        const tagInfo = tagMap[tagString] || { label: tagString, color: 'green' }
+        displayGuest.tag = tagInfo
+      }
+      
+      // For now, gift info is not stored in backend (only hasGivenGift boolean)
+      // This would need to be implemented in a separate gifts/payments table
+      // For now, we'll just show hasGivenGift status
+      
+      return displayGuest
+    })
+  }, [guests])
   
   // Get guests who have given gifts
-  const guestsWithGifts = guests.filter(guest => guest.hasGivenGift && guest.gift)
+  const guestsWithGifts = displayGuests.filter(guest => guest.hasGivenGift)
   const giftCount = guestsWithGifts.length
   
   // Filter guests by search query
-  const filteredGuests = guests.filter(guest =>
+  const filteredGuests = displayGuests.filter(guest =>
     guest.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    guest.email.toLowerCase().includes(searchQuery.toLowerCase())
+    (guest.email && guest.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (guest.phone && guest.phone.toLowerCase().includes(searchQuery.toLowerCase()))
   )
+  
+  // Loading state
+  if (eventLoading || guestsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+      </div>
+    )
+  }
+  
+  // Error state
+  if (eventError || !event) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">
+          <p className="text-sm text-red-600 mb-4">
+            {eventError?.message || 'Failed to load event'}
+          </p>
+          <Button onClick={() => router.back()} variant="outline">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Go Back
+          </Button>
+        </div>
+      </div>
+    )
+  }
+  
+  // Handle delete event
+  const handleDeleteEvent = async () => {
+    if (confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+      await deleteEventMutation.mutateAsync(id)
+      router.push('/dashboard/events')
+    }
+  }
+  
+  // Handle create guest
+  const handleCreateGuest = async (formData: { 
+    name: string
+    phone?: string
+    occupation?: string
+    notes?: string
+    tag?: string
+    address?: string
+    province?: string
+  }) => {
+    await createGuestMutation.mutateAsync({
+      name: formData.name,
+      phone: formData.phone,
+      eventId: id,
+      tag: formData.tag,
+      occupation: formData.occupation,
+      notes: formData.notes,
+      address: formData.address,
+      province: formData.province,
+    })
+    setIsGuestDrawerOpen(false)
+  }
+  
+  // Handle update guest (for gift payment)
+  const handleGiftPayment = async (guestId: string) => {
+    await updateGuestMutation.mutateAsync({
+      id: guestId,
+      data: {
+        hasGivenGift: true,
+        // Note: Gift details (amount, type, etc.) would need a separate gifts/payments table
+        // For now, we're just marking hasGivenGift as true
+      },
+    })
+    setSelectedGuestForGift(null)
+  }
+  
+  // Handle delete guest
+  const handleDeleteGuest = async (guestId: string) => {
+    if (confirm('Are you sure you want to delete this guest?')) {
+      await deleteGuestMutation.mutateAsync({ id: guestId, eventId: id })
+    }
+  }
   
   const getTagColor = (color?: string) => {
     switch (color) {
@@ -192,9 +233,15 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                 <p className="text-sm text-gray-600 mb-3">{event.description}</p>
               )}
             </div>
-            <Button variant="outline" size="sm" className="text-xs">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="text-xs"
+              onClick={handleDeleteEvent}
+              disabled={deleteEventMutation.isPending}
+            >
               <Trash2 className="h-4 w-4 mr-1.5" />
-              Delete
+              {deleteEventMutation.isPending ? 'Deleting...' : 'Delete'}
             </Button>
           </div>
         </CardHeader>
@@ -204,8 +251,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               <Calendar className="h-5 w-5 text-gray-600 mt-0.5 shrink-0" />
     <div>
                 <p className="text-xs text-gray-600 mb-0.5">Event Date</p>
-                <p className="text-sm font-semibold text-black">{formatDate(event.date)}</p>
-                {event.time && <p className="text-xs text-gray-600">{event.time}</p>}
+                <p className="text-sm font-semibold text-black">{formatDate(typeof event.date === 'string' ? event.date : event.date.toISOString())}</p>
         </div>
       </div>
             <div className="flex items-start gap-3">
@@ -226,7 +272,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               <Calendar className="h-5 w-5 text-gray-600 mt-0.5 shrink-0" />
                 <div>
                 <p className="text-xs text-gray-600 mb-0.5">Created</p>
-                <p className="text-sm font-semibold text-black">{formatDateTime(event.createdAt)}</p>
+                <p className="text-sm font-semibold text-black">{formatDateTime(typeof event.createdAt === 'string' ? event.createdAt : event.createdAt.toISOString())}</p>
               </div>
             </div>
           </div>
@@ -284,7 +330,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                   <CardTitle className="text-sm font-semibold text-black">Event Date & Time</CardTitle>
                 </div>
                 <p className="text-sm text-black">
-                  {formatDate(event.date)} {event.time && `at ${event.time}`}
+                  {formatDate(typeof event.date === 'string' ? event.date : event.date.toISOString())}
                 </p>
               </CardContent>
             </Card>
@@ -321,24 +367,28 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               <div className="space-y-3">
                 {guestsWithGifts.map((guest) => {
                   const initial = guest.name.charAt(0).toUpperCase()
-                  const amount = guest.gift!.amount
-                  const currency = guest.gift!.currency === 'USD' ? 'ដុល្លារ' : 'រៀល'
+                  const createdAt = new Date(guest.createdAt).toLocaleDateString('km-KH', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })
                   return (
-                    <div key={guest.gift!.id} className="flex items-center justify-between py-3">
+                    <div key={guest.id} className="flex items-center justify-between py-3">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
                           <span className="text-sm font-semibold text-gray-600">{initial}</span>
               </div>
               <div>
                           <p className="text-sm font-semibold text-black">{guest.name}</p>
-                          <p className="text-xs text-gray-600">{guest.gift!.date}</p>
+                          <p className="text-xs text-gray-600">{createdAt}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        {amount && (
-                          <p className="text-sm font-semibold text-black">{amount} {currency}</p>
-                        )}
-                        <p className="text-xs text-gray-600">{guest.gift!.type}</p>
+                        <Badge variant="outline" className="text-xs">
+                          បានចង់ដៃ
+                        </Badge>
                       </div>
               </div>
                   )
@@ -390,25 +440,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               <CreateGuestDrawer
                 open={isGuestDrawerOpen}
                 onOpenChange={setIsGuestDrawerOpen}
-                onSave={(formData) => {
-                  // Add new guest to the list
-                  const newGuest: Guest = {
-                    id: `guest-${Date.now()}`,
-                    name: formData.name,
-                    email: formData.phone || '',
-                    hasGivenGift: false,
-                    tag: formData.tag ? {
-                      label: formData.tag === 'bride' ? 'ភ្ញៀវកូនក្រមុំ' : 'ភ្ញៀវកូនកំលោះ',
-                      color: formData.tag === 'bride' ? 'red' : 'blue'
-                    } : undefined
-                  }
-                  setGuests([...guests, newGuest])
-                  setIsGuestDrawerOpen(false)
-                }}
+                onSave={handleCreateGuest}
                 trigger={
-                  <Button size="sm" className="text-xs h-9">
+                  <Button size="sm" className="text-xs h-9" disabled={createGuestMutation.isPending}>
                     <Plus className="h-3.5 w-3.5 mr-1.5" />
-                    បង្កើតភ្ញៀវថ្មី
+                    {createGuestMutation.isPending ? 'Creating...' : 'បង្កើតភ្ញៀវថ្មី'}
                   </Button>
                 }
               />
@@ -442,6 +478,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                           </td>
                           <td className="p-3">
                             <p className="text-sm font-semibold text-black">{guest.name}</p>
+                            {guest.email && (
+                              <p className="text-xs text-gray-500">{guest.email}</p>
+                            )}
+                            {guest.phone && (
+                              <p className="text-xs text-gray-500">{guest.phone}</p>
+                            )}
                           </td>
                           <td className="p-3">
                             {guest.tag ? (
@@ -475,31 +517,8 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                       setSelectedGuestForGift(guest)
                                     }
                                   }}
-                                  onSave={(formData: GiftFormData) => {
-                                    // Update guest to mark as having given gift
-                                    setGuests(guests.map(g => {
-                                      if (g.id === guest.id) {
-                                        return {
-                                          ...g,
-                                          hasGivenGift: true,
-                                          gift: {
-                                            id: `gift-${Date.now()}`,
-                                            date: new Date().toLocaleDateString('km-KH', {
-                                              year: 'numeric',
-                                              month: 'long',
-                                              day: 'numeric',
-                                              hour: '2-digit',
-                                              minute: '2-digit'
-                                            }),
-                                            type: formData.paymentMethod === 'cash' ? 'ប្រភេទ៖ សាច់ប្រាក់' : 'ប្រភេទ៖ KHQR',
-                                            amount: parseFloat(formData.amount),
-                                            currency: formData.currency === 'khr' ? 'KHR' : 'USD'
-                                          }
-                                        }
-                                      }
-                                      return g
-                                    }))
-                                    setSelectedGuestForGift(null)
+                                  onSave={() => {
+                                    handleGiftPayment(guest.id)
                                   }}
                                   trigger={
                                     <Button variant="outline" size="sm" className="text-xs h-7">
@@ -508,33 +527,41 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                   }
                                 />
                               )}
-                              {guest.hasGivenGift && guest.gift && (
+                              {guest.hasGivenGift && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-xs h-7 w-7 p-0"
+                                  onClick={() => {
+                                    setSelectedGuestForView(guest)
+                                  }}
+                                  disabled={!guest.hasGivenGift}
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                              {guest.hasGivenGift && selectedGuestForView?.id === guest.id && (
                                 <ViewGiftDrawer
                                   guestName={guest.name}
-                                  gift={guest.gift}
+                                  gift={{
+                                    id: guest.id,
+                                    date: new Date(guest.updatedAt).toLocaleDateString('km-KH', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    }),
+                                    type: 'បានចង់ដៃ',
+                                  }}
                                   open={selectedGuestForView?.id === guest.id}
                                   onOpenChange={(open) => {
-                                    if (open) {
-                                      setSelectedGuestForView(guest)
-                                    } else {
+                                    if (!open) {
                                       setSelectedGuestForView(null)
                                     }
                                   }}
                                 />
                               )}
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-xs h-7 w-7 p-0"
-                                onClick={() => {
-                                  if (guest.hasGivenGift && guest.gift) {
-                                    setSelectedGuestForView(guest)
-                                  }
-                                }}
-                                disabled={!guest.hasGivenGift || !guest.gift}
-                              >
-                                <Eye className="h-3.5 w-3.5" />
-                              </Button>
                               <Button variant="ghost" size="sm" className="text-xs h-7 w-7 p-0">
                                 <QrCode className="h-3.5 w-3.5" />
                               </Button>
@@ -545,8 +572,18 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                                  <DropdownMenuItem className="text-gray-600">Delete</DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={() => router.push(`/dashboard/events/${id}/guests/${guest.id}/edit`)}
+                                  >
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    className="text-red-600"
+                                    onClick={() => handleDeleteGuest(guest.id)}
+                                    disabled={deleteGuestMutation.isPending}
+                                  >
+                                    {deleteGuestMutation.isPending ? 'Deleting...' : 'Delete'}
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </div>

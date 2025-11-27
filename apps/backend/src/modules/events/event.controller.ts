@@ -4,13 +4,45 @@ import { eventService } from './event.service';
 import { buildSuccessResponse } from '@/helpers/http-response';
 import { storageService } from '@/common/services/storage.service';
 import { uploadRepository } from '@/modules/upload/upload.repository';
+import { eventRepository } from './event.repository';
+import { userSubscriptionService } from '@/modules/subscriptions/user-subscription.service';
+import type { EventListFilters } from './event.service';
 
 /**
  * Create a new event
  */
+// Helper function to convert relative paths to full URLs
+const convertToFullUrl = (url: string | undefined, req: Request): string | undefined => {
+  if (!url) return undefined;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  if (url.startsWith('/uploads/')) {
+    const protocol = req.protocol;
+    const host = req.get('host');
+    return `${protocol}://${host}${url}`;
+  }
+  return url;
+};
+
 export const createEventHandler = async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Authentication required' });
+  }
+
+  // Check event limit based on subscription plan
+  // Admins have unlimited events
+  if (req.user.role !== 'admin') {
+    const maxEvents = await userSubscriptionService.getMaxEventsForUser(req.user.id);
+    
+    if (maxEvents !== null) {
+      const eventCount = await eventRepository.countDocuments({ hostId: req.user.id });
+      if (eventCount >= maxEvents) {
+        return res.status(httpStatus.FORBIDDEN).json({ 
+          error: `You have reached the maximum limit of ${maxEvents} events. Please upgrade your subscription to create more events.` 
+        });
+      }
+    }
   }
 
   let coverImageUrl: string | undefined;
@@ -95,12 +127,17 @@ export const createEventHandler = async (req: Request, res: Response) => {
     khqrKhrUrl = req.body.khqrKhr;
   }
 
+  // Convert relative paths to full URLs if they exist in body
+  const bodyCoverImage = convertToFullUrl(req.body.coverImage, req);
+  const bodyKhqrUsd = convertToFullUrl(req.body.khqrUsd, req);
+  const bodyKhqrKhr = convertToFullUrl(req.body.khqrKhr, req);
+
   const eventData = {
     ...req.body,
     hostId: req.user.id,
-    coverImage: coverImageUrl,
-    khqrUsd: khqrUsdUrl,
-    khqrKhr: khqrKhrUrl,
+    coverImage: coverImageUrl || bodyCoverImage,
+    khqrUsd: khqrUsdUrl || bodyKhqrUsd,
+    khqrKhr: khqrKhrUrl || bodyKhqrKhr,
     restrictDuplicateNames: req.body.restrictDuplicateNames === 'true' || req.body.restrictDuplicateNames === true,
   };
 
@@ -211,12 +248,18 @@ export const updateEventHandler = async (req: Request, res: Response) => {
   const updateData: any = { ...req.body };
   if (coverImageUrl !== undefined) {
     updateData.coverImage = coverImageUrl;
+  } else if (req.body.coverImage !== undefined) {
+    updateData.coverImage = convertToFullUrl(req.body.coverImage, req);
   }
   if (khqrUsdUrl !== undefined) {
     updateData.khqrUsd = khqrUsdUrl;
+  } else if (req.body.khqrUsd !== undefined) {
+    updateData.khqrUsd = convertToFullUrl(req.body.khqrUsd, req);
   }
   if (khqrKhrUrl !== undefined) {
     updateData.khqrKhr = khqrKhrUrl;
+  } else if (req.body.khqrKhr !== undefined) {
+    updateData.khqrKhr = convertToFullUrl(req.body.khqrKhr, req);
   }
   if (req.body.restrictDuplicateNames !== undefined) {
     updateData.restrictDuplicateNames = req.body.restrictDuplicateNames === 'true' || req.body.restrictDuplicateNames === true;
@@ -246,25 +289,18 @@ export const listEventsHandler = async (req: Request, res: Response) => {
   const page = Number(req.query.page) || 1;
   const pageSize = Number(req.query.pageSize) || 10;
   
-  const filters: {
-    hostId?: string;
-    status?: string;
-    eventType?: string;
-    search?: string;
-    dateFrom?: string;
-    dateTo?: string;
-  } = {};
+  const filters: EventListFilters = {};
   
   if (req.query.hostId) {
     filters.hostId = req.query.hostId as string;
   }
   
   if (req.query.status) {
-    filters.status = req.query.status as string;
+    filters.status = req.query.status as EventListFilters['status'];
   }
   
   if (req.query.eventType) {
-    filters.eventType = req.query.eventType as string;
+    filters.eventType = req.query.eventType as EventListFilters['eventType'];
   }
   
   if (req.query.search) {

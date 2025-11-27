@@ -88,8 +88,12 @@ class StorageService {
 
     await fs.writeFile(filePath, file.buffer);
 
-    const url = `/uploads/${folder}/${fileName}`;
+    const relativePath = `/uploads/${folder}/${fileName}`;
     const key = `${folder}/${fileName}`;
+
+    // Construct full URL using API base URL from environment or default
+    const apiBaseUrl = process.env.API_BASE_URL || process.env.API_URL || `http://localhost:${env.port || 4000}`;
+    const url = `${apiBaseUrl}${relativePath}`;
 
     return {
       url,

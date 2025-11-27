@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useEvent } from '@/hooks/useEvent'
+import { useCreateEvent } from '@/hooks/api/useEvent'
 
 const eventTypes = [
   { value: 'wedding', label: 'ពិធីរៀបមង្គលការ' },
@@ -24,18 +24,19 @@ const eventTypes = [
 
 export default function CreateEventPage() {
   const router = useRouter()
-  const { createEvent } = useEvent()
+  const createEvent = useCreateEvent()
   const [formData, setFormData] = useState({
-    eventType: '',
+    title: '',
+    eventType: '' as 'wedding' | 'engagement' | 'hand-cutting' | 'birthday' | 'anniversary' | 'other' | '',
     startDate: '',
     address: '',
     googleMapLink: '',
+    description: '',
     restrictDuplicateNames: false,
     coverImage: null as File | null,
     khqrUsd: null as File | null,
     khqrKhr: null as File | null,
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -47,30 +48,53 @@ export default function CreateEventPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsSubmitting(true)
+
+    if (!formData.eventType || !formData.startDate || !formData.address) {
+      return
+    }
 
     try {
       const eventData = {
-        title: eventTypes.find((t) => t.value === formData.eventType)?.label || '',
+        title: formData.title || eventTypes.find((t) => t.value === formData.eventType)?.label || '',
+        eventType: formData.eventType as 'wedding' | 'engagement' | 'hand-cutting' | 'birthday' | 'anniversary' | 'other',
         date: formData.startDate,
         venue: formData.address,
-        description: formData.googleMapLink,
+        googleMapLink: formData.googleMapLink || undefined,
+        description: formData.description || undefined,
+        restrictDuplicateNames: formData.restrictDuplicateNames,
       }
 
-      const result = await createEvent(eventData)
-      if (result.success) {
-        router.push('/dashboard/events')
+      const files = {
+        coverImage: formData.coverImage || undefined,
+        khqrUsd: formData.khqrUsd || undefined,
+        khqrKhr: formData.khqrKhr || undefined,
       }
+
+      await createEvent.mutateAsync({ data: eventData, files })
+      router.push('/dashboard/events')
     } catch (error) {
       console.error('Error creating event:', error)
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
   return (
     <div className="max-w-4xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Event Title */}
+        <div>
+          <Label htmlFor="title" className="text-sm font-semibold text-black mb-2 block">
+            ចំណងជើង
+          </Label>
+          <Input
+            id="title"
+            type="text"
+            value={formData.title}
+            onChange={(e) => handleInputChange('title', e.target.value)}
+            placeholder="ចំណងជើងកម្មវិធី"
+            className="w-full h-10 text-sm"
+          />
+        </div>
+
         {/* Event Type */}
         <div>
           <Label htmlFor="eventType" className="text-sm font-semibold text-black mb-2 block">
@@ -121,6 +145,21 @@ export default function CreateEventPage() {
             placeholder="ទីតាំងកម្មវិធីដែលត្រូវប្រព្រឹត្តឡើង"
             className="w-full h-10 text-sm"
             required
+          />
+        </div>
+
+        {/* Description */}
+        <div>
+          <Label htmlFor="description" className="text-sm font-semibold text-black mb-2 block">
+            ពិព័រណ៍
+          </Label>
+          <Input
+            id="description"
+            type="text"
+            value={formData.description}
+            onChange={(e) => handleInputChange('description', e.target.value)}
+            placeholder="ពិព័រណ៍អំពីកម្មវិធី"
+            className="w-full h-10 text-sm"
           />
         </div>
 
@@ -200,10 +239,10 @@ export default function CreateEventPage() {
         <div className="pt-4">
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={createEvent.isPending}
             className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg"
           >
-            {isSubmitting ? 'កំពុងរក្សាទុក...' : 'រក្សាទុក'}
+            {createEvent.isPending ? 'កំពុងរក្សាទុក...' : 'រក្សាទុក'}
           </Button>
         </div>
       </form>
