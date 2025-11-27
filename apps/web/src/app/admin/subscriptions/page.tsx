@@ -1,19 +1,11 @@
 'use client'
 
-import React from 'react'
-import { UserCheck, Search } from 'lucide-react'
+import React, { useState, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Billing } from '@/types/billing'
+import { SubscriptionsSummary } from '@/components/admin/subscriptions/SubscriptionsSummary'
+import { SubscriptionsTable } from '@/components/admin/subscriptions/SubscriptionsTable'
+import { SubscriptionsFilters } from '@/components/admin/subscriptions/SubscriptionsFilters'
 
 // Sample subscriptions data - TODO: Replace with API call
 const sampleSubscriptions: Billing[] = [
@@ -71,6 +63,42 @@ const sampleSubscriptions: Billing[] = [
     nextBillingDate: '2024-11-30T00:00:00Z',
     createdAt: '2024-04-12T08:30:00Z',
   },
+  {
+    id: '7',
+    userId: '10',
+    plan: 'enterprise',
+    amount: 199,
+    status: 'active',
+    nextBillingDate: '2025-01-05T00:00:00Z',
+    createdAt: '2024-05-01T10:20:00Z',
+  },
+  {
+    id: '8',
+    userId: '11',
+    plan: 'basic',
+    amount: 29,
+    status: 'active',
+    nextBillingDate: '2024-12-22T00:00:00Z',
+    createdAt: '2024-05-15T14:10:00Z',
+  },
+  {
+    id: '9',
+    userId: '12',
+    plan: 'premium',
+    amount: 59,
+    status: 'cancelled',
+    nextBillingDate: '2024-12-10T00:00:00Z',
+    createdAt: '2024-06-01T09:00:00Z',
+  },
+  {
+    id: '10',
+    userId: '13',
+    plan: 'enterprise',
+    amount: 199,
+    status: 'active',
+    nextBillingDate: '2025-01-10T00:00:00Z',
+    createdAt: '2024-06-20T11:30:00Z',
+  },
 ]
 
 // User names mapping - TODO: Get from API
@@ -81,135 +109,97 @@ const userNames: Record<string, string> = {
   '7': 'Robert Wilson',
   '8': 'Emily Davis',
   '9': 'Michael Taylor',
+  '10': 'Jennifer Martinez',
+  '11': 'James Anderson',
+  '12': 'Lisa Thompson',
+  '13': 'Christopher Lee',
 }
 
+const ITEMS_PER_PAGE = 10
+
 export default function AdminUserSubscriptionsPage() {
-  const [searchTerm, setSearchTerm] = React.useState('')
-  const [subscriptions] = React.useState<Billing[]>(sampleSubscriptions)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [planFilter, setPlanFilter] = useState<string>('all')
+  const [currentPage, setCurrentPage] = useState(1)
 
-  const filteredSubscriptions = subscriptions.filter((sub) => {
-    const userName = userNames[sub.userId] || ''
-    return (
-      userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sub.plan.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sub.status.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  })
+  const subscriptions = useMemo(() => sampleSubscriptions, [])
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+  const filteredSubscriptions = useMemo(() => {
+    return subscriptions.filter((sub) => {
+      const userName = userNames[sub.userId] || ''
+      const matchesSearch =
+        userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        sub.plan.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        sub.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        sub.id.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesStatus = statusFilter === 'all' || sub.status === statusFilter
+      const matchesPlan = planFilter === 'all' || sub.plan === planFilter
+
+      return matchesSearch && matchesStatus && matchesPlan
     })
+  }, [subscriptions, searchTerm, statusFilter, planFilter])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredSubscriptions.length / ITEMS_PER_PAGE)
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const endIndex = startIndex + ITEMS_PER_PAGE
+  const paginatedSubscriptions = filteredSubscriptions.slice(startIndex, endIndex)
+
+  // Handler functions that reset page when filters change
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value)
+    if (currentPage !== 1) setCurrentPage(1)
   }
 
-  const formatCurrency = (amount: number) => {
-    return `$${amount.toFixed(2)}`
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value)
+    if (currentPage !== 1) setCurrentPage(1)
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'default'
-      case 'cancelled':
-        return 'secondary'
-      case 'expired':
-        return 'destructive'
-      default:
-        return 'secondary'
-    }
-  }
-
-  const getPlanColor = (plan: string) => {
-    switch (plan) {
-      case 'enterprise':
-        return 'default'
-      case 'premium':
-        return 'secondary'
-      case 'basic':
-        return 'outline'
-      default:
-        return 'outline'
-    }
+  const handlePlanFilterChange = (value: string) => {
+    setPlanFilter(value)
+    if (currentPage !== 1) setCurrentPage(1)
   }
 
   return (
     <div>
       <div className="mb-6 md:mb-8">
         <h1 className="text-xl md:text-2xl font-semibold text-black">User Subscriptions</h1>
-        <p className="text-xs text-gray-600 mt-1">View and manage all user subscriptions and plans</p>
+        <p className="text-xs text-gray-600 mt-1">
+          View and manage all user subscriptions and billing transactions
+        </p>
       </div>
+
+      <SubscriptionsSummary subscriptions={filteredSubscriptions} />
 
       <Card className="border border-gray-200">
         <CardHeader className="pb-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col gap-4">
             <CardTitle className="text-sm font-semibold text-black">
               All Subscriptions ({filteredSubscriptions.length})
             </CardTitle>
-            <div className="relative w-full sm:w-64">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search subscriptions..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 h-9 text-xs border-gray-200"
-              />
-            </div>
+            <SubscriptionsFilters
+              searchTerm={searchTerm}
+              statusFilter={statusFilter}
+              planFilter={planFilter}
+              onSearchChange={handleSearchChange}
+              onStatusFilterChange={handleStatusFilterChange}
+              onPlanFilterChange={handlePlanFilterChange}
+            />
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-gray-200">
-                  <TableHead className="text-xs font-semibold text-black">User</TableHead>
-                  <TableHead className="text-xs font-semibold text-black">Plan</TableHead>
-                  <TableHead className="text-xs font-semibold text-black">Amount</TableHead>
-                  <TableHead className="text-xs font-semibold text-black">Status</TableHead>
-                  <TableHead className="text-xs font-semibold text-black">Next Billing</TableHead>
-                  <TableHead className="text-xs font-semibold text-black">Created</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredSubscriptions.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8 text-xs text-gray-500">
-                      No subscriptions found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredSubscriptions.map((subscription) => (
-                    <TableRow key={subscription.id} className="border-gray-200">
-                      <TableCell className="text-xs text-black font-medium">
-                        {userNames[subscription.userId] || `User ${subscription.userId}`}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getPlanColor(subscription.plan)} className="text-xs capitalize">
-                          {subscription.plan}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-black font-medium">
-                        {formatCurrency(subscription.amount)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getStatusColor(subscription.status)} className="text-xs capitalize">
-                          {subscription.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-gray-600">
-                        {formatDate(subscription.nextBillingDate)}
-                      </TableCell>
-                      <TableCell className="text-xs text-gray-600">
-                        {formatDate(subscription.createdAt)}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <SubscriptionsTable
+            subscriptions={paginatedSubscriptions}
+            userNames={userNames}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={ITEMS_PER_PAGE}
+            startIndex={startIndex}
+            totalItems={filteredSubscriptions.length}
+            onPageChange={setCurrentPage}
+          />
         </CardContent>
       </Card>
     </div>
