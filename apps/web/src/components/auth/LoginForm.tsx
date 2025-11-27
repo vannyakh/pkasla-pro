@@ -195,7 +195,7 @@ export function LoginForm() {
                 backgroundSize: '100% 100%',
               }}
             >
-              <h1 className="text-red-800 md:text-3xl text-2xl -translate-y-1  font-bold">ចុូលប្រព័ន្ធ</h1>
+              <h1 className="text-red-800 md:text-3xl text-2xl -translate-y-1  font-moulpali font-bold">ចុូលប្រព័ន្ធ</h1>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5 pt-8 sm:pt-10 md:pt-12" noValidate>
               {/* Email Field */}
