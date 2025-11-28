@@ -4,7 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="5670ec84-e24e-440b-8f6f-0077eef8c099" name="Changes" comment="" />
+    <list default="true" id="5670ec84-e24e-440b-8f6f-0077eef8c099" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/app/dashboard/events/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/app/dashboard/events/[id]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/components/events/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/components/events/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/lib/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/lib/utils.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,9 +18,9 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "associatedIndex": 8
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
   <component name="ProjectId" id="35uVrnIgEfUppdx5U96IaFlbsdi" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
@@ -26,7 +31,7 @@
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
+    "git-widget-placeholder": "dev/youry",
     "js.debugger.nextJs.config.created.client": "true",
     "js.debugger.nextJs.config.created.server": "true",
     "last_opened_file_path": "/Users/dms/Documents/React/pkasla",
@@ -69,6 +74,7 @@
       <option name="presentableId" value="Default" />
       <updated>1763960144528</updated>
       <workItem from="1763960145613" duration="5211000" />
+      <workItem from="1764311867002" duration="1995000" />
     </task>
     <servers />
   </component>

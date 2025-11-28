@@ -2,16 +2,11 @@
 
 import React, { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Calendar, Users, MapPin, Settings, FileText, QrCode, Info, UserCheck, Eye, MoreVertical, CheckCircle2, Search, Filter, Plus, Loader2, ArrowLeft } from 'lucide-react'
+import { Calendar, Users, MapPin, Settings as SettingsIcon, FileText, QrCode, Info, UserCheck, CheckCircle2, Loader2, ArrowLeft, DollarSign } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import GiftPaymentDrawer from '@/components/guests/GiftPaymentDrawer'
-import CreateGuestDrawer from '@/components/guests/CreateGuestDrawer'
-import ViewGiftDrawer from '@/components/guests/ViewGiftDrawer'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +17,7 @@ import { useEvent, useUpdateEvent } from '@/hooks/api/useEvent'
 import type { EventStatus } from '@/types/event'
 import { useGuestsByEvent, useCreateGuest, useUpdateGuest, useDeleteGuest } from '@/hooks/api/useGuest'
 import type { Guest as GuestType } from '@/types/guest'
+import { Overview, Guests, Schedules, Settings, Templates, QRGenerate, Payments, SampleTemplate } from '@/components/events/tabs'
 
 // Extended guest interface for UI display (includes gift info)
 interface DisplayGuest extends Omit<GuestType, 'tag'> {
@@ -227,6 +223,76 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     }
   }
 
+  // mockup data for payments
+  interface PaymentProps {
+    id: string
+    guestName: string
+    amount: number
+    currency: 'USD' | 'KHR'
+    method: 'KHQR' | 'Cash' | 'Bank Transfer'
+    createdAt: string | Date
+  }
+  const payments: PaymentProps[] = [
+    {
+      id: '1',
+      guestName: 'John Doe',
+      amount: 100,
+      currency: 'KHR',
+      method: 'KHQR',
+      createdAt: new Date(),
+    },
+    {
+      id: '2',
+      guestName: 'Jane Doe',
+      amount: 200,
+      currency: 'USD',
+      method: 'Cash',
+      createdAt: new Date(),
+    },
+  ]
+  const totalRiel = 0
+  const totalDollars = 0
+  const totalGuests = 0
+  const contributingGuests = 0
+
+  // mockup data for sample template
+  const handleViewSample = (templateId: string) => {
+    console.log('View sample template', templateId)
+  }
+  const handleBuyNow = (templateId: string) => {
+    console.log('Buy now template', templateId)
+  }
+  interface SampleTemplateProps {
+    id: string
+    name: string
+    image: string
+    price: number
+    category: string
+    previewUrl?: string
+  }
+  const templates: SampleTemplateProps[] = [
+    {
+      id: '1',
+      name: 'Sample Template 1',
+      image: 'https://i.pinimg.com/1200x/88/c1/0d/88c10d4fb189790cb4cf673c9f604665.jpg',
+      price: 100,
+      category: 'Sample Category',
+    },
+    {
+      id: '2',
+      name: 'Sample Template 2',
+      image: 'https://i.pinimg.com/1200x/97/8d/71/978d715a8ede8b69000f3d0eaf6d8cbc.jpg',
+      price: 200,
+      category: 'Sample Category',
+    },
+    {
+      id: '3',
+      name: 'Sample Template 3',
+      image: 'https://i.pinimg.com/1200x/7a/07/ae/7a07aef417a460bd23706a6cb6976bc7.jpg',
+      price: 300,
+      category: 'Sample Category',
+    },
+  ]
   return (
     <div className="space-y-6">
       {/* Event Info Block */}
@@ -256,7 +322,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                   className="text-xs bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 shrink-0"
                   disabled={updateEventMutation.isPending}
                 >
-                  <Settings className="h-4 w-4 mr-1.5" />
+                  <SettingsIcon className="h-4 w-4 mr-1.5" />
                   {updateEventMutation.isPending ? 'កំពុងធ្វើ...' : `ស្ថានភាព: ${getStatusLabel(event.status)}`}
                 </Button>
               </DropdownMenuTrigger>
@@ -342,17 +408,25 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             <UserCheck className="h-3.5 w-3.5 mr-1.5" />
             ភ្ញៀវកិត្តយស
           </TabsTrigger>
+          <TabsTrigger value="payments" className="text-xs">
+            <DollarSign className="h-3.5 w-3.5 mr-1.5" />
+            ចំណងដៃ
+          </TabsTrigger>
           <TabsTrigger value="schedule" className="text-xs">
             <Calendar className="h-3.5 w-3.5 mr-1.5" />
             កាលវិភាគ
           </TabsTrigger>
           <TabsTrigger value="settings" className="text-xs">
-            <Settings className="h-3.5 w-3.5 mr-1.5" />
+            <SettingsIcon className="h-3.5 w-3.5 mr-1.5" />
             កែប្រែ
           </TabsTrigger>
           <TabsTrigger value="templates" className="text-xs">
             <FileText className="h-3.5 w-3.5 mr-1.5" />
             គំរូធៀបខ្ញុំ
+          </TabsTrigger>
+          <TabsTrigger value="sample-template" className="text-xs">
+            <FileText className="h-3.5 w-3.5 mr-1.5" />
+            ហាងគំរូធៀប
           </TabsTrigger>
           <TabsTrigger value="qr" className="text-xs">
             <QrCode className="h-3.5 w-3.5 mr-1.5" />
@@ -362,359 +436,79 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
         {/* ទូទៅ Tab - View Only */}
         <TabsContent value="overview" className="mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Event Title Block */}
-            <Card className="border border-gray-200 p-4 shadow-none">
-              <CardContent className="p-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <Info className="h-4 w-4 text-gray-600" />
-                  <CardTitle className="text-sm font-semibold text-black">Event Title</CardTitle>
-                </div>
-                <p className="text-sm text-black">{event.title}</p>
-              </CardContent>
-            </Card>
-
-            {/* Event Date & Time Block */}
-            <Card className="border border-gray-200 p-4 shadow-none">
-              <CardContent className="p-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-gray-600" />
-                  <CardTitle className="text-sm font-semibold text-black">Event Date & Time</CardTitle>
-                </div>
-                <p className="text-sm text-black">
-                  {formatDate(typeof event.date === 'string' ? event.date : event.date.toISOString())}
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Venue Block */}
-            <Card className="border border-gray-200 p-4 shadow-none">
-              <CardContent className="p-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <MapPin className="h-4 w-4 text-gray-600" />
-                  <CardTitle className="text-sm font-semibold text-black">Venue</CardTitle>
-                </div>
-                <p className="text-sm text-black">{event.venue}</p>
-              </CardContent>
-            </Card>
-
-            {/* Total Guests Block */}
-            <Card className="border border-gray-200 p-4 shadow-none">
-              <CardContent className="p-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <Users className="h-4 w-4 text-gray-600" />
-                  <CardTitle className="text-sm font-semibold text-black">Total Guests</CardTitle>
-                </div>
-                <p className="text-sm text-black">{event.guestCount} នាក់</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Recent Gifts/Donations Section */}
-          <div className="mt-6">
-            <CardTitle className="text-lg font-semibold text-black mb-2">ចំណងដៃថ្មីៗ</CardTitle>
-            <p className="text-sm text-gray-600 mb-4">បានទទួលចំណងដៃសរុបចំនួន {giftCount}នាក់</p>
-            
-            {giftCount > 0 ? (
-              <div className="space-y-3">
-                {guestsWithGifts.map((guest) => {
-                  const initial = guest.name.charAt(0).toUpperCase()
-                  const createdAt = new Date(guest.createdAt).toLocaleDateString('km-KH', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })
-                  return (
-                    <div key={guest.id} className="flex items-center justify-between py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-semibold text-gray-600">{initial}</span>
-              </div>
-              <div>
-                          <p className="text-sm font-semibold text-black">{guest.name}</p>
-                          <p className="text-xs text-gray-600">{createdAt}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <Badge variant="outline" className="text-xs">
-                          បានចង់ដៃ
-                        </Badge>
-                      </div>
-              </div>
-                  )
-                })}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-600 text-center py-4">មិនទាន់មានចំណងដៃ</p>
-            )}
-          </div>
+          <Overview 
+            event={event} 
+            guestsWithGifts={guestsWithGifts}
+            giftCount={giftCount}
+          />
         </TabsContent>
 
         {/* Guests Tab */}
         <TabsContent value="guests" className="mt-4">
-          <div className="space-y-4">
-            {/* Title */}
-            <h2 className="text-lg font-semibold text-black text-center">តារាងភ្ញៀវកិត្តយស</h2>
-            
-            {/* Search and Action Bar */}
-            <div className="flex items-center gap-3 flex-wrap">
-              <div className="flex-1 min-w-[200px]">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="ស្វែងរក"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 h-9 text-sm"
-                  />
-                </div>
-              </div>
-              <Button variant="outline" size="sm" className="text-xs h-9">
-                <Filter className="h-3.5 w-3.5 mr-1.5" />
-                ស្លាក
-              </Button>
-              <Button variant="outline" size="sm" className="text-xs h-9">
-                នាំចូល
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="text-xs h-9">
-                    ទាញយក
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem>Excel</DropdownMenuItem>
-                  <DropdownMenuItem>PDF</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <CreateGuestDrawer
-                open={isGuestDrawerOpen}
-                onOpenChange={setIsGuestDrawerOpen}
-                onSave={handleCreateGuest}
-                trigger={
-                  <Button size="sm" className="text-xs h-9" disabled={createGuestMutation.isPending}>
-                    <Plus className="h-3.5 w-3.5 mr-1.5" />
-                    {createGuestMutation.isPending ? 'Creating...' : 'បង្កើតភ្ញៀវថ្មី'}
-                  </Button>
-                }
-              />
-            </div>
-
-            {/* Table */}
-            <Card className="border border-gray-200 shadow-none">
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-gray-200">
-                        <th className="w-12 p-3 text-left">
-                          <Checkbox />
-                        </th>
-                        <th className="p-3 text-left text-sm font-semibold text-black">
-                          <div className="flex items-center gap-1">
-                            ឈ្មោះ
-                            <span className="text-gray-400">↕</span>
-                          </div>
-                        </th>
-                        <th className="p-3 text-left text-sm font-semibold text-black">ស្លាក</th>
-                        <th className="p-3 text-right text-sm font-semibold text-black">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredGuests.map((guest) => (
-                        <tr key={guest.id} className="border-b border-gray-200 last:border-b-0">
-                          <td className="p-3">
-                            <Checkbox />
-                          </td>
-                          <td className="p-3">
-                            <p className="text-sm font-semibold text-black">{guest.name}</p>
-                            {guest.email && (
-                              <p className="text-xs text-gray-500">{guest.email}</p>
-                            )}
-                            {guest.phone && (
-                              <p className="text-xs text-gray-500">{guest.phone}</p>
-                            )}
-                          </td>
-                          <td className="p-3">
-                            {guest.tag ? (
-                              <Badge className={`${getTagColor(guest.tag.color)} text-xs border`}>
-                                {guest.tag.label}
-                              </Badge>
-                            ) : (
-                              <span className="text-xs text-gray-400">-</span>
-                            )}
-                          </td>
-                          <td className="p-3">
-                            <div className="flex items-center justify-end gap-2">
-                              {guest.hasGivenGift ? (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="text-xs h-7 bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
-                                >
-                                  <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
-                                  រួចរាល់
-                                </Button>
-                              ) : (
-                                <GiftPaymentDrawer
-                                  guestName={guest.name}
-                                  guestId={guest.id}
-                                  open={selectedGuestForGift?.id === guest.id}
-                                  onOpenChange={(open) => {
-                                    if (!open) {
-                                      setSelectedGuestForGift(null)
-                                    } else {
-                                      setSelectedGuestForGift(guest)
-                                    }
-                                  }}
-                                  onSave={() => {
-                                    handleGiftPayment(guest.id)
-                                  }}
-                                  trigger={
-                                    <Button variant="outline" size="sm" className="text-xs h-7">
-                                      ចង់ដៃ
-                                    </Button>
-                                  }
-                                />
-                              )}
-                              {guest.hasGivenGift && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-xs h-7 w-7 p-0"
-                                  onClick={() => {
-                                    setSelectedGuestForView(guest)
-                                  }}
-                                  disabled={!guest.hasGivenGift}
-                                >
-                                  <Eye className="h-3.5 w-3.5" />
-                                </Button>
-                              )}
-                              {guest.hasGivenGift && selectedGuestForView?.id === guest.id && (
-                                <ViewGiftDrawer
-                                  guestName={guest.name}
-                                  gift={{
-                                    id: guest.id,
-                                    date: new Date(guest.updatedAt).toLocaleDateString('km-KH', {
-                                      year: 'numeric',
-                                      month: 'long',
-                                      day: 'numeric',
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                    }),
-                                    type: 'បានចង់ដៃ',
-                                  }}
-                                  open={selectedGuestForView?.id === guest.id}
-                                  onOpenChange={(open) => {
-                                    if (!open) {
-                                      setSelectedGuestForView(null)
-                                    }
-                                  }}
-                                />
-                              )}
-                              <Button variant="ghost" size="sm" className="text-xs h-7 w-7 p-0">
-                                <QrCode className="h-3.5 w-3.5" />
-                              </Button>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="text-xs h-7 w-7 p-0">
-                                    <MoreVertical className="h-3.5 w-3.5" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem 
-                                    onClick={() => router.push(`/dashboard/events/${id}/guests/${guest.id}/edit`)}
-                                  >
-                                    Edit
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    className="text-red-600"
-                                    onClick={() => handleDeleteGuest(guest.id)}
-                                    disabled={deleteGuestMutation.isPending}
-                                  >
-                                    {deleteGuestMutation.isPending ? 'Deleting...' : 'Delete'}
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="p-3 border-t border-gray-200 text-center">
-                  <p className="text-xs text-gray-600">សរុប {filteredGuests.length} / {guests.length} នាក់</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <Guests
+            displayGuests={displayGuests}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            filteredGuests={filteredGuests}
+            isGuestDrawerOpen={isGuestDrawerOpen}
+            onGuestDrawerOpenChange={setIsGuestDrawerOpen}
+            selectedGuestForGift={selectedGuestForGift}
+            onSelectedGuestForGiftChange={(guest) => setSelectedGuestForGift(guest)}
+            selectedGuestForView={selectedGuestForView}
+            onSelectedGuestForViewChange={(guest) => setSelectedGuestForView(guest)}
+            onCreateGuest={handleCreateGuest}
+            onGiftPayment={handleGiftPayment}
+            onDeleteGuest={handleDeleteGuest}
+            eventId={id}
+            router={router}
+            createGuestMutation={createGuestMutation}
+            updateGuestMutation={updateGuestMutation}
+            deleteGuestMutation={deleteGuestMutation}
+            getTagColor={getTagColor}
+          />
+        </TabsContent>
+        {/* Payments Tab */}
+        <TabsContent value="payments" className="mt-4">
+          <Payments 
+            payments={payments}
+            totalRiel={totalRiel}
+            totalDollars={totalDollars}
+            totalGuests={totalGuests}
+            contributingGuests={contributingGuests}
+          />
         </TabsContent>
 
         {/* Schedule Tab */}
         <TabsContent value="schedule" className="mt-4">
-          <Card className="border border-gray-200 shadow-none">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-black">កាលវិភាគ (Schedule)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">Schedule management coming soon...</p>
-            </CardContent>
-          </Card>
+          <Schedules />
         </TabsContent>
 
         {/* Settings Tab */}
         <TabsContent value="settings" className="mt-4">
-          <Card className="border border-gray-200 shadow-none">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-black">កែប្រែ (Settings)</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-black mb-1.5 block">Event Status</label>
-                <select
-                  defaultValue={event.status}
-                  className="w-full h-9 px-3 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 bg-white"
-                >
-                  <option value="draft">Draft</option>
-                  <option value="published">Published</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
-              <div className="pt-2">
-                <Button className="bg-black hover:bg-gray-800 text-white text-xs">
-                  Save Settings
-                </Button>
-            </div>
-            </CardContent>
-          </Card>
+          <Settings 
+            event={event}
+            onUpdateStatus={handleUpdateStatus}
+            updateEventMutation={updateEventMutation}
+          />
         </TabsContent>
 
         {/* Templates Tab */}
         <TabsContent value="templates" className="mt-4">
-          <Card className="border border-gray-200 shadow-none">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-black">គំរូធៀបខ្ញុំ (My Templates)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">Template management coming soon...</p>
-            </CardContent>
-          </Card>
+          <Templates />
+        </TabsContent>
+
+        {/* Sample Template Tab */}
+        <TabsContent value="sample-template" className="mt-4">
+          <SampleTemplate 
+            templates={templates}
+            onViewSample={handleViewSample}
+            onBuyNow={handleBuyNow}
+          />
         </TabsContent>
 
         {/* QR Code Tab */}
         <TabsContent value="qr" className="mt-4">
-          <Card className="border border-gray-200 shadow-none">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-black">បង្កើតQR (Generate QR)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">QR code generation coming soon...</p>
-            </CardContent>
-          </Card>
+          <QRGenerate />
         </TabsContent>
       </Tabs>
     </div>

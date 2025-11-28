@@ -1,0 +1,8 @@
+export { default as Overview } from './Overview'
+export { default as Guests } from './Guests'
+export { default as Schedules } from './Schedules'
+export { default as Settings } from './Settings'
+export { default as Templates } from './Templates'
+export { default as QRGenerate } from './QRGenerate'
+export { default as Payments } from './Payments'
+export { default as SampleTemplate } from './SampleTemplate'
