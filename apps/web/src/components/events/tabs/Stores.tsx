@@ -15,17 +15,17 @@ interface Template {
   previewUrl?: string
 }
 
-interface SampleTemplateProps {
+interface StoresProps {
   templates?: Template[]
   onViewSample?: (templateId: string) => void
   onBuyNow?: (templateId: string) => void
 }
 
-export default function SampleTemplate({
+export default function Stores({
   templates = [],
   onViewSample,
   onBuyNow,
-}: SampleTemplateProps) {
+}: StoresProps) {
   const defaultTemplates: Template[] = [
     {
       id: '1',
