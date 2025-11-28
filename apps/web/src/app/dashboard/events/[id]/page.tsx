@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Calendar, Users, MapPin, Settings, FileText, QrCode, Info, UserCheck, Trash2, Eye, MoreVertical, CheckCircle2, Search, Filter, Plus, Loader2, ArrowLeft } from 'lucide-react'
+import { Calendar, Users, MapPin, Settings, FileText, QrCode, Info, UserCheck, Eye, MoreVertical, CheckCircle2, Search, Filter, Plus, Loader2, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -18,7 +18,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useEvent, useDeleteEvent } from '@/hooks/api/useEvent'
+import { useEvent, useUpdateEvent } from '@/hooks/api/useEvent'
+import type { EventStatus } from '@/types/event'
 import { useGuestsByEvent, useCreateGuest, useUpdateGuest, useDeleteGuest } from '@/hooks/api/useGuest'
 import type { Guest as GuestType } from '@/types/guest'
 
@@ -49,7 +50,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   const createGuestMutation = useCreateGuest()
   const updateGuestMutation = useUpdateGuest()
   const deleteGuestMutation = useDeleteGuest()
-  const deleteEventMutation = useDeleteEvent()
+  const updateEventMutation = useUpdateEvent()
   
   const [isGuestDrawerOpen, setIsGuestDrawerOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -117,12 +118,22 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     )
   }
   
-  // Handle delete event
-  const handleDeleteEvent = async () => {
-    if (confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-      await deleteEventMutation.mutateAsync(id)
-      router.push('/dashboard/events')
+  // Handle update event status
+  const handleUpdateStatus = async (newStatus: EventStatus) => {
+    await updateEventMutation.mutateAsync({
+      id,
+      data: { status: newStatus },
+    })
+  }
+
+  const getStatusLabel = (status: EventStatus) => {
+    const labels: Record<EventStatus, string> = {
+      draft: 'ព្រាង',
+      published: 'បានចុះផ្សាយ',
+      completed: 'បានបញ្ចប់',
+      cancelled: 'បានលុបចោល',
     }
+    return labels[status]
   }
   
   // Handle create guest
@@ -219,66 +230,107 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
   return (
     <div className="space-y-6">
       {/* Event Info Block */}
-      <Card className="border border-gray-200 shadow-none">
-        <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <CardTitle className="text-xl font-bold text-black">{event.title}</CardTitle>
-                <Badge variant={getStatusColor(event.status)} className="capitalize">
+      <div
+        className="relative bg-cover bg-center rounded-xl overflow-hidden border border-gray-200 shadow-lg"
+        style={{ 
+          backgroundImage: `url(${event.coverImage})`,
+          minHeight: '280px'
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60 z-0" />
+       <Card className="shadow-none border-none bg-transparent z-10 absolute inset-0 w-full h-full">
+         <div className="flex items-start justify-between gap-4 px-4">
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center gap-3 flex-wrap">
+                <CardTitle className="text-2xl md:text-3xl font-bold text-white drop-shadow-lg">{event.title}</CardTitle>
+                <Badge variant={getStatusColor(event.status)} className="capitalize text-xs px-2.5 py-1 bg-white/10 backdrop-blur-sm border-white/20 text-white">
                   {event.status}
                 </Badge>
               </div>
-              {event.description && (
-                <p className="text-sm text-gray-600 mb-3">{event.description}</p>
-              )}
             </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="text-xs"
-              onClick={handleDeleteEvent}
-              disabled={deleteEventMutation.isPending}
-            >
-              <Trash2 className="h-4 w-4 mr-1.5" />
-              {deleteEventMutation.isPending ? 'Deleting...' : 'Delete'}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 shrink-0"
+                  disabled={updateEventMutation.isPending}
+                >
+                  <Settings className="h-4 w-4 mr-1.5" />
+                  {updateEventMutation.isPending ? 'កំពុងធ្វើ...' : `ស្ថានភាព: ${getStatusLabel(event.status)}`}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[180px] z-50">
+                {(['draft', 'published', 'completed', 'cancelled'] as EventStatus[]).map((status) => (
+                  <DropdownMenuItem
+                    key={status}
+                    onSelect={(e) => {
+                      e.preventDefault()
+                      if (event.status !== status && !updateEventMutation.isPending) {
+                        handleUpdateStatus(status)
+                      }
+                    }}
+                    disabled={event.status === status || updateEventMutation.isPending}
+                    className={event.status === status ? 'bg-gray-100' : 'cursor-pointer'}
+                  >
+                    <span className="flex-1">{getStatusLabel(status)}</span>
+                    {event.status === status && (
+                      <CheckCircle2 className="h-4 w-4 ml-auto" />
+                    )}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 text-gray-600 mt-0.5 shrink-0" />
-    <div>
-                <p className="text-xs text-gray-600 mb-0.5">Event Date</p>
-                <p className="text-sm font-semibold text-black">{formatDate(typeof event.date === 'string' ? event.date : event.date.toISOString())}</p>
-        </div>
-      </div>
-            <div className="flex items-start gap-3">
-              <MapPin className="h-5 w-5 text-gray-600 mt-0.5 shrink-0" />
-                <div>
-                <p className="text-xs text-gray-600 mb-0.5">Venue</p>
-                <p className="text-sm font-semibold text-black">{event.venue}</p>
+           {/* box content info */}
+         <div className="px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 hover:bg-white/15 transition-colors">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="h-4 w-4 text-white/90" />
+                <p className="text-xs font-medium text-white/80 uppercase tracking-wide">កាលបរិច្ឆេទ</p>
               </div>
+              <p className="text-base font-bold text-white">
+                {formatDate(typeof event.date === 'string' ? event.date : event.date.toISOString())}
+              </p>
             </div>
-            <div className="flex items-start gap-3">
-              <Users className="h-5 w-5 text-gray-600 mt-0.5 shrink-0" />
-                <div>
-                <p className="text-xs text-gray-600 mb-0.5">Guests</p>
-                <p className="text-sm font-semibold text-black">{event.guestCount} នាក់</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 hover:bg-white/15 transition-colors">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin className="h-4 w-4 text-white/90" />
+                <p className="text-xs font-medium text-white/80 uppercase tracking-wide">ទីតាំង</p>
               </div>
+              <p className="text-base font-bold text-white">{event.venue}</p>
             </div>
-            <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 text-gray-600 mt-0.5 shrink-0" />
-                <div>
-                <p className="text-xs text-gray-600 mb-0.5">Created</p>
-                <p className="text-sm font-semibold text-black">{formatDateTime(typeof event.createdAt === 'string' ? event.createdAt : event.createdAt.toISOString())}</p>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 hover:bg-white/15 transition-colors">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="h-4 w-4 text-white/90" />
+                <p className="text-xs font-medium text-white/80 uppercase tracking-wide">ភ្ញៀវ</p>
               </div>
+              <p className="text-base font-bold text-white">{event.guestCount} នាក់</p>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 hover:bg-white/15 transition-colors">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="h-4 w-4 text-white/90" />
+                <p className="text-xs font-medium text-white/80 uppercase tracking-wide">បានបង្កើត</p>
+              </div>
+              <p className="text-base font-bold text-white">
+                {formatDateTime(typeof event.createdAt === 'string' ? event.createdAt : event.createdAt.toISOString())}
+              </p>
             </div>
           </div>
-        </CardContent>
+         </div>
+         
+         {/* Description with divider */}
+         {event.description && (
+           <>
+             <div className="px-4">
+             <div className="border-t border-white/20 mb-4"></div>
+               <p className="text-sm md:text-base text-white/95 drop-shadow-md">{event.description}</p>
+             </div>
+           </>
+         )}
       </Card>
-
+      </div>
       {/* Tabs Section */}
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
