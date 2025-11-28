@@ -11,7 +11,8 @@ import {
   UserCheck,
   Component,
   ChevronRight,
-  type LucideIcon
+  type LucideIcon,
+  BarChart3
 } from 'lucide-react'
 import * as Collapsible from '@radix-ui/react-collapsible'
 import {
@@ -37,6 +38,7 @@ interface MenuItem {
 
 const MENU_ITEMS: readonly MenuItem[] = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/admin/users', label: 'Users', icon: Users },
   { 
     href: '/admin/subscriptions', 
