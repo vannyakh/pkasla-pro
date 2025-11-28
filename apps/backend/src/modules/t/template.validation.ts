@@ -47,36 +47,50 @@ export const updateTemplateSchema = z.object({
   }),
   body: z.object({
     name: z
-      .string()
-      .min(1, { message: 'Name cannot be empty' })
-      .max(100, { message: 'Name must not exceed 100 characters' })
-      .trim()
-      .regex(/^[a-z0-9-]+$/, { message: 'Name must contain only lowercase letters, numbers, and hyphens' })
-      .optional(),
+      .preprocess(
+        (val) => (val === '' || val === null ? undefined : val),
+        z
+          .string()
+          .trim()
+          .min(1, { message: 'Name cannot be empty' })
+          .max(100, { message: 'Name must not exceed 100 characters' })
+          .regex(/^[a-z0-9-]+$/, { message: 'Name must contain only lowercase letters, numbers, and hyphens' })
+          .optional()
+      ),
     title: z
-      .string()
-      .min(1, { message: 'Title cannot be empty' })
-      .max(200, { message: 'Title must not exceed 200 characters' })
-      .trim()
-      .optional(),
+      .preprocess(
+        (val) => (val === '' || val === null ? undefined : val),
+        z
+          .string()
+          .trim()
+          .min(1, { message: 'Title cannot be empty' })
+          .max(200, { message: 'Title must not exceed 200 characters' })
+          .optional()
+      ),
     category: z
-      .string()
-      .max(50, { message: 'Category must not exceed 50 characters' })
-      .trim()
-      .optional(),
+      .preprocess(
+        (val) => (val === '' || val === null ? undefined : val),
+        z
+          .string()
+          .trim()
+          .max(50, { message: 'Category must not exceed 50 characters' })
+          .optional()
+      ),
     price: z
       .number()
       .min(0, { message: 'Price must be a positive number' })
       .optional(),
-    isPremium: z
-      .boolean()
-      .optional(),
+    isPremium: z.boolean().optional(),
     previewImage: z
-      .union([
-        z.string().url({ message: 'Preview image must be a valid URL' }),
-        z.string().optional(),
-      ])
-      .optional(),
+      .preprocess(
+        (val) => (val === '' || val === null ? undefined : val),
+        z
+          .union([
+            z.string().url({ message: 'Preview image must be a valid URL' }),
+            z.string().optional(),
+          ])
+          .optional()
+      ),
   }),
 });
 

@@ -11,10 +11,44 @@ export const validateRequest =
     });
 
     if (!result.success) {
+      const formattedErrors: {
+        formErrors: string[];
+        fieldErrors: Record<string, string[]>;
+      } = {
+        formErrors: [],
+        fieldErrors: {},
+      };
+
+      // Process Zod errors to show proper field paths
+      result.error.issues.forEach((issue) => {
+        const path = issue.path.join('.');
+        
+        // If path starts with 'body.', extract just the field name
+        if (path.startsWith('body.')) {
+          const fieldName = path.replace('body.', '');
+          if (!formattedErrors.fieldErrors[fieldName]) {
+            formattedErrors.fieldErrors[fieldName] = [];
+          }
+          formattedErrors.fieldErrors[fieldName].push(issue.message);
+        } else if (path === 'body') {
+          // Handle body-level errors
+          if (!formattedErrors.fieldErrors[path]) {
+            formattedErrors.fieldErrors[path] = [];
+          }
+          formattedErrors.fieldErrors[path].push(issue.message);
+        } else {
+          // Handle params, query, or other paths
+          if (!formattedErrors.fieldErrors[path]) {
+            formattedErrors.fieldErrors[path] = [];
+          }
+          formattedErrors.fieldErrors[path].push(issue.message);
+        }
+      });
+
       return res.status(httpStatus.BAD_REQUEST).json({
         success: false,
         message: 'Validation error',
-        errors: result.error.flatten(),
+        errors: formattedErrors,
       });
     }
 

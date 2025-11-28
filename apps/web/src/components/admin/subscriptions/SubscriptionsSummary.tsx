@@ -3,21 +3,29 @@
 import React from 'react'
 import { CreditCard } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Billing } from '@/types/billing'
+import type { UserSubscription } from '@/types/user-subscription'
+import type { SubscriptionPlan } from '@/types/subscription-plan'
 
 interface SubscriptionsSummaryProps {
-  subscriptions: Billing[]
+  subscriptions: UserSubscription[]
 }
 
 const formatCurrency = (amount: number) => {
   return `$${amount.toFixed(2)}`
 }
 
+const getPlanPrice = (planId: string | SubscriptionPlan): number => {
+  if (typeof planId === 'object' && planId !== null) {
+    return planId.price || 0
+  }
+  return 0
+}
+
 export function SubscriptionsSummary({ subscriptions }: SubscriptionsSummaryProps) {
   const totalRevenue = React.useMemo(() => {
     return subscriptions
       .filter((sub) => sub.status === 'active')
-      .reduce((sum, sub) => sum + sub.amount, 0)
+      .reduce((sum, sub) => sum + getPlanPrice(sub.planId), 0)
   }, [subscriptions])
 
   const activeCount = React.useMemo(() => {

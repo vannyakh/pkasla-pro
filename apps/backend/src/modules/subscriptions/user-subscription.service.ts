@@ -196,6 +196,13 @@ class UserSubscriptionService {
       autoRenew: true,
     });
   }
+
+  async list(filter: any = {}): Promise<UserSubscriptionResponse[]> {
+    const subscriptions = await userSubscriptionRepository.list(filter);
+    return subscriptions
+      .map((sub) => sanitizeUserSubscription(sub as unknown as UserSubscriptionDocument))
+      .filter(Boolean) as UserSubscriptionResponse[];
+  }
 }
 
 export const userSubscriptionService = new UserSubscriptionService();

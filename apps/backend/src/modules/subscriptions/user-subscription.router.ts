@@ -10,6 +10,7 @@ import {
   cancelSubscriptionHandler,
   getUserSubscriptionsHandler,
   changeSubscriptionHandler,
+  listAllSubscriptionsHandler,
 } from './user-subscription.controller';
 import {
   createUserSubscriptionSchema,
@@ -56,6 +57,13 @@ router.get(
   authorize('admin'),
   validateRequest(getUserSubscriptionsSchema),
   asyncHandler(getUserSubscriptionsHandler),
+);
+
+// List all subscriptions (Admin only)
+router.get(
+  '/admin/all',
+  authorize('admin'),
+  asyncHandler(listAllSubscriptionsHandler),
 );
 
 export const userSubscriptionRouter: Router = router;

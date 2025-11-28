@@ -179,23 +179,37 @@ export function useUpdateTemplate() {
         formData.append('previewImage', previewImage);
 
         // Use axiosInstance directly for PATCH with FormData
-        const response = await axiosInstance.patch<Template, AxiosResponse<ApiResponse<Template>>>(
-          `/admin/t/${id}`,
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data',
-            },
+        // The interceptor will format errors, so catch and rethrow with formatted message
+        try {
+          const response = await axiosInstance.patch<Template, AxiosResponse<ApiResponse<Template>>>(
+            `/admin/t/${id}`,
+            formData,
+            {
+              headers: {
+                'Content-Type': 'multipart/form-data',
+              },
+            }
+          );
+          const responseData = response.data;
+          if (!responseData.success) {
+            throw new Error(responseData.error || 'Failed to update template');
           }
-        );
-        const responseData = response.data;
-        if (!responseData.success) {
-          throw new Error(responseData.error || 'Failed to update template');
+          if (!responseData.data) {
+            throw new Error('Template data not found');
+          }
+          return responseData.data;
+          
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+          // The axios interceptor formats errors, so check for ApiResponse format
+          if (error?.error) {
+            throw new Error(error.error);
+          }
+          if (error?.response?.data?.error) {
+            throw new Error(error.response.data.error);
+          }
+          throw error instanceof Error ? error : new Error('Failed to update template');
         }
-        if (!responseData.data) {
-          throw new Error('Template data not found');
-        }
-        return responseData.data;
       } else {
         // No file, use regular JSON PATCH
         const response = await api.patch<Template>(`/admin/t/${id}`, data);

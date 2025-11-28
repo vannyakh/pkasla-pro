@@ -1,20 +1,33 @@
 'use client'
 
-import { memo } from 'react'
-import { Bell, Search, Trash2 } from 'lucide-react'
+import { memo, useState } from 'react'
+import { Bell, Search, Trash2, AlertTriangle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { SidebarTrigger } from '@/components/ui/sidebar'
-import ProfileMenu from '@/components/layout/ProfileMenu'
+import AdminProfileMenu from '@/components/layout/AdminProfileMenu'
 import { useClearCache } from '@/hooks/api/useAdmin'
 import { Button } from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 
 function AdminHeader() {
+  const [open, setOpen] = useState(false)
   const clearCacheMutation = useClearCache()
 
   const handleClearCache = () => {
-    if (window.confirm('Are you sure you want to clear all cache? This will refresh all data.')) {
-      clearCacheMutation.mutate()
-    }
+    clearCacheMutation.mutate(undefined, {
+      onSuccess: () => {
+        setOpen(false)
+      },
+    })
   }
 
   return (
@@ -42,7 +55,7 @@ function AdminHeader() {
           type="button"
           variant="ghost"
           size="sm"
-          onClick={handleClearCache}
+          onClick={() => setOpen(true)}
           disabled={clearCacheMutation.isPending}
           className="h-8 px-2 text-xs hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-1"
           aria-label="Clear cache"
@@ -60,8 +73,45 @@ function AdminHeader() {
           <Bell className="h-4 w-4 text-gray-600" aria-hidden="true" />
         </button>
 
-        <ProfileMenu />
+        <AdminProfileMenu />
       </div>
+
+      <AlertDialog open={open} onOpenChange={setOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <AlertDialogTitle>Clear All Cache</AlertDialogTitle>
+                <AlertDialogDescription className="mt-1">
+                  Are you sure you want to clear all cache? This will refresh all data and may temporarily slow down the system.
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={clearCacheMutation.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleClearCache}
+              disabled={clearCacheMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {clearCacheMutation.isPending ? (
+                <>
+                  <span className="mr-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Clearing...
+                </>
+              ) : (
+                'Clear Cache'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   )
 }

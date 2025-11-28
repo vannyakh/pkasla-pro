@@ -65,6 +65,19 @@ export const getUserSubscriptionsHandler = async (req: Request, res: Response) =
 };
 
 /**
+ * List all subscriptions (Admin only)
+ */
+export const listAllSubscriptionsHandler = async (req: Request, res: Response) => {
+  const { status } = req.query;
+  const filter: any = {};
+  if (status && typeof status === 'string') {
+    filter.status = status;
+  }
+  const subscriptions = await userSubscriptionService.list(filter);
+  return res.status(httpStatus.OK).json(buildSuccessResponse(subscriptions));
+};
+
+/**
  * Upgrade or downgrade subscription
  */
 export const changeSubscriptionHandler = async (req: Request, res: Response) => {

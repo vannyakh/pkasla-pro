@@ -108,11 +108,44 @@ axiosInstance.interceptors.response.use(
 
     // Handle other errors
     if (error.response) {
+      // Check for validation errors with formatted field errors
+      const responseData = error.response.data;
+      let errorMessage = responseData?.error || responseData?.message || 'An error occurred';
+      
+      // If there are validation errors with fieldErrors, format them
+      if (responseData?.errors?.fieldErrors && Object.keys(responseData.errors.fieldErrors).length > 0) {
+        const fieldErrors = responseData.errors.fieldErrors;
+        const errorMessages: string[] = [];
+        
+        // Collect all field error messages
+        Object.entries(fieldErrors).forEach(([field, messages]) => {
+          if (Array.isArray(messages) && messages.length > 0) {
+            // Capitalize field name and join messages
+            const fieldName = field.charAt(0).toUpperCase() + field.slice(1);
+            errorMessages.push(`${fieldName}: ${messages.join(', ')}`);
+          }
+        });
+        
+        // If there are form-level errors, add them too
+        if (responseData.errors.formErrors && Array.isArray(responseData.errors.formErrors) && responseData.errors.formErrors.length > 0) {
+          errorMessages.push(...responseData.errors.formErrors);
+        }
+        
+        // Combine all error messages
+        if (errorMessages.length > 0) {
+          errorMessage = errorMessages.join('. ');
+        }
+      } else if (responseData?.errors?.formErrors && Array.isArray(responseData.errors.formErrors) && responseData.errors.formErrors.length > 0) {
+        // Only form-level errors
+        errorMessage = responseData.errors.formErrors.join('. ');
+      }
+      
       // Server responded with error status
       const errorResponse: ApiResponse<never> = {
         success: false,
-        error: error.response.data?.error || error.response.data?.message || 'An error occurred',
-        message: error.response.data?.message,
+        error: errorMessage,
+        message: responseData?.message,
+        errors: responseData?.errors, // Include errors object for detailed handling if needed
       };
       return Promise.reject(errorResponse);
     } else if (error.request) {

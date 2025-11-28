@@ -27,6 +27,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'pub-09e3e90eed9b4e6198abb65caba89c7e.r2.dev',
       },
+      {
+        protocol: 'https',
+        hostname: 'avatar.iran.liara.run',
+      }
     
     ],
   },

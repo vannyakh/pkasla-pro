@@ -12,11 +12,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Billing } from '@/types/billing'
+import type { UserSubscription } from '@/types/user-subscription'
+import type { SubscriptionPlan } from '@/types/subscription-plan'
 
 interface SubscriptionsTableProps {
-  subscriptions: Billing[]
-  userNames: Record<string, string>
+  subscriptions: UserSubscription[]
   currentPage: number
   totalPages: number
   pageSize: number
@@ -45,30 +45,45 @@ const getStatusColor = (status: string) => {
       return 'secondary'
     case 'expired':
       return 'destructive'
+    case 'pending':
+      return 'outline'
     default:
       return 'secondary'
   }
 }
 
-const getPlanColor = (plan: string) => {
-  switch (plan) {
-    case 'enterprise':
-      return 'default'
-    case 'premium':
-      return 'secondary'
-    case 'basic':
-      return 'outline'
-    default:
-      return 'outline'
+const getPlanName = (planId: string | SubscriptionPlan): string => {
+  if (typeof planId === 'object' && planId !== null) {
+    return planId.displayName || planId.name || 'Unknown'
   }
+  return 'Unknown'
+}
+
+const getPlanPrice = (planId: string | SubscriptionPlan): number => {
+  if (typeof planId === 'object' && planId !== null) {
+    return planId.price || 0
+  }
+  return 0
+}
+
+const getUserName = (userId: string | { id?: string; name?: string; email?: string }): string => {
+  if (typeof userId === 'object' && userId !== null) {
+    return userId.name || userId.email || 'Unknown User'
+  }
+  return `User ${userId}`
+}
+
+const getUserEmail = (userId: string | { id?: string; name?: string; email?: string }): string | undefined => {
+  if (typeof userId === 'object' && userId !== null) {
+    return userId.email
+  }
+  return undefined
 }
 
 export function SubscriptionsTable({
   subscriptions,
-  userNames,
   currentPage,
   totalPages,
-  pageSize,
   startIndex,
   totalItems,
   onPageChange,
@@ -86,55 +101,80 @@ export function SubscriptionsTable({
               <TableHead className="text-xs font-semibold text-black">No</TableHead>
               <TableHead className="text-xs font-semibold text-black">User</TableHead>
               <TableHead className="text-xs font-semibold text-black">Plan</TableHead>
-              <TableHead className="text-xs font-semibold text-black">Amount</TableHead>
+              <TableHead className="text-xs font-semibold text-black">Price</TableHead>
               <TableHead className="text-xs font-semibold text-black">Status</TableHead>
-              <TableHead className="text-xs font-semibold text-black">Next Billing</TableHead>
+              <TableHead className="text-xs font-semibold text-black">Start Date</TableHead>
+              <TableHead className="text-xs font-semibold text-black">End Date</TableHead>
+              <TableHead className="text-xs font-semibold text-black">Auto Renew</TableHead>
               <TableHead className="text-xs font-semibold text-black">Created</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {subscriptions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-xs text-gray-500">
+                <TableCell colSpan={9} className="text-center py-8 text-xs text-gray-500">
                   No subscriptions found
                 </TableCell>
               </TableRow>
             ) : (
-              subscriptions.map((subscription, index) => (
-                <TableRow key={subscription.id} className="border-gray-200">
-                  <TableCell className="text-xs text-black font-medium">
-                    {startIndex + index + 1}
-                  </TableCell>
-                  <TableCell className="text-xs text-black font-medium">
-                    {userNames[subscription.userId] || `User ${subscription.userId}`}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={getPlanColor(subscription.plan)}
-                      className="text-xs capitalize"
-                    >
-                      {subscription.plan}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-xs text-black font-medium">
-                    {formatCurrency(subscription.amount)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={getStatusColor(subscription.status)}
-                      className="text-xs capitalize"
-                    >
-                      {subscription.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-xs text-gray-600">
-                    {formatDate(subscription.nextBillingDate)}
-                  </TableCell>
-                  <TableCell className="text-xs text-gray-600">
-                    {formatDate(subscription.createdAt)}
-                  </TableCell>
-                </TableRow>
-              ))
+              subscriptions.map((subscription, index) => {
+                const userName = getUserName(subscription.userId)
+                const userEmail = getUserEmail(subscription.userId)
+                const planName = getPlanName(subscription.planId)
+                const planPrice = getPlanPrice(subscription.planId)
+
+                return (
+                  <TableRow key={subscription.id} className="border-gray-200">
+                    <TableCell className="text-xs text-black font-medium">
+                      {startIndex + index + 1}
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      <div className="flex flex-col">
+                        <span className="text-black font-medium">{userName}</span>
+                        {userEmail && (
+                          <span className="text-gray-500 text-[10px]">{userEmail}</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="text-xs">
+                        {planName}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-black font-medium">
+                      {formatCurrency(planPrice)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={getStatusColor(subscription.status)}
+                        className="text-xs capitalize"
+                      >
+                        {subscription.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-gray-600">
+                      {formatDate(subscription.startDate)}
+                    </TableCell>
+                    <TableCell className="text-xs text-gray-600">
+                      {formatDate(subscription.endDate)}
+                    </TableCell>
+                    <TableCell className="text-xs text-gray-600">
+                      {subscription.autoRenew ? (
+                        <Badge variant="outline" className="text-xs bg-green-50 text-green-700">
+                          Yes
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs">
+                          No
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-xs text-gray-600">
+                      {formatDate(subscription.createdAt)}
+                    </TableCell>
+                  </TableRow>
+                )
+              })
             )}
           </TableBody>
         </Table>
