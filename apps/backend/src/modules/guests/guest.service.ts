@@ -16,6 +16,7 @@ export interface CreateGuestInput {
   tag?: string;
   address?: string;
   province?: string;
+  photo?: string;
   hasGivenGift?: boolean;
   status?: GuestStatus;
 }
@@ -29,6 +30,7 @@ export interface UpdateGuestInput {
   tag?: string;
   address?: string;
   province?: string;
+  photo?: string;
   hasGivenGift?: boolean;
   status?: GuestStatus;
 }
@@ -40,12 +42,14 @@ export interface GuestResponse {
   phone?: string;
   eventId: string | { id: string; title: string; date: Date; venue: string; hostId: string | object };
   userId?: string | { id: string; name: string; email: string; avatar?: string };
+  createdBy?: string | { id: string; name: string; email: string; avatar?: string };
   status: GuestStatus;
   occupation?: string;
   notes?: string;
   tag?: string;
   address?: string;
   province?: string;
+  photo?: string;
   hasGivenGift: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -100,11 +104,25 @@ export const sanitizeGuest = (guest: GuestSource): GuestResponse | null => {
     userId = rest.userId.toString();
   }
 
+  // Handle populated createdBy
+  let createdBy: string | { id: string; name: string; email: string; avatar?: string } | undefined;
+  if (rest.createdBy && typeof rest.createdBy === 'object' && rest.createdBy._id) {
+    createdBy = {
+      id: rest.createdBy._id.toString(),
+      name: rest.createdBy.name,
+      email: rest.createdBy.email,
+      avatar: rest.createdBy.avatar,
+    };
+  } else if (rest.createdBy) {
+    createdBy = rest.createdBy.toString();
+  }
+
   return {
-    ...(rest as Omit<GuestResponse, 'id' | 'eventId' | 'userId'>),
+    ...(rest as Omit<GuestResponse, 'id' | 'eventId' | 'userId' | 'createdBy'>),
     id: (_id ?? (rest as Record<string, any>).id).toString(),
     eventId,
     userId,
+    createdBy,
     hasGivenGift: rest.hasGivenGift ?? false,
   } as GuestResponse;
 };
@@ -158,6 +176,10 @@ class GuestService {
     };
     if (userId) {
       createPayload.userId = new Types.ObjectId(userId);
+    }
+    // Store who created this guest
+    if (hostId) {
+      createPayload.createdBy = new Types.ObjectId(hostId);
     }
     const guest = await guestRepository.create(createPayload);
     

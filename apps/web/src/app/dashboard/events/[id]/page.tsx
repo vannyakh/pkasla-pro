@@ -232,37 +232,6 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
     }
   }
 
-  // mockup data for payments
-  interface PaymentProps {
-    id: string
-    guestName: string
-    amount: number
-    currency: 'USD' | 'KHR'
-    method: 'KHQR' | 'Cash' | 'Bank Transfer'
-    createdAt: string | Date
-  }
-  const payments: PaymentProps[] = [
-    {
-      id: '1',
-      guestName: 'John Doe',
-      amount: 100,
-      currency: 'KHR',
-      method: 'KHQR',
-      createdAt: new Date(),
-    },
-    {
-      id: '2',
-      guestName: 'Jane Doe',
-      amount: 200,
-      currency: 'USD',
-      method: 'Cash',
-      createdAt: new Date(),
-    },
-  ]
-  const totalRiel = 0
-  const totalDollars = 0
-  const totalGuests = 0
-  const contributingGuests = 0
 
   // mockup data for stores template
   const handleViewSample = (templateId: string) => {
@@ -582,13 +551,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
         </TabsContent>
         {/* Payments Tab */}
         <TabsContent value="payments" className="mt-4 md:mt-4 mb-16 md:mb-4">
-          <Payments 
-            payments={payments}
-            totalRiel={totalRiel}
-            totalDollars={totalDollars}
-            totalGuests={totalGuests}
-            contributingGuests={contributingGuests}
-          />
+          <Payments eventId={id} />
         </TabsContent>
 
         {/* Schedule Tab */}

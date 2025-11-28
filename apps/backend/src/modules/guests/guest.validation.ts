@@ -50,6 +50,11 @@ export const createGuestSchema = z.object({
       .max(100, { message: 'Province must not exceed 100 characters' })
       .trim()
       .optional(),
+    photo: z
+      .string()
+      .url({ message: 'Photo must be a valid URL' })
+      .optional()
+      .or(z.literal('')),
     hasGivenGift: z.boolean().optional().default(false),
     status: guestStatusEnum.optional().default('pending'),
   }),
@@ -105,6 +110,11 @@ export const updateGuestSchema = z.object({
       .max(100, { message: 'Province must not exceed 100 characters' })
       .trim()
       .optional(),
+    photo: z
+      .string()
+      .url({ message: 'Photo must be a valid URL' })
+      .optional()
+      .or(z.literal('')),
     hasGivenGift: z.boolean().optional(),
     status: guestStatusEnum.optional(),
   }),

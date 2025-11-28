@@ -8,12 +8,14 @@ export interface GuestDocument extends Document {
   phone?: string;
   eventId: Types.ObjectId;
   userId?: Types.ObjectId; // If guest is a registered user
+  createdBy?: Types.ObjectId; // User who added/created this guest
   status: GuestStatus;
   occupation?: string;
   notes?: string;
   tag?: string; // e.g., 'bride', 'groom'
   address?: string;
   province?: string;
+  photo?: string; // URL to guest photo
   hasGivenGift?: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -48,6 +50,11 @@ const guestSchema = new Schema<GuestDocument>(
       ref: 'User',
       index: true,
     },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      index: true,
+    },
     status: {
       type: String,
       enum: ['pending', 'confirmed', 'declined'],
@@ -74,6 +81,10 @@ const guestSchema = new Schema<GuestDocument>(
       type: String,
       trim: true,
     },
+    photo: {
+      type: String,
+      trim: true,
+    },
     hasGivenGift: {
       type: Boolean,
       default: false,
@@ -86,6 +97,7 @@ const guestSchema = new Schema<GuestDocument>(
 guestSchema.index({ eventId: 1, status: 1 });
 guestSchema.index({ eventId: 1, email: 1 });
 guestSchema.index({ eventId: 1, phone: 1 });
+guestSchema.index({ createdBy: 1, eventId: 1 });
 // guestSchema.index({ userId: 1, eventId: 1 }, { unique: true, sparse: true });
 
 guestSchema.set('toJSON', {

@@ -10,12 +10,14 @@ export class GuestRepository {
     return GuestModel.findById(id)
       .populate('eventId', 'title date venue hostId')
       .populate('userId', 'name email avatar')
+      .populate('createdBy', 'name email avatar')
       .lean();
   }
 
   findByEventId(eventId: string) {
     return GuestModel.find({ eventId })
       .populate('userId', 'name email avatar')
+      .populate('createdBy', 'name email avatar')
       .sort({ createdAt: -1 })
       .lean();
   }
@@ -27,6 +29,7 @@ export class GuestRepository {
     }
     return GuestModel.find(filter)
       .populate('eventId', 'title date venue hostId')
+      .populate('createdBy', 'name email avatar')
       .sort({ createdAt: -1 })
       .lean();
   }
@@ -43,6 +46,7 @@ export class GuestRepository {
     return GuestModel.findByIdAndUpdate(id, payload, { new: true })
       .populate('eventId', 'title date venue hostId')
       .populate('userId', 'name email avatar')
+      .populate('createdBy', 'name email avatar')
       .lean();
   }
 
@@ -58,6 +62,7 @@ export class GuestRepository {
     return GuestModel.find(filter)
       .populate('eventId', 'title date venue hostId')
       .populate('userId', 'name email avatar')
+      .populate('createdBy', 'name email avatar')
       .sort({ createdAt: -1 })
       .lean();
   }
@@ -71,7 +76,8 @@ export class GuestRepository {
     const skip = (page - 1) * pageSize;
     const query = GuestModel.find(filter)
       .populate('eventId', 'title date venue hostId')
-      .populate('userId', 'name email avatar');
+      .populate('userId', 'name email avatar')
+      .populate('createdBy', 'name email avatar');
     if (sort) {
       query.sort(sort);
     }

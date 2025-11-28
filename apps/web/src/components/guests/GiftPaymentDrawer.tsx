@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { CreditCard, QrCode, Camera, Upload, X, FileText } from 'lucide-react'
+import Image from 'next/image'
+import { CreditCard, QrCode, Camera, Upload, X, FileText, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,22 +16,17 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer'
-
-interface GiftFormData {
-  paymentMethod: 'cash' | 'khqr'
-  currency: 'khr' | 'usd'
-  amount: string
-  note: string
-  file: File | null
-}
+import { useCreateGift, useUpdateGift } from '@/hooks/api/useGift'
+import type { CreateGiftDto, UpdateGiftDto, Gift } from '@/types/gift'
 
 interface GiftPaymentDrawerProps {
   guestName: string
   guestId: string
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSave: (formData: GiftFormData) => void
+  onSuccess?: () => void
   trigger?: React.ReactNode
+  gift?: Gift | null // If provided, it's edit mode
 }
 
 export default function GiftPaymentDrawer({
@@ -38,28 +34,94 @@ export default function GiftPaymentDrawer({
   guestId,
   open,
   onOpenChange,
-  onSave,
+  onSuccess,
   trigger,
+  gift,
 }: GiftPaymentDrawerProps) {
-  const [giftForm, setGiftForm] = useState<GiftFormData>({
-    paymentMethod: 'cash',
-    currency: 'khr',
+  const isEditMode = !!gift
+  const createGiftMutation = useCreateGift()
+  const updateGiftMutation = useUpdateGift()
+
+  const [giftForm, setGiftForm] = useState({
+    paymentMethod: 'cash' as 'cash' | 'khqr',
+    currency: 'khr' as 'khr' | 'usd',
     amount: '',
     note: '',
-    file: null,
+    file: null as File | null,
+    receiptImageUrl: '' as string,
   })
 
-  const handleSave = () => {
+  // Load gift data when in edit mode
+  React.useEffect(() => {
+    if (gift && open) {
+      setGiftForm({
+        paymentMethod: gift.paymentMethod,
+        currency: gift.currency,
+        amount: gift.amount.toString(),
+        note: gift.note || '',
+        file: null,
+        receiptImageUrl: gift.receiptImage || '',
+      })
+    } else if (!gift && open) {
+      // Reset form for create mode
+      setGiftForm({
+        paymentMethod: 'cash',
+        currency: 'khr',
+        amount: '',
+        note: '',
+        file: null,
+        receiptImageUrl: '',
+      })
+    }
+  }, [gift, open])
+
+  const handleSave = async () => {
     if (!giftForm.amount) return
-    onSave(giftForm)
-    setGiftForm({
-      paymentMethod: 'cash',
-      currency: 'khr',
-      amount: '',
-      note: '',
-      file: null,
-    })
-    onOpenChange(false)
+
+    try {
+      if (isEditMode && gift) {
+        const updateData: UpdateGiftDto = {
+          paymentMethod: giftForm.paymentMethod,
+          currency: giftForm.currency,
+          amount: parseFloat(giftForm.amount),
+          note: giftForm.note || undefined,
+          receiptImage: giftForm.file ? undefined : (giftForm.receiptImageUrl || undefined),
+        }
+
+        await updateGiftMutation.mutateAsync({
+          id: gift.id,
+          data: updateData,
+          file: giftForm.file || undefined,
+        })
+      } else {
+        const giftData: CreateGiftDto = {
+          guestId,
+          paymentMethod: giftForm.paymentMethod,
+          currency: giftForm.currency,
+          amount: parseFloat(giftForm.amount),
+          note: giftForm.note || undefined,
+        }
+
+        await createGiftMutation.mutateAsync({
+          data: giftData,
+          file: giftForm.file || undefined,
+        })
+      }
+
+      // Reset form
+      setGiftForm({
+        paymentMethod: 'cash',
+        currency: 'khr',
+        amount: '',
+        note: '',
+        file: null,
+        receiptImageUrl: '',
+      })
+      onSuccess?.()
+      onOpenChange(false)
+    } catch {
+      // Error is handled by the mutation hook
+    }
   }
 
   const handleFileSelect = (isCamera: boolean) => {
@@ -83,7 +145,9 @@ export default function GiftPaymentDrawer({
         <DrawerHeader className="border-b">
           <div className="flex items-center justify-between">
             <div>
-              <DrawerTitle className="text-lg font-semibold text-black">ចំណងដៃថ្មី</DrawerTitle>
+              <DrawerTitle className="text-lg font-semibold text-black">
+                {isEditMode ? 'កែប្រែចំណងដៃ' : 'ចំណងដៃថ្មី'}
+              </DrawerTitle>
               <DrawerDescription className="text-sm text-gray-600 mt-1">
                 ឈ្មោះ {guestName}
               </DrawerDescription>
@@ -209,20 +273,39 @@ export default function GiftPaymentDrawer({
             </Button>
           </div>
 
-          {giftForm.file && (
+          {(giftForm.file || giftForm.receiptImageUrl) && (
             <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-700 truncate">{giftForm.file.name}</p>
+                <p className="text-sm text-gray-700 truncate">
+                  {giftForm.file ? giftForm.file.name : 'Receipt image'}
+                </p>
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   className="h-6 w-6 p-0"
-                  onClick={() => setGiftForm({ ...giftForm, file: null })}
+                  onClick={() =>
+                    setGiftForm({
+                      ...giftForm,
+                      file: null,
+                      receiptImageUrl: '',
+                    })
+                  }
                 >
                   <X className="h-3 w-3" />
                 </Button>
               </div>
+              {giftForm.receiptImageUrl && !giftForm.file && (
+                <div className="mt-2 relative w-full h-32 rounded overflow-hidden">
+                  <Image
+                    src={giftForm.receiptImageUrl}
+                    alt="Receipt"
+                    fill
+                    className="object-contain"
+                    unoptimized
+                  />
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -230,16 +313,23 @@ export default function GiftPaymentDrawer({
           <Button
             className="w-full bg-black hover:bg-gray-800 text-white h-11"
             onClick={handleSave}
-            disabled={!giftForm.amount}
+            disabled={!giftForm.amount || createGiftMutation.isPending || updateGiftMutation.isPending}
           >
-            <FileText className="h-4 w-4 mr-2" />
-            រក្សាទុក
+            {createGiftMutation.isPending || updateGiftMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {isEditMode ? 'កំពុងរក្សាទុក...' : 'កំពុងបង្កើត...'}
+              </>
+            ) : (
+              <>
+                <FileText className="h-4 w-4 mr-2" />
+                រក្សាទុក
+              </>
+            )}
           </Button>
         </div>
       </DrawerContent>
     </Drawer>
   )
 }
-
-export type { GiftFormData }
 

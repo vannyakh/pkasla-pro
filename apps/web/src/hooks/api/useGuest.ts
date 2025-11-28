@@ -47,6 +47,29 @@ export function useGuests(filters: GuestListFilters = {}) {
 }
 
 /**
+ * Get guests by current user (authenticated)
+ * Optionally filter by eventId
+ */
+export function useMyGuests(eventId?: string) {
+  return useQuery<Guest[], Error>({
+    queryKey: [...guestKeys.my(), eventId],
+    queryFn: async (): Promise<Guest[]> => {
+      const url = eventId ? `/guests/my?eventId=${eventId}` : '/guests/my';
+      const response = await api.get<Guest[]>(url);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to fetch my guests');
+      }
+      if (!response.data) {
+        throw new Error('Guests data not found');
+      }
+      return Array.isArray(response.data) ? response.data : [response.data];
+    },
+    retry: false,
+    staleTime: 1000 * 30, // 30 seconds
+  });
+}
+
+/**
  * Get guests by event ID
  */
 export function useGuestsByEvent(eventId: string) {

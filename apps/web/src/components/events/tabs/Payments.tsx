@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
 import { type ColumnDef } from '@tanstack/react-table'
-import { Download, Edit, Trash2, User, FileText, Calendar, DollarSign } from 'lucide-react'
+import { Download, Edit, Trash2, User, FileText, Calendar, DollarSign, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -12,31 +12,67 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { DataTable } from '@/components/ui/data-table'
-
-interface Payment {
-  id: string
-  guestName: string
-  amount: number
-  currency: 'USD' | 'KHR'
-  method: 'KHQR' | 'Cash' | 'Bank Transfer'
-  createdAt: string | Date
-}
+import { useGiftsByEvent } from '@/hooks/api/useGift'
+import { useDeleteGift } from '@/hooks/api/useGift'
+import { useGuestsByEvent } from '@/hooks/api/useGuest'
+import type { Gift } from '@/types/gift'
+import GiftPaymentDrawer from '@/components/guests/GiftPaymentDrawer'
+import ViewGiftDrawer from '@/components/guests/ViewGiftDrawer'
 
 interface PaymentsProps {
-  payments?: Payment[]
-  totalRiel?: number
-  totalDollars?: number
-  totalGuests?: number
-  contributingGuests?: number
+  eventId: string
 }
 
-export default function Payments({
-  payments = [],
-  totalRiel = 0,
-  totalDollars = 0,
-  totalGuests = 0,
-  contributingGuests = 0,
-}: PaymentsProps) {
+export default function Payments({ eventId }: PaymentsProps) {
+  // Fetch gifts for this event
+  const { data: gifts = [], isLoading: giftsLoading } = useGiftsByEvent(eventId)
+  const { data: guests = [] } = useGuestsByEvent(eventId)
+  const deleteGiftMutation = useDeleteGift()
+
+  // State for drawers
+  const [isGiftDrawerOpen, setIsGiftDrawerOpen] = useState(false)
+  const [isViewGiftDrawerOpen, setIsViewGiftDrawerOpen] = useState(false)
+  const [selectedGift, setSelectedGift] = useState<Gift | null>(null)
+  const [editingGift, setEditingGift] = useState<Gift | null>(null)
+
+  // Calculate statistics from gifts
+  const { payments, totalRiel, totalDollars, totalGuests, contributingGuests } = useMemo(() => {
+    const paymentsData = gifts.map((gift) => {
+      const guestId = typeof gift.guestId === 'string' ? gift.guestId : gift.guestId.id
+      const guest = guests.find((g) => g.id === guestId)
+      const guestName = guest?.name || 'Unknown Guest'
+
+      return {
+        id: gift.id,
+        gift: gift, // Store full gift object for actions
+        guestName,
+        amount: gift.amount,
+        currency: gift.currency.toUpperCase() as 'USD' | 'KHR',
+        method: gift.paymentMethod.toUpperCase() === 'KHQR' ? 'KHQR' : 'Cash' as 'KHQR' | 'Cash',
+        createdAt: gift.createdAt,
+      }
+    })
+
+    const totalRiel = gifts
+      .filter((g) => g.currency === 'khr')
+      .reduce((sum, g) => sum + g.amount, 0)
+
+    const totalDollars = gifts
+      .filter((g) => g.currency === 'usd')
+      .reduce((sum, g) => sum + g.amount, 0)
+
+    const totalGuests = guests.length
+    const contributingGuests = guests.filter((g) => g.hasGivenGift).length
+
+    return {
+      payments: paymentsData,
+      totalRiel,
+      totalDollars,
+      totalGuests,
+      contributingGuests,
+    }
+  }, [gifts, guests])
+
   const formatCurrency = (amount: number, currency: 'USD' | 'KHR') => {
     if (currency === 'USD') {
       return `${amount.toLocaleString()} ដុល្លារ`
@@ -65,7 +101,39 @@ export default function Payments({
     return methodMap[method] || method
   }
 
-  const columns = useMemo<ColumnDef<Payment>[]>(
+  // Handle view gift
+  const handleViewGift = useCallback((gift: Gift) => {
+    setSelectedGift(gift)
+    setIsViewGiftDrawerOpen(true)
+  }, [])
+
+  // Handle edit gift
+  const handleEditGift = useCallback((gift: Gift) => {
+    setEditingGift(gift)
+    setIsGiftDrawerOpen(true)
+  }, [])
+
+  // Handle delete gift
+  const handleDeleteGift = useCallback(async (gift: Gift) => {
+    if (!confirm('Are you sure you want to delete this gift payment?')) return
+
+    const guestId = typeof gift.guestId === 'string' ? gift.guestId : gift.guestId.id
+    const eventId = typeof gift.eventId === 'string' ? gift.eventId : gift.eventId.id
+
+    try {
+      await deleteGiftMutation.mutateAsync({ id: gift.id, guestId, eventId })
+    } catch {
+      // Error is handled by the mutation hook
+    }
+  }, [deleteGiftMutation])
+
+  // Handle gift drawer success
+  const handleGiftDrawerSuccess = () => {
+    setIsGiftDrawerOpen(false)
+    setEditingGift(null)
+  }
+
+  const columns = useMemo<ColumnDef<typeof payments[0]>[]>(
     () => [
       {
         accessorKey: 'guestName',
@@ -108,8 +176,21 @@ export default function Payments({
               className="text-xs h-7 w-7 p-0"
               onClick={(e) => {
                 e.stopPropagation()
-                console.log('Edit payment', row.original.id)
+                handleViewGift(row.original.gift)
               }}
+              title="View gift details"
+            >
+              <FileText className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs h-7 w-7 p-0"
+              onClick={(e) => {
+                e.stopPropagation()
+                handleEditGift(row.original.gift)
+              }}
+              title="Edit gift"
             >
               <Edit className="h-3.5 w-3.5" />
             </Button>
@@ -119,17 +200,32 @@ export default function Payments({
               className="text-xs h-7 w-7 p-0 text-red-600 hover:text-red-700"
               onClick={(e) => {
                 e.stopPropagation()
-                console.log('Delete payment', row.original.id)
+                handleDeleteGift(row.original.gift)
               }}
+              disabled={deleteGiftMutation.isPending}
+              title="Delete gift"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              {deleteGiftMutation.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <Trash2 className="h-3.5 w-3.5" />
+              )}
             </Button>
           </div>
         ),
       },
     ],
-    []
+    [handleViewGift, handleEditGift, handleDeleteGift, deleteGiftMutation.isPending]
   )
+
+  if (giftsLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">Loading payments...</span>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -236,6 +332,38 @@ export default function Payments({
             )}
           </CardContent>
         </Card>
+
+      {/* Gift Drawers */}
+      {selectedGift && (
+        <ViewGiftDrawer
+          guestName={
+            typeof selectedGift.guestId === 'string'
+              ? guests.find((g) => g.id === selectedGift.guestId)?.name || 'Unknown Guest'
+              : selectedGift.guestId.name
+          }
+          gift={selectedGift}
+          open={isViewGiftDrawerOpen}
+          onOpenChange={setIsViewGiftDrawerOpen}
+        />
+      )}
+
+      {editingGift && (
+        <GiftPaymentDrawer
+          guestName={
+            typeof editingGift.guestId === 'string'
+              ? guests.find((g) => g.id === editingGift.guestId)?.name || 'Unknown Guest'
+              : editingGift.guestId.name
+          }
+          guestId={typeof editingGift.guestId === 'string' ? editingGift.guestId : editingGift.guestId.id}
+          gift={editingGift}
+          open={isGiftDrawerOpen}
+          onOpenChange={(open) => {
+            setIsGiftDrawerOpen(open)
+            if (!open) setEditingGift(null)
+          }}
+          onSuccess={handleGiftDrawerSuccess}
+        />
+      )}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { X, MapPin } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { X, MapPin, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -21,77 +21,159 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from '@/components/ui/drawer'
+import { useCreateGuest, useUpdateGuest } from '@/hooks/api/useGuest'
+import { useMyEvents } from '@/hooks/api/useEvent'
+import type { Guest, GuestStatus, CreateGuestDto, UpdateGuestDto } from '@/types/guest'
+import toast from 'react-hot-toast'
 
-interface CreateGuestDrawerProps {
+interface GuestDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   trigger?: React.ReactNode
-  onSave?: (data: GuestFormData) => void
+  guest?: Guest | null // If provided, it's edit mode
+  onSuccess?: () => void
 }
 
 interface GuestFormData {
   name: string
+  email: string
   phone: string
+  eventId: string
   occupation: string
   notes: string
   tag: string
-  addressSearch: string
+  address: string
   province: string
-  verify: string
+  photo: string
+  status: GuestStatus
 }
 
-export default function CreateGuestDrawer({
+export default function GuestDrawer({
   open,
   onOpenChange,
   trigger,
-  onSave,
-}: CreateGuestDrawerProps) {
+  guest,
+  onSuccess,
+}: GuestDrawerProps) {
+  const isEditMode = !!guest
+  const createMutation = useCreateGuest()
+  const updateMutation = useUpdateGuest()
+  const { data: events = [] } = useMyEvents()
+
   const [formData, setFormData] = useState<GuestFormData>({
     name: '',
+    email: '',
     phone: '',
+    eventId: '',
     occupation: '',
     notes: '',
     tag: '',
-    addressSearch: '',
+    address: '',
     province: '',
-    verify: '',
+    photo: '',
+    status: 'pending',
   })
   const [showAddress, setShowAddress] = useState(false)
+
+  // Load guest data when in edit mode
+  useEffect(() => {
+    if (!open) return
+
+    if (guest) {
+      const eventId = typeof guest.eventId === 'string' ? guest.eventId : guest.eventId.id
+      setFormData({
+        name: guest.name || '',
+        email: guest.email || '',
+        phone: guest.phone || '',
+        eventId: eventId || '',
+        occupation: guest.occupation || '',
+        notes: guest.notes || '',
+        tag: guest.tag || '',
+        address: guest.address || '',
+        province: guest.province || '',
+        photo: guest.photo || '',
+        status: guest.status || 'pending',
+      })
+      setShowAddress(!!(guest.address || guest.province))
+    } else {
+      // Reset form for create mode
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        eventId: '',
+        occupation: '',
+        notes: '',
+        tag: '',
+        address: '',
+        province: '',
+        photo: '',
+        status: 'pending',
+      })
+      setShowAddress(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, guest?.id])
 
   const handleInputChange = (field: keyof GuestFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleSave = () => {
-    if (!formData.name) return // Name is required
-    onSave?.(formData)
-    // Reset form
-    setFormData({
-      name: '',
-      phone: '',
-      occupation: '',
-      notes: '',
-      tag: '',
-      addressSearch: '',
-      province: '',
-      verify: '',
-    })
-    onOpenChange(false)
+  const handleSave = async () => {
+    if (!formData.name) {
+      toast.error('Name is required')
+      return
+    }
+    if (!formData.eventId) {
+      toast.error('Event is required')
+      return
+    }
+
+    try {
+      if (isEditMode && guest) {
+        const updateData: UpdateGuestDto = {
+          name: formData.name,
+          email: formData.email || undefined,
+          phone: formData.phone || undefined,
+          occupation: formData.occupation || undefined,
+          notes: formData.notes || undefined,
+          tag: formData.tag || undefined,
+          address: formData.address || undefined,
+          province: formData.province || undefined,
+          photo: formData.photo || undefined,
+          status: formData.status,
+        }
+        await updateMutation.mutateAsync({ id: guest.id, data: updateData })
+        toast.success('Guest updated successfully')
+      } else {
+        const createData: CreateGuestDto = {
+          name: formData.name,
+          email: formData.email || undefined,
+          phone: formData.phone || undefined,
+          eventId: formData.eventId,
+          occupation: formData.occupation || undefined,
+          notes: formData.notes || undefined,
+          tag: formData.tag || undefined,
+          address: formData.address || undefined,
+          province: formData.province || undefined,
+          photo: formData.photo || undefined,
+          status: formData.status,
+        }
+        await createMutation.mutateAsync(createData)
+        toast.success('Guest created successfully')
+      }
+      onSuccess?.()
+      onOpenChange(false)
+    } catch {
+      // Error is handled by the mutation hook
+    }
   }
 
   const handleCancel = () => {
-    setFormData({
-      name: '',
-      phone: '',
-      occupation: '',
-      notes: '',
-      tag: '',
-      addressSearch: '',
-      province: '',
-      verify: '',
-    })
     onOpenChange(false)
   }
+
+  const isLoading = createMutation.isPending || updateMutation.isPending
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange} direction="right">
@@ -100,7 +182,9 @@ export default function CreateGuestDrawer({
         <DrawerHeader className="border-b">
           <div className="flex items-center justify-between">
             <div>
-              <DrawerTitle className="text-lg font-semibold text-black">បង្កើតភ្ញៀវថ្មី</DrawerTitle>
+              <DrawerTitle className="text-lg font-semibold text-black">
+                {isEditMode ? 'កែប្រែភ្ញៀវ' : 'បង្កើតភ្ញៀវថ្មី'}
+              </DrawerTitle>
               <DrawerDescription className="text-sm text-gray-600 mt-1">
                 ពត៍មានទូទៅ
               </DrawerDescription>
@@ -128,6 +212,23 @@ export default function CreateGuestDrawer({
                 placeholder="Pkasla"
                 className="h-10"
                 required
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* Email */}
+            <div>
+              <Label htmlFor="email" className="text-sm font-semibold text-black mb-2 block">
+                អ៊ីម៉ែល
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                placeholder="email@example.com"
+                className="h-10"
+                disabled={isLoading}
               />
             </div>
 
@@ -143,7 +244,52 @@ export default function CreateGuestDrawer({
                 onChange={(e) => handleInputChange('phone', e.target.value)}
                 placeholder="លេខទូរសព្ទ"
                 className="h-10"
+                disabled={isLoading}
               />
+            </div>
+
+            {/* Event */}
+            <div>
+              <Label htmlFor="eventId" className="text-sm font-semibold text-black mb-2 block">
+                ព្រឹត្តិការណ៍ <span className="text-gray-600">*</span>
+              </Label>
+              <Select
+                value={formData.eventId}
+                onValueChange={(value) => handleInputChange('eventId', value)}
+                disabled={isLoading || isEditMode}
+              >
+                <SelectTrigger className="h-10">
+                  <SelectValue placeholder="ជ្រើសរើសព្រឹត្តិការណ៍" />
+                </SelectTrigger>
+                <SelectContent>
+                  {events.map((event) => (
+                    <SelectItem key={event.id} value={event.id}>
+                      {event.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Status */}
+            <div>
+              <Label htmlFor="status" className="text-sm font-semibold text-black mb-2 block">
+                ស្ថានភាព
+              </Label>
+              <Select
+                value={formData.status}
+                onValueChange={(value) => handleInputChange('status', value as GuestStatus)}
+                disabled={isLoading}
+              >
+                <SelectTrigger className="h-10">
+                  <SelectValue placeholder="ជ្រើសរើសស្ថានភាព" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="confirmed">Confirmed</SelectItem>
+                  <SelectItem value="declined">Declined</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Occupation */}
@@ -161,6 +307,22 @@ export default function CreateGuestDrawer({
               />
             </div>
 
+            {/* Photo URL */}
+            <div>
+              <Label htmlFor="photo" className="text-sm font-semibold text-black mb-2 block">
+                រូបភាព (URL)
+              </Label>
+              <Input
+                id="photo"
+                type="url"
+                value={formData.photo}
+                onChange={(e) => handleInputChange('photo', e.target.value)}
+                placeholder="https://example.com/photo.jpg"
+                className="h-10"
+                disabled={isLoading}
+              />
+            </div>
+
             {/* Notes */}
             <div>
               <Label htmlFor="notes" className="text-sm font-semibold text-black mb-2 block">
@@ -173,6 +335,7 @@ export default function CreateGuestDrawer({
                 onChange={(e) => handleInputChange('notes', e.target.value)}
                 placeholder="កត់ចំណាំ"
                 className="h-10"
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -207,19 +370,20 @@ export default function CreateGuestDrawer({
                 </Button>
               </div>
 
-              {/* Search */}
+              {/* Address */}
               <div>
-                <Label htmlFor="addressSearch" className="text-sm font-semibold text-black mb-2 block">
-                  ស្វែងរក
+                <Label htmlFor="address" className="text-sm font-semibold text-black mb-2 block">
+                  អាសយដ្ឋាន
                 </Label>
                 <div className="relative">
                   <Input
-                    id="addressSearch"
+                    id="address"
                     type="text"
-                    value={formData.addressSearch}
-                    onChange={(e) => handleInputChange('addressSearch', e.target.value)}
-                    placeholder="ស្វែងរក"
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    placeholder="អាសយដ្ឋាន"
                     className="h-10 pr-10"
+                    disabled={isLoading}
                   />
                   <MapPin className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 </div>
@@ -242,20 +406,6 @@ export default function CreateGuestDrawer({
                 </Select>
               </div>
 
-              {/* Verify */}
-              <div>
-                <Label htmlFor="verify" className="text-sm font-semibold text-black mb-2 block">
-                  ផ្ទៀងផ្ទាត់
-                </Label>
-                <Input
-                  id="verify"
-                  type="text"
-                  value={formData.verify}
-                  onChange={(e) => handleInputChange('verify', e.target.value)}
-                  placeholder="ផ្ទៀងផ្ទាត់"
-                  className="h-10"
-                />
-              </div>
             </div>
           )}
 
@@ -277,11 +427,22 @@ export default function CreateGuestDrawer({
 
         {/* Action Buttons */}
         <div className="px-4 py-4 border-t flex items-center justify-end gap-3">
-          <Button variant="outline" onClick={handleCancel} className="h-10">
+          <Button variant="outline" onClick={handleCancel} className="h-10" disabled={isLoading}>
             បោះបង់
           </Button>
-          <Button onClick={handleSave} className="h-10 bg-black hover:bg-gray-800 text-white" disabled={!formData.name}>
-            រក្សាទុក
+          <Button
+            onClick={handleSave}
+            className="h-10 bg-black hover:bg-gray-800 text-white"
+            disabled={!formData.name || !formData.eventId || isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                {isEditMode ? 'កំពុងរក្សាទុក...' : 'កំពុងបង្កើត...'}
+              </>
+            ) : (
+              'រក្សាទុក'
+            )}
           </Button>
         </div>
       </DrawerContent>

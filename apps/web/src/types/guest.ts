@@ -7,12 +7,14 @@ export interface Guest {
   phone?: string
   eventId: string | { id: string; title: string; date: string | Date; venue: string; hostId: string | object }
   userId?: string | { id: string; name: string; email: string; avatar?: string }
+  createdBy?: string | { id: string; name: string; email: string; avatar?: string }
   status: GuestStatus
   occupation?: string
   notes?: string
   tag?: string
   address?: string
   province?: string
+  photo?: string
   hasGivenGift: boolean
   createdAt: string | Date
   updatedAt: string | Date
@@ -29,6 +31,7 @@ export interface CreateGuestDto {
   tag?: string
   address?: string
   province?: string
+  photo?: string
   hasGivenGift?: boolean
   status?: GuestStatus
 }
@@ -42,6 +45,7 @@ export interface UpdateGuestDto {
   tag?: string
   address?: string
   province?: string
+  photo?: string
   hasGivenGift?: boolean
   status?: GuestStatus
 }

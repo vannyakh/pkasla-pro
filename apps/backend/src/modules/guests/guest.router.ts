@@ -18,6 +18,7 @@ import {
   deleteGuestSchema,
   listGuestsQuerySchema,
 } from './guest.validation';
+import { giftRouter } from './gift.router';
 
 const router = Router();
 
@@ -71,6 +72,9 @@ router.delete(
   validateRequest(deleteGuestSchema),
   asyncHandler(deleteGuestHandler),
 );
+
+// Gift payment routes (nested under guests)
+router.use('/gifts', giftRouter);
 
 export const guestRouter: Router = router;
 

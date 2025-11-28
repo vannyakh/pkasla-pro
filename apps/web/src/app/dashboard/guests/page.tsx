@@ -1,8 +1,11 @@
-import React from 'react'
-import { Users, Search, Plus, Mail } from 'lucide-react'
+'use client'
+
+import React, { useState, useMemo } from 'react'
+import { useSession } from 'next-auth/react'
+import { Search, Plus, Mail, Loader2, Pencil } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -19,8 +22,146 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useGuests } from '@/hooks/api/useGuest'
+import { useMyEvents } from '@/hooks/api/useEvent'
+import GuestDrawer from '@/components/guests/CreateGuestDrawer'
+import type { Guest, GuestStatus } from '@/types/guest'
+import type { User } from '@/types/user'
 
 export default function GuestPage() {
+  const { data: session } = useSession()
+  const user = session?.user as User | undefined
+
+  // State for filters
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedEventId, setSelectedEventId] = useState<string>('all')
+  const [selectedStatus, setSelectedStatus] = useState<string>('all')
+  const [page, setPage] = useState(1)
+  const pageSize = 10
+
+  // State for drawer
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [editingGuest, setEditingGuest] = useState<Guest | null>(null)
+
+  // Fetch user's events for the filter dropdown
+  const { data: events = [], isLoading: eventsLoading } = useMyEvents()
+
+  // Build filters for API
+  const filters = useMemo(() => {
+    const apiFilters: {
+      userId?: string
+      eventId?: string
+      status?: GuestStatus
+      search?: string
+      page: number
+      pageSize: number
+    } = {
+      page,
+      pageSize,
+    }
+
+    // Filter by current user
+    if (user?.id) {
+      apiFilters.userId = user.id
+    }
+
+    // Filter by event
+    if (selectedEventId && selectedEventId !== 'all') {
+      apiFilters.eventId = selectedEventId
+    }
+
+    // Filter by status
+    if (selectedStatus && selectedStatus !== 'all') {
+      apiFilters.status = selectedStatus as GuestStatus
+    }
+
+    // Search query
+    if (searchQuery.trim()) {
+      apiFilters.search = searchQuery.trim()
+    }
+
+    return apiFilters
+  }, [user, selectedEventId, selectedStatus, searchQuery, page, pageSize])
+
+  // Fetch guests with filters
+  const { data: guestsData, isLoading: guestsLoading, error: guestsError } = useGuests(filters)
+
+  // Extract guests and pagination info
+  const guests = guestsData?.items || []
+  const total = guestsData?.total || 0
+  const totalPages = Math.ceil(total / pageSize)
+
+  // Helper function to get event name
+  const getEventName = (eventId: Guest['eventId']): string => {
+    if (typeof eventId === 'string') {
+      const event = events.find((e) => e.id === eventId)
+      return event?.title || 'Unknown Event'
+    }
+    if (eventId && typeof eventId === 'object' && 'title' in eventId) {
+      return eventId.title
+    }
+    return 'Unknown Event'
+  }
+
+  // Helper function to get status badge variant
+  const getStatusBadge = (status: GuestStatus) => {
+    switch (status) {
+      case 'confirmed':
+        return (
+          <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">
+            Confirmed
+          </Badge>
+        )
+      case 'pending':
+        return (
+          <Badge variant="default" className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
+            Pending
+          </Badge>
+        )
+      case 'declined':
+        return (
+          <Badge variant="default" className="bg-red-100 text-red-700 hover:bg-red-100">
+            Declined
+          </Badge>
+        )
+      default:
+        return (
+          <Badge variant="default" className="bg-gray-100 text-gray-700 hover:bg-gray-100">
+            {status}
+          </Badge>
+        )
+    }
+  }
+
+  // Get initials for avatar
+  const getInitials = (name: string): string => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  // Handle create guest
+  const handleCreateGuest = () => {
+    setEditingGuest(null)
+    setIsDrawerOpen(true)
+  }
+
+  // Handle edit guest
+  const handleEditGuest = (guest: Guest) => {
+    setEditingGuest(guest)
+    setIsDrawerOpen(true)
+  }
+
+  // Handle drawer success (refresh data)
+  const handleDrawerSuccess = () => {
+    // Data will be automatically refreshed by React Query
+    setIsDrawerOpen(false)
+    setEditingGuest(null)
+  }
+
   return (
     <div>
       <div className="mb-8 flex items-center justify-between">
@@ -28,7 +169,7 @@ export default function GuestPage() {
           <h1 className="text-3xl font-bold text-gray-900">Guests</h1>
           <p className="text-gray-600 mt-2">Manage your guest list and RSVPs</p>
         </div>
-        <Button>
+        <Button onClick={handleCreateGuest}>
           <Plus className="h-4 w-4 mr-2" />
           Add Guest
         </Button>
@@ -42,19 +183,40 @@ export default function GuestPage() {
             type="text"
             placeholder="Search guests..."
             className="pl-10"
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              setPage(1) // Reset to first page on search
+            }}
           />
         </div>
-        <Select>
+        <Select
+          value={selectedEventId}
+          onValueChange={(value) => {
+            setSelectedEventId(value)
+            setPage(1) // Reset to first page on filter change
+          }}
+          disabled={eventsLoading}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Events" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Events</SelectItem>
-            <SelectItem value="event1">Event 1</SelectItem>
-            <SelectItem value="event2">Event 2</SelectItem>
+            {events.map((event) => (
+              <SelectItem key={event.id} value={event.id}>
+                {event.title}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
-        <Select>
+        <Select
+          value={selectedStatus}
+          onValueChange={(value) => {
+            setSelectedStatus(value)
+            setPage(1) // Reset to first page on filter change
+          }}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="All Status" />
           </SelectTrigger>
@@ -70,48 +232,120 @@ export default function GuestPage() {
       {/* Guest List */}
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Guest</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Event</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {[1, 2, 3, 4, 5].map((item) => (
-                <TableRow key={item}>
-                  <TableCell>
-                    <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold">
-                        <Users className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <div className="font-medium">Guest Name {item}</div>
-                        <div className="text-sm text-muted-foreground">+855 12 345 678</div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">guest{item}@example.com</TableCell>
-                  <TableCell className="text-muted-foreground">Wedding Event {item}</TableCell>
-                  <TableCell>
-                    <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">
-                      Confirmed
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon">
-                      <Mail className="h-4 w-4" />
+          {guestsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              <span className="ml-2 text-muted-foreground">Loading guests...</span>
+            </div>
+          ) : guestsError ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-red-600">Error loading guests: {guestsError.message}</p>
+            </div>
+          ) : guests.length === 0 ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-muted-foreground">No guests found</p>
+            </div>
+          ) : (
+            <>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Guest</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Event</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {guests.map((guest) => (
+                    <TableRow key={guest.id}>
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          <div className="h-10 w-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold text-sm">
+                            {getInitials(guest.name)}
+                          </div>
+                          <div>
+                            <div className="font-medium">{guest.name}</div>
+                            {guest.phone && (
+                              <div className="text-sm text-muted-foreground">{guest.phone}</div>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {guest.email || '-'}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {getEventName(guest.eventId)}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(guest.status)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditGuest(guest)}
+                            title="Edit guest"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          {guest.email && (
+                            <Button variant="ghost" size="icon" asChild>
+                              <a href={`mailto:${guest.email}`} title="Send email">
+                                <Mail className="h-4 w-4" />
+                              </a>
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-4 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, total)} of{' '}
+                    {total} guests
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                    >
+                      Previous
                     </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    <div className="text-sm text-muted-foreground">
+                      Page {page} of {totalPages}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </CardContent>
       </Card>
+
+      {/* Guest Drawer */}
+      <GuestDrawer
+        open={isDrawerOpen}
+        onOpenChange={setIsDrawerOpen}
+        guest={editingGuest}
+        onSuccess={handleDrawerSuccess}
+      />
     </div>
   )
 }
