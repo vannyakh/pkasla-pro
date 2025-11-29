@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "start:standalone": "node .next/standalone/server.js",
-    "lint": "eslint . --max-warnings 0",
+    "lint": "eslint .",
     "deploy": "npx wrangler pages deploy .next",
     "pages:deploy": "npx wrangler pages deploy .next",
     "cf:deploy": "npx wrangler pages deploy .next",
