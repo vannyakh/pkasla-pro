@@ -50,8 +50,7 @@ export default function StoresPage() {
   }, [templatesData?.items])
 
   const handleViewSample = (templateId: string) => {
-    // TODO: Implement view sample functionality
-    console.log('View sample:', templateId)
+    window.open(`/templates/preview/${templateId}`, '_blank')
   }
 
   const handleBuyNow = (templateId: string) => {

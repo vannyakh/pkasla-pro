@@ -57,11 +57,18 @@ export function useTemplates(filters: TemplateListFilters = {}) {
 /**
  * Get template by ID
  */
-export function useTemplate(id: string) {
+export function useTemplate(id: string | { _id?: unknown; id?: unknown } | unknown) {
+  // Ensure ID is always a string
+  const templateId = typeof id === 'string' 
+    ? id 
+    : (id && typeof id === 'object' && ('_id' in id || 'id' in id))
+      ? String((id as { _id?: unknown; id?: unknown })._id || (id as { _id?: unknown; id?: unknown }).id)
+      : String(id)
+
   return useQuery<Template, Error>({
-    queryKey: templateKeys.detail(id),
+    queryKey: templateKeys.detail(templateId),
     queryFn: async (): Promise<Template> => {
-      const response = await api.get<Template>(`/admin/t/${id}`);
+      const response = await api.get<Template>(`/admin/t/${templateId}`);
       if (!response.success) {
         throw new Error(response.error || 'Failed to fetch template');
       }
@@ -70,7 +77,7 @@ export function useTemplate(id: string) {
       }
       return response.data;
     },
-    enabled: !!id,
+    enabled: !!templateId && templateId !== 'undefined' && templateId !== 'null',
     retry: false,
     staleTime: 1000 * 60, // 1 minute
   });

@@ -10,14 +10,13 @@ import {
   CreditCard, 
   FileText, 
   Settings,
-  LogOut,
   Heart,
-  Store
+  Store,
+  FileCheck
 } from 'lucide-react'
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarHeader,
@@ -30,6 +29,7 @@ const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/events', label: 'Events', icon: Calendar },
   { href: '/dashboard/guests', label: 'Guests', icon: Users },
+  { href: '/dashboard/templates', label: 'My Templates', icon: FileCheck },
   { href: '/dashboard/stores', label: 'Template Store', icon: Store },
   { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
   { href: '/dashboard/reports', label: 'Reports', icon: FileText },

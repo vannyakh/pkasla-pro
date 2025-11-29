@@ -282,7 +282,7 @@ export default function EventDetailPage({
 
   // mockup data for stores template
   const handleViewSample = (templateId: string) => {
-    console.log("View sample template", templateId);
+    window.open(`/templates/preview/${templateId}`, '_blank')
   };
   const handleBuyNow = (templateId: string) => {
     console.log("Buy now template", templateId);
