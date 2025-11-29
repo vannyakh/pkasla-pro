@@ -50,14 +50,14 @@ export default function Stores({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {displayTemplates.map((template) => (
           <Card key={template.id} className="border border-gray-200 shadow-none overflow-hidden p-0">
-            <div className="relative w-full aspect-[3/4] bg-gradient-to-br from-amber-50 to-orange-50 overflow-hidden">
+            <div className="relative w-full aspect-3/2 bg-linear-to-br from-amber-50 to-orange-50 overflow-hidden">
               {/* Template Preview Image */}
               {template.image ? (
                 <Image
                   src={template.image}
                   alt={template.name}
                   fill
-                  className="object-cover"
+                  className="object-cover aspect-3/2"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               ) : (
@@ -70,7 +70,7 @@ export default function Stores({
                 </div>
               )}
             </div>
-            <CardContent className="p-4 space-y-3">
+            <CardContent className="p-4 space-y-1">
               {/* Price */}
               <div>
                 <p className="text-sm font-semibold text-red-600">
