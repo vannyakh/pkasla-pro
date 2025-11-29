@@ -1,21 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import localFont from "next/font/local";
 import "./globals.css";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { SessionProvider } from "@/providers/SessionProvider";
 import { AppProvider } from "@/providers/AppProvider";
 import { Toaster } from "react-hot-toast";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import {
+  geistSans,
+  geistMono,
+  beVietnamPro,
+  craftyGirls,
+  monsieurLaDoulaise,
+  preahvihear,
+  sedgwickAveDisplay,
+  zenKakuGothicNew,
+} from "@/constants/fonts";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -30,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${beVietnamPro.variable} ${craftyGirls.variable} ${monsieurLaDoulaise.variable} ${preahvihear.variable} ${sedgwickAveDisplay.variable} ${zenKakuGothicNew.variable} antialiased`}
       >
        <SessionProvider>
           <QueryProvider>
