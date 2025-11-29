@@ -52,6 +52,7 @@
     "@types/express-session": "^1.18.2",
     "@types/http-status": "^0.2.30",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/mongodb": "^4.0.7",
     "@types/node": "^24.10.1",
     "@types/qrcode": "^1.5.6",
     "@types/speakeasy": "^2.0.10",

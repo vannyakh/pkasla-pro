@@ -9,8 +9,9 @@ import { errorHandler } from './common/middlewares/error-handler';
 import { checkMaintenanceMode } from './common/middlewares/check-settings';
 import { sessionConfig } from './config/session';
 import { env } from './config/environment';
+import type { Application } from 'express';
 
-export const createApp = () => {
+export const createApp = (): Application => {
   const app = express();
 
   app.set('trust proxy', 1);
