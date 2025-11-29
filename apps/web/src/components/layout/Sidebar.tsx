@@ -11,7 +11,8 @@ import {
   FileText, 
   Settings,
   LogOut,
-  Heart
+  Heart,
+  Store
 } from 'lucide-react'
 import {
   Sidebar,
@@ -29,6 +30,7 @@ const menuItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/events', label: 'Events', icon: Calendar },
   { href: '/dashboard/guests', label: 'Guests', icon: Users },
+  { href: '/dashboard/stores', label: 'Template Store', icon: Store },
   { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
   { href: '/dashboard/reports', label: 'Reports', icon: FileText },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },

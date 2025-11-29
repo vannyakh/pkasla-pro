@@ -5,4 +5,5 @@ export {
   useUserLoading,
   initializeUserFromAuth 
 } from './user';
+export { useTemplateStore } from './templates';
 
