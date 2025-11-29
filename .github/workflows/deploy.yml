@@ -66,50 +66,79 @@ jobs:
           username: ${{ secrets.VULTR_USERNAME || 'root' }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.VULTR_SSH_PORT || '22' }}
+          script_stop: true
           script: |
             set -e
             
             echo "🚀 Starting deployment..."
+            echo "📍 Current directory: $(pwd)"
+            echo "📍 Project path: ${{ secrets.VULTR_PROJECT_PATH || '/www/wwwroot/turborepo/pkasla-pro' }}"
             
             # Navigate to project directory
-            cd ${{ secrets.VULTR_PROJECT_PATH || '/www/wwwroot/turborepo/pkasla-pro' }}
+            PROJECT_PATH="${{ secrets.VULTR_PROJECT_PATH || '/www/wwwroot/turborepo/pkasla-pro' }}"
+            cd "$PROJECT_PATH" || { echo "❌ Failed to cd to $PROJECT_PATH"; exit 1; }
+            echo "✅ Changed to project directory: $(pwd)"
             
             # Pull latest changes
             echo "📥 Pulling latest changes..."
-            git fetch origin
-            git reset --hard origin/main
+            git fetch origin || { echo "⚠️  Git fetch failed, continuing..."; }
+            git reset --hard origin/main || { echo "⚠️  Git reset failed, continuing..."; }
+            
+            # Check Node.js and pnpm
+            echo "🔍 Checking environment..."
+            node --version || { echo "❌ Node.js not found"; exit 1; }
+            pnpm --version || { echo "❌ pnpm not found"; exit 1; }
+            pm2 --version || { echo "❌ PM2 not found"; exit 1; }
             
             # Enable corepack and install dependencies
             echo "📦 Installing dependencies..."
-            corepack enable
-            pnpm install --frozen-lockfile --prod=false
+            corepack enable || echo "⚠️  Corepack enable failed, continuing..."
+            pnpm install --frozen-lockfile --prod=false || { echo "❌ pnpm install failed"; exit 1; }
             
             # Build applications
             echo "🔨 Building applications..."
-            NODE_ENV=production pnpm run build
+            export NODE_ENV=production
+            export NEXT_PUBLIC_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}"
+            pnpm run build || { echo "❌ Build failed"; exit 1; }
             
             # Create logs directory if it doesn't exist
             mkdir -p logs
+            echo "✅ Logs directory ready"
             
             # Restart applications with PM2
             echo "🔄 Restarting applications..."
+            
+            # Check if backend is running
             if pm2 list | grep -q "backend"; then
-              pm2 restart backend
+              echo "🔄 Restarting existing backend process..."
+              pm2 restart backend || { echo "❌ Failed to restart backend"; exit 1; }
             else
-              pm2 start ecosystem.config.js --only backend
+              echo "🚀 Starting new backend process..."
+              pm2 start ecosystem.config.js --only backend || { echo "❌ Failed to start backend"; exit 1; }
             fi
             
+            # Check if web is running
             if pm2 list | grep -q "web"; then
-              pm2 restart web
+              echo "🔄 Restarting existing web process..."
+              pm2 restart web || { echo "❌ Failed to restart web"; exit 1; }
             else
-              pm2 start ecosystem.config.js --only web
+              echo "🚀 Starting new web process..."
+              pm2 start ecosystem.config.js --only web || { echo "❌ Failed to start web"; exit 1; }
             fi
             
             # Save PM2 configuration
-            pm2 save
+            pm2 save || echo "⚠️  PM2 save failed, continuing..."
             
             # Show PM2 status
+            echo "📊 PM2 Status:"
             pm2 status
+            
+            # Show recent logs
+            echo "📋 Recent backend logs:"
+            pm2 logs backend --lines 10 --nostream || echo "⚠️  Could not show backend logs"
+            
+            echo "📋 Recent web logs:"
+            pm2 logs web --lines 10 --nostream || echo "⚠️  Could not show web logs"
             
             echo "✅ Deployment completed successfully!"
 
@@ -117,4 +146,10 @@ jobs:
         if: failure()
         run: |
           echo "❌ Deployment failed!"
+          echo "Please check the SSH deployment logs above for details."
+          echo "Common issues:"
+          echo "  - SSH connection failed (check IP, port, username, key)"
+          echo "  - Build failed on server (check dependencies, env vars)"
+          echo "  - PM2 not installed or configured incorrectly"
+          echo "  - Project path incorrect"
           exit 1
