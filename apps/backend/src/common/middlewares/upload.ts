@@ -1,5 +1,6 @@
 import multer from 'multer';
-import { Request } from 'express';
+import type { Request } from 'express';
+import type { RequestHandler } from 'express-serve-static-core';
 import { AppError } from '@/common/errors/app-error';
 import httpStatus from 'http-status';
 
@@ -25,7 +26,7 @@ const defaultOptions: FileFilterOptions = {
 export const createUploadMiddleware = (
   fieldName: string = 'file',
   options: FileFilterOptions = {},
-) => {
+): RequestHandler => {
   const config = { ...defaultOptions, ...options };
 
   const storage = multer.memoryStorage();
@@ -57,7 +58,7 @@ export const createMultipleUploadMiddleware = (
   fieldName: string = 'files',
   maxCount: number = 5,
   options: FileFilterOptions = {},
-) => {
+): RequestHandler => {
   const config = { ...defaultOptions, ...options };
 
   const storage = multer.memoryStorage();
@@ -88,7 +89,7 @@ export const createMultipleUploadMiddleware = (
 export const createFieldsUploadMiddleware = (
   fields: string | string[],
   options: FileFilterOptions = {},
-) => {
+): RequestHandler => {
   const config = { ...defaultOptions, ...options };
 
   const storage = multer.memoryStorage();

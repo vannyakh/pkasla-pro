@@ -1,8 +1,9 @@
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
+import type { RequestHandler } from 'express-serve-static-core';
 import { env } from './environment';
 
-export const sessionConfig = session({
+export const sessionConfig: RequestHandler = session({
   secret: env.session.secret,
   resave: false,
   saveUninitialized: false,
