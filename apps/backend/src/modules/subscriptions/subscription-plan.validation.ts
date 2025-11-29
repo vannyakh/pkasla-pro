@@ -7,7 +7,7 @@ export const createSubscriptionPlanSchema = z.object({
     description: z.string().optional(),
     price: z.number().min(0, { message: 'Price must be a positive number' }),
     billingCycle: z.enum(['monthly', 'yearly'], {
-      errorMap: () => ({ message: 'Billing cycle must be monthly or yearly' }),
+      message: 'Billing cycle must be monthly or yearly',
     }),
     maxEvents: z.number().min(0).nullable(),
     features: z.array(z.string()).default([]),

@@ -15,8 +15,8 @@ export const createFeedbackHandler = asyncHandler(async (req: Request, res: Resp
 });
 
 export const listFeedbacksHandler = asyncHandler(async (req: Request, res: Response) => {
-  const { data, meta } = await feedbackService.list(req.query);
-  return res.status(httpStatus.OK).json(buildSuccessResponse(data, meta));
+  const result = await feedbackService.list(req.query);
+  return res.status(httpStatus.OK).json(buildSuccessResponse(result));
 });
 
 export const getFeedbackHandler = asyncHandler(async (req: Request, res: Response) => {
@@ -48,7 +48,7 @@ export const getUserFeedbacksHandler = asyncHandler(async (req: Request, res: Re
     throw new AppError('Authentication required', httpStatus.UNAUTHORIZED);
   }
 
-  const { data, meta } = await feedbackService.findByUserId(req.user.id, req.query);
-  return res.status(httpStatus.OK).json(buildSuccessResponse(data, meta));
+  const result = await feedbackService.findByUserId(req.user.id, req.query);
+  return res.status(httpStatus.OK).json(buildSuccessResponse(result));
 });
 

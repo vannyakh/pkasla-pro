@@ -17,6 +17,7 @@ import { DataTable } from '@/components/ui/data-table'
 import GiftPaymentDrawer from '@/components/guests/GiftPaymentDrawer'
 import CreateGuestDrawer from '@/components/guests/CreateGuestDrawer'
 import ViewGiftDrawer from '@/components/guests/ViewGiftDrawer'
+import { useGiftsByGuest } from '@/hooks/api/useGift'
 
 interface DisplayGuest {
   id: string
@@ -73,7 +74,7 @@ export default function Guests({
   onSelectedGuestForGiftChange,
   selectedGuestForView,
   onSelectedGuestForViewChange,
-  onCreateGuest,
+  onCreateGuest: _onCreateGuest, // Unused - CreateGuestDrawer handles creation internally
   onGiftPayment,
   onDeleteGuest,
   eventId,
@@ -82,6 +83,9 @@ export default function Guests({
   deleteGuestMutation,
   getTagColor,
 }: GuestsProps) {
+  // Fetch gift data for the selected guest
+  const { data: guestGifts = [] } = useGiftsByGuest(selectedGuestForView?.id || '')
+  const selectedGuestGift = guestGifts.length > 0 ? guestGifts[0] : null
 
   const columns = useMemo<ColumnDef<DisplayGuest>[]>(
     () => [
@@ -162,7 +166,7 @@ export default function Guests({
                       onSelectedGuestForGiftChange(guest)
                     }
                   }}
-                  onSave={() => {
+                  onSuccess={() => {
                     onGiftPayment(guest.id)
                   }}
                   trigger={
@@ -187,20 +191,10 @@ export default function Guests({
                   <Eye className="h-3.5 w-3.5" />
                 </Button>
               )}
-              {guest.hasGivenGift && selectedGuestForView?.id === guest.id && (
+              {guest.hasGivenGift && selectedGuestForView?.id === guest.id && selectedGuestGift && (
                 <ViewGiftDrawer
                   guestName={guest.name}
-                  gift={{
-                    id: guest.id,
-                    date: new Date(guest.updatedAt).toLocaleDateString('km-KH', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    }),
-                    type: 'បានចង់ដៃ',
-                  }}
+                  gift={selectedGuestGift}
                   open={selectedGuestForView?.id === guest.id}
                   onOpenChange={(open) => {
                     if (!open) {
@@ -249,7 +243,7 @@ export default function Guests({
         },
       },
     ],
-    [selectedGuestForGift, selectedGuestForView, getTagColor, eventId, router, onSelectedGuestForGiftChange, onGiftPayment, onSelectedGuestForViewChange, onDeleteGuest, deleteGuestMutation.isPending]
+    [selectedGuestForGift, selectedGuestForView, selectedGuestGift, getTagColor, eventId, router, onSelectedGuestForGiftChange, onGiftPayment, onSelectedGuestForViewChange, onDeleteGuest, deleteGuestMutation.isPending]
   )
 
   // Handle bulk delete
@@ -307,7 +301,10 @@ export default function Guests({
                 <CreateGuestDrawer
                   open={isGuestDrawerOpen}
                   onOpenChange={onGuestDrawerOpenChange}
-                  onSave={onCreateGuest}
+                  onSuccess={() => {
+                    // Guest creation is handled by CreateGuestDrawer internally
+                    // This callback is just for notification purposes
+                  }}
                   trigger={
                     <Button size="sm" className="text-xs h-9" disabled={createGuestMutation.isPending}>
                       <Plus className="h-3.5 w-3.5 mr-1 sm:mr-1.5" />

@@ -1,4 +1,5 @@
 import httpStatus from 'http-status';
+import { Types } from 'mongoose';
 import { AppError } from '@/common/errors/app-error';
 import { eventRepository } from './event.repository';
 import type { EventDocument, EventStatus, EventType } from './event.model';
@@ -103,6 +104,7 @@ class EventService {
     const event = await eventRepository.create({
       ...payload,
       date: new Date(payload.date),
+      hostId: new Types.ObjectId(payload.hostId),
       restrictDuplicateNames: payload.restrictDuplicateNames ?? false,
       status: payload.status ?? 'draft',
     });

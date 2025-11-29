@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { invitationService } from './invitation.service';
 import { buildSuccessResponse } from '@/helpers/http-response';
+import type { InvitationStatus } from './invitation.model';
 
 /**
  * Create a new invitation request
@@ -64,7 +65,7 @@ export const listInvitationsHandler = async (req: Request, res: Response) => {
   const filters: {
     eventId?: string;
     userId?: string;
-    status?: string;
+    status?: InvitationStatus;
   } = {};
   
   if (req.query.eventId) {
@@ -76,7 +77,7 @@ export const listInvitationsHandler = async (req: Request, res: Response) => {
   }
   
   if (req.query.status) {
-    filters.status = req.query.status as string;
+    filters.status = req.query.status as InvitationStatus;
   }
   
   const result = await invitationService.list(page, pageSize, filters);

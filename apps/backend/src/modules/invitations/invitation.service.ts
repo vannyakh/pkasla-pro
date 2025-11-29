@@ -1,4 +1,5 @@
 import httpStatus from 'http-status';
+import { Types } from 'mongoose';
 import { AppError } from '@/common/errors/app-error';
 import { invitationRepository } from './invitation.repository';
 import { eventService } from '@/modules/events/event.service';
@@ -108,7 +109,9 @@ class InvitationService {
     }
 
     const invitation = await invitationRepository.create({
-      ...payload,
+      eventId: new Types.ObjectId(payload.eventId),
+      userId: new Types.ObjectId(payload.userId),
+      message: payload.message,
       status: 'pending',
     });
     
