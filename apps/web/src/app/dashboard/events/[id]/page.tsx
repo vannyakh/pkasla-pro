@@ -485,10 +485,6 @@ export default function EventDetailPage({
               <Calendar className="h-3.5 w-3.5 mr-1.5" />
               កាលវិភាគ
             </TabsTrigger>
-            <TabsTrigger value="settings" className="text-xs">
-              <SettingsIcon className="h-3.5 w-3.5 mr-1.5" />
-              កែប្រែ
-            </TabsTrigger>
             <TabsTrigger value="templates" className="text-xs">
               <FileText className="h-3.5 w-3.5 mr-1.5" />
               គំរូធៀបខ្ញុំ
@@ -500,6 +496,10 @@ export default function EventDetailPage({
             <TabsTrigger value="qr" className="text-xs">
               <QrCode className="h-3.5 w-3.5 mr-1.5" />
               បង្កើតQR
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="text-xs">
+              <SettingsIcon className="h-3.5 w-3.5 mr-1.5" />
+              កែប្រែ
             </TabsTrigger>
           </TabsList>
         </div>

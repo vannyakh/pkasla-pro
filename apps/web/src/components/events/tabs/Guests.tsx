@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { type ColumnDef } from '@tanstack/react-table'
 import { Filter, Plus, CheckCircle2, Eye, QrCode, MoreVertical, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -14,26 +14,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { DataTable } from '@/components/ui/data-table'
-import GiftPaymentDrawer from '@/components/guests/GiftPaymentDrawer'
 import CreateGuestDrawer from '@/components/guests/CreateGuestDrawer'
+import GuestDetailsDrawer, { type DisplayGuest } from '@/components/guests/GuestDetailsDrawer'
+import GiftPaymentDrawer from '@/components/guests/GiftPaymentDrawer'
 import ViewGiftDrawer from '@/components/guests/ViewGiftDrawer'
 import { useGiftsByGuest } from '@/hooks/api/useGift'
 
-interface DisplayGuest {
-  id: string
-  name: string
-  email?: string
-  phone?: string
-  tag?: {
-    label: string
-    color: 'red' | 'blue' | 'green'
-  }
-  hasGivenGift: boolean
-  updatedAt: string | Date
-  createdAt: string | Date
-  eventId: string | { id: string; title: string; date: string | Date; venue: string; hostId: string | object }
-  status: 'pending' | 'confirmed' | 'declined'
-}
+export type { DisplayGuest } from '@/components/guests/GuestDetailsDrawer'
 
 interface GuestsProps {
   displayGuests: DisplayGuest[]
@@ -83,7 +70,10 @@ export default function Guests({
   deleteGuestMutation,
   getTagColor,
 }: GuestsProps) {
-  // Fetch gift data for the selected guest
+  // State for full screen view
+  const [selectedGuestForFullScreen, setSelectedGuestForFullScreen] = useState<DisplayGuest | null>(null)
+  
+  // Fetch gift data for the selected guest (for table row actions)
   const { data: guestGifts = [] } = useGiftsByGuest(selectedGuestForView?.id || '')
   const selectedGuestGift = guestGifts.length > 0 ? guestGifts[0] : null
 
@@ -256,6 +246,11 @@ export default function Guests({
     }
   }
 
+  // Handle row click for full screen
+  const handleRowClick = (guest: DisplayGuest) => {
+    setSelectedGuestForFullScreen(guest)
+  }
+
   return (
     <div className="space-y-4">
       {/* Table */}
@@ -281,6 +276,7 @@ export default function Guests({
               filename: `guests-${eventId}`,
               formats: ['csv', 'json'],
             }}
+            onRowClick={handleRowClick}
             bulkActions={[
               {
                 label: 'លុបដែលបានជ្រើស',
@@ -327,6 +323,27 @@ export default function Guests({
           </div>
         </CardContent>
       </Card>
+
+      {/* Full Screen Guest Details Drawer */}
+      <GuestDetailsDrawer
+        guest={selectedGuestForFullScreen}
+        open={!!selectedGuestForFullScreen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedGuestForFullScreen(null)
+          }
+        }}
+        selectedGuestForGift={selectedGuestForGift}
+        onSelectedGuestForGiftChange={onSelectedGuestForGiftChange}
+        selectedGuestForView={selectedGuestForView}
+        onSelectedGuestForViewChange={onSelectedGuestForViewChange}
+        onGiftPayment={onGiftPayment}
+        onDeleteGuest={onDeleteGuest}
+        eventId={eventId}
+        router={router}
+        deleteGuestMutation={deleteGuestMutation}
+        getTagColor={getTagColor}
+      />
     </div>
   )
 }

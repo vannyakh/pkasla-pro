@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Calendar, MapPin, Globe, Upload, X, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -363,7 +363,7 @@ export function EventForm({ event, onSuccess, onCancel }: EventFormProps) {
       </div>
 
       {/* File Uploads */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Cover Image */}
         <div>
           <Label className="text-sm font-semibold text-black mb-2 block">
