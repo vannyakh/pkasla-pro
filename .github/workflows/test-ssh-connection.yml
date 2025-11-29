@@ -1,0 +1,145 @@
+name: Test SSH Connection
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test (production or development)'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - development
+
+jobs:
+  test-connection:
+    name: Test SSH Connection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate secrets
+        run: |
+          echo "🔍 Validating secrets for ${{ github.event.inputs.environment }} environment..."
+          
+          if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+            if [ -z "${{ secrets.VULTR_IP }}" ]; then
+              echo "❌ Error: VULTR_IP secret is missing!"
+              exit 1
+            fi
+            VULTR_IP="${{ secrets.VULTR_IP }}"
+            PROJECT_PATH="${{ secrets.VULTR_PROJECT_PATH || '/www/wwwroot/turborepo/pkasla-pro' }}"
+          else
+            VULTR_IP="${{ secrets.VULTR_IP_DEV || secrets.VULTR_IP }}"
+            if [ -z "$VULTR_IP" ]; then
+              echo "❌ Error: VULTR_IP_DEV or VULTR_IP secret is missing!"
+              exit 1
+            fi
+            PROJECT_PATH="${{ secrets.VULTR_PROJECT_PATH_DEV || '/www/wwwroot/turborepo/pkasla-pro' }}"
+          fi
+          
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "❌ Error: SSH_PRIVATE_KEY secret is missing!"
+            exit 1
+          fi
+          
+          echo "✅ VULTR_IP: $VULTR_IP"
+          echo "✅ Username: ${{ secrets.VULTR_USERNAME || 'root' }}"
+          echo "✅ Port: ${{ secrets.VULTR_SSH_PORT || '22' }}"
+          echo "✅ Project Path: $PROJECT_PATH"
+          echo "✅ SSH_PRIVATE_KEY is set"
+          echo "✅ All required secrets are present"
+
+      - name: Test SSH Connection
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ github.event.inputs.environment == 'production' && secrets.VULTR_IP || (secrets.VULTR_IP_DEV || secrets.VULTR_IP) }}
+          username: ${{ secrets.VULTR_USERNAME || 'root' }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VULTR_SSH_PORT || '22' }}
+          script_stop: true
+          script: |
+            set -e
+            
+            echo "🚀 Testing SSH connection..."
+            echo "📍 Current directory: $(pwd)"
+            echo "📍 User: $(whoami)"
+            echo "📍 Hostname: $(hostname)"
+            
+            # Test basic commands
+            echo ""
+            echo "🔍 Testing system information..."
+            echo "✅ Node.js version: $(node --version || echo 'Not installed')"
+            echo "✅ pnpm version: $(pnpm --version || echo 'Not installed')"
+            echo "✅ PM2 version: $(pm2 --version || echo 'Not installed')"
+            echo "✅ Git version: $(git --version || echo 'Not installed')"
+            
+            # Check project directory
+            PROJECT_PATH="${{ github.event.inputs.environment == 'production' && (secrets.VULTR_PROJECT_PATH || '/www/wwwroot/turborepo/pkasla-pro') || (secrets.VULTR_PROJECT_PATH_DEV || '/www/wwwroot/turborepo/pkasla-pro') }}"
+            echo ""
+            echo "🔍 Checking project directory: $PROJECT_PATH"
+            if [ -d "$PROJECT_PATH" ]; then
+              echo "✅ Project directory exists"
+              cd "$PROJECT_PATH"
+              echo "✅ Changed to project directory: $(pwd)"
+              echo "✅ Git remote: $(git remote get-url origin 2>/dev/null || echo 'Not a git repository')"
+              echo "✅ Current branch: $(git branch --show-current 2>/dev/null || echo 'Not a git repository')"
+            else
+              echo "⚠️  Project directory does not exist: $PROJECT_PATH"
+            fi
+            
+            # Check PM2 processes
+            echo ""
+            echo "🔍 Checking PM2 processes..."
+            if command -v pm2 &> /dev/null; then
+              pm2 list || echo "⚠️  PM2 list failed"
+            else
+              echo "⚠️  PM2 is not installed"
+            fi
+            
+            # Check disk space
+            echo ""
+            echo "🔍 Checking disk space..."
+            df -h / | tail -1
+            
+            # Check if ports are in use
+            echo ""
+            echo "🔍 Checking if application ports are in use..."
+            if [ "${{ github.event.inputs.environment }}" == "production" ]; then
+              netstat -tuln | grep -E ':(3000|4000)' || echo "⚠️  Ports 3000 and 4000 are not in use"
+            else
+              netstat -tuln | grep -E ':(3001|4001)' || echo "⚠️  Ports 3001 and 4001 are not in use"
+            fi
+            
+            echo ""
+            echo "✅ SSH connection test completed successfully!"
+            echo "✅ Server is accessible and ready for deployment"
+
+      - name: Connection Test Summary
+        if: success()
+        run: |
+          echo "## ✅ SSH Connection Test Passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** Connection successful" >> $GITHUB_STEP_SUMMARY
+          echo "**Server:** ${{ github.event.inputs.environment == 'production' && secrets.VULTR_IP || (secrets.VULTR_IP_DEV || secrets.VULTR_IP) }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All checks passed! The server is ready for deployment." >> $GITHUB_STEP_SUMMARY
+
+      - name: Connection Test Failed
+        if: failure()
+        run: |
+          echo "## ❌ SSH Connection Test Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** Connection failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Troubleshooting Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Verify SSH credentials are correct" >> $GITHUB_STEP_SUMMARY
+          echo "2. Check if server IP is correct" >> $GITHUB_STEP_SUMMARY
+          echo "3. Ensure SSH port is open (default: 22)" >> $GITHUB_STEP_SUMMARY
+          echo "4. Verify SSH_PRIVATE_KEY secret is set correctly" >> $GITHUB_STEP_SUMMARY
+          echo "5. Check server firewall settings" >> $GITHUB_STEP_SUMMARY
+
