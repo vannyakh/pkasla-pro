@@ -1,0 +1,23 @@
+name: Deploy to Vultr
+on: [push]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: corepack enable && pnpm install
+      - run: turbo run build
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VULTR_IP }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/wwwroot/my-turborepo
+            git pull origin main
+            pnpm install --frozen-lockfile
+            turbo run build
+            pm2 restart all
