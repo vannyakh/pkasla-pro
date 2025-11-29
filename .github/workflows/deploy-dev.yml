@@ -41,10 +41,26 @@ jobs:
     name: Deploy to Dev Server
     needs: build
     runs-on: ubuntu-latest
-    environment: development
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Validate secrets
+        run: |
+          echo "🔍 Validating secrets..."
+          if [ -z "${{ secrets.VULTR_IP_DEV || secrets.VULTR_IP }}" ]; then
+            echo "❌ Error: VULTR_IP or VULTR_IP_DEV secret is missing or empty!"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "❌ Error: SSH_PRIVATE_KEY secret is missing or empty!"
+            exit 1
+          fi
+          echo "✅ VULTR_IP is set"
+          echo "✅ SSH_PRIVATE_KEY is set"
+          echo "✅ Username: ${{ secrets.VULTR_USERNAME || 'root' }}"
+          echo "✅ Port: ${{ secrets.VULTR_SSH_PORT || '22' }}"
+          echo "✅ All required secrets are present"
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.0
