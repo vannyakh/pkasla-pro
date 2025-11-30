@@ -59,7 +59,7 @@ export default function Templates({ eventId }: TemplatesProps) {
         },
       })
       setSelectedTemplateSlug(slug)
-      toast.success('Template selected successfully')
+      // Toast is handled by the mutation's onSuccess callback
     } catch {
       toast.error('Failed to select template')
     }
@@ -82,7 +82,7 @@ export default function Templates({ eventId }: TemplatesProps) {
           },
         },
       })
-      toast.success('Customization saved successfully')
+      // Toast is handled by the mutation's onSuccess callback
       setIsCustomizing(false)
     } catch {
       toast.error('Failed to save customization')

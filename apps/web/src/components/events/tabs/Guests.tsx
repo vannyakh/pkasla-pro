@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
 import { type ColumnDef } from '@tanstack/react-table'
-import { Filter, Plus, CheckCircle2, Eye, QrCode, MoreVertical, Trash2 } from 'lucide-react'
+import { Filter, Plus, CheckCircle2, Eye, QrCode, MoreVertical, Trash2, Share2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent } from '@/components/ui/card'
@@ -20,6 +20,8 @@ import GuestDetailsDrawer, { type DisplayGuest } from '@/components/guests/Guest
 import GiftPaymentDrawer from '@/components/guests/GiftPaymentDrawer'
 import ViewGiftDrawer from '@/components/guests/ViewGiftDrawer'
 import { useGiftsByGuest } from '@/hooks/api/useGift'
+import toast from 'react-hot-toast'
+import { api } from '@/lib/axios-client'
 
 export type { DisplayGuest } from '@/components/guests/GuestDetailsDrawer'
 
@@ -77,10 +79,47 @@ export default function Guests({
 }: GuestsProps) {
   // State for full screen view
   const [selectedGuestForFullScreen, setSelectedGuestForFullScreen] = useState<DisplayGuest | null>(null)
+  const [sharingGuestId, setSharingGuestId] = useState<string | null>(null)
   
   // Fetch gift data for the selected guest (for table row actions)
   const { data: guestGifts = [] } = useGiftsByGuest(selectedGuestForView?.id || '')
   const selectedGuestGift = guestGifts.length > 0 ? guestGifts[0] : null
+
+  // Handle share invite link
+  const handleShareInvite = useCallback(async (guestId: string) => {
+    try {
+      setSharingGuestId(guestId)
+      
+      // First try to get the guest to see if inviteToken is included
+      const guestResponse = await api.get<{ inviteToken?: string }>(`/guests/${guestId}`)
+      const guest = guestResponse.data
+      
+      let inviteToken: string | undefined = guest?.inviteToken
+      
+      // If no token, regenerate it
+      if (!inviteToken) {
+        const tokenResponse = await api.post<{ token: string }>(`/guests/${guestId}/regenerate-token`)
+        if (tokenResponse.success && tokenResponse.data) {
+          inviteToken = tokenResponse.data.token
+        } else {
+          throw new Error('Failed to get invite token')
+        }
+      }
+      
+      if (inviteToken) {
+        const inviteUrl = `${window.location.origin}/invite/${inviteToken}`
+        await navigator.clipboard.writeText(inviteUrl)
+        toast.success('Invite link copied to clipboard!')
+      } else {
+        throw new Error('No invite token available')
+      }
+    } catch (error) {
+      console.error('Error sharing invite:', error)
+      toast.error('Failed to share invite link')
+    } finally {
+      setSharingGuestId(null)
+    }
+  }, [])
 
   const columns = useMemo<ColumnDef<DisplayGuest>[]>(
     () => [
@@ -198,6 +237,19 @@ export default function Guests({
                   }}
                 />
               )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs h-7 w-7 p-0"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleShareInvite(guest.id)
+                }}
+                disabled={sharingGuestId === guest.id}
+                title="Share invite link"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+              </Button>
               <Button variant="ghost" size="sm" className="text-xs h-7 w-7 p-0 hidden sm:flex">
                 <QrCode className="h-3.5 w-3.5" />
               </Button>
@@ -250,7 +302,7 @@ export default function Guests({
         },
       },
     ],
-    [selectedGuestForGift, selectedGuestForView, selectedGuestGift, getTagColor, onSelectedGuestForGiftChange, onGiftPayment, onSelectedGuestForViewChange, onDeleteGuest, deleteGuestMutation.isPending, displayGuests, onEditingGuestChange, onGuestDrawerOpenChange]
+    [selectedGuestForGift, selectedGuestForView, selectedGuestGift, getTagColor, onSelectedGuestForGiftChange, onGiftPayment, onSelectedGuestForViewChange, onDeleteGuest, deleteGuestMutation.isPending, displayGuests, onEditingGuestChange, onGuestDrawerOpenChange, sharingGuestId, handleShareInvite]
   )
 
   // Handle bulk delete

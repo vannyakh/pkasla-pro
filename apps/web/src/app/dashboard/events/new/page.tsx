@@ -115,24 +115,20 @@ export default function CreateEventPage() {
           <Select 
             value={formData.eventType} 
             onValueChange={(value) => handleInputChange('eventType', value)}
-            disabled={isLoadingCategories}
+            disabled={isLoadingCategories || eventTypes.length === 0}
           >
             <SelectTrigger className="w-full h-10 text-sm">
-              <SelectValue placeholder={isLoadingCategories ? 'កំពុងផ្ទុក...' : 'ជ្រើសរើសប្រភេទកម្មវិធី'} />
+              <SelectValue placeholder={isLoadingCategories ? 'កំពុងផ្ទុក...' : eventTypes.length === 0 ? 'មិនមានប្រភេទ' : 'ជ្រើសរើសប្រភេទកម្មវិធី'} />
             </SelectTrigger>
-            <SelectContent>
-              {eventTypes.length > 0 ? (
-                eventTypes.map((type) => (
+            {eventTypes.length > 0 && (
+              <SelectContent>
+                {eventTypes.map((type) => (
                   <SelectItem key={type.value} value={type.value}>
                     {type.label}
                   </SelectItem>
-                ))
-              ) : (
-                <SelectItem value="" disabled>
-                  {isLoadingCategories ? 'កំពុងផ្ទុក...' : 'មិនមានប្រភេទ'}
-                </SelectItem>
-              )}
-            </SelectContent>
+                ))}
+              </SelectContent>
+            )}
           </Select>
         </div>
 

@@ -682,7 +682,7 @@ export default function EventDetailPage({
 
         {/* Templates Tab */}
         <TabsContent value="templates" className="mt-4 md:mt-4 mb-16 md:mb-4">
-          <Templates />
+          <Templates eventId={id} />
         </TabsContent>
 
         {/* Stores Tab */}
