@@ -17,6 +17,14 @@ export interface EventDocument extends Document {
   restrictDuplicateNames: boolean;
   status: EventStatus;
   guestCount: number;
+  templateSlug?: string; // Selected template slug for this event
+  userTemplateConfig?: {
+    images?: Record<string, string>; // Custom image URLs
+    colors?: Record<string, string>; // Custom colors
+    fonts?: Record<string, string>; // Custom fonts
+    spacing?: Record<string, number>; // Custom spacing values
+    customVariables?: Record<string, string>; // Additional custom variables
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -82,6 +90,21 @@ const eventSchema = new Schema<EventDocument>(
       type: Number,
       default: 0,
       min: 0,
+    },
+    templateSlug: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+    userTemplateConfig: {
+      type: {
+        images: Map,
+        colors: Map,
+        fonts: Map,
+        spacing: Map,
+        customVariables: Map,
+      },
+      default: {},
     },
   },
   { timestamps: true },

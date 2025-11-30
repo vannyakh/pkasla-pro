@@ -16,6 +16,14 @@ export interface Event {
   restrictDuplicateNames: boolean
   status: EventStatus
   guestCount: number
+  templateSlug?: string
+  userTemplateConfig?: {
+    images?: Record<string, string>
+    colors?: Record<string, string>
+    fonts?: Record<string, string>
+    spacing?: Record<string, number>
+    customVariables?: Record<string, string>
+  }
   createdAt: string | Date
   updatedAt: string | Date
 }
@@ -46,6 +54,14 @@ export interface UpdateEventDto {
   khqrKhr?: string
   restrictDuplicateNames?: boolean
   status?: EventStatus
+  templateSlug?: string
+  userTemplateConfig?: {
+    images?: Record<string, string>
+    colors?: Record<string, string>
+    fonts?: Record<string, string>
+    spacing?: Record<string, number>
+    customVariables?: Record<string, string>
+  }
 }
 
 export interface EventListFilters {

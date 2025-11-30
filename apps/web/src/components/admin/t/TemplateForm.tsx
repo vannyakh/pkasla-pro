@@ -38,6 +38,13 @@ export function TemplateForm({
     price: '',
     isPremium: false,
     previewImage: null,
+    slug: '',
+    variables: [],
+    assets: {
+      images: [],
+      colors: [],
+      fonts: [],
+    },
   })
   const [preview, setPreview] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -54,6 +61,13 @@ export function TemplateForm({
         price: template.price || '',
         isPremium: template.isPremium,
         previewImage: null,
+        slug: template.slug || '',
+        variables: template.variables || [],
+        assets: template.assets || {
+          images: [],
+          colors: [],
+          fonts: [],
+        },
       })
       if (template.previewImage) {
         setPreview(template.previewImage)
@@ -251,6 +265,45 @@ export function TemplateForm({
           disabled={isSubmitting}
         />
         {errors.price && <p className="text-xs text-red-600 mt-1">{errors.price}</p>}
+      </div>
+
+      {/* Slug */}
+      <div>
+        <Label htmlFor="slug" className="text-sm font-semibold text-black mb-2 block">
+          Slug (Route Name)
+        </Label>
+        <Input
+          id="slug"
+          value={formData.slug || ''}
+          onChange={(e) => handleInputChange('slug', e.target.value)}
+          placeholder="e.g., classic-gold, modern-minimal"
+          className="h-10 text-sm"
+          disabled={isSubmitting}
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Unique identifier for the template route (lowercase, hyphens only)
+        </p>
+      </div>
+
+      {/* Variables */}
+      <div>
+        <Label htmlFor="variables" className="text-sm font-semibold text-black mb-2 block">
+          Available Variables (comma-separated)
+        </Label>
+        <Input
+          id="variables"
+          value={formData.variables?.join(', ') || ''}
+          onChange={(e) => {
+            const vars = e.target.value.split(',').map(v => v.trim()).filter(Boolean)
+            setFormData(prev => ({ ...prev, variables: vars }))
+          }}
+          placeholder="e.g., event.title, guest.name, event.date"
+          className="h-10 text-sm"
+          disabled={isSubmitting}
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          List of variables that can be used in this template
+        </p>
       </div>
 
       {/* Is Premium */}

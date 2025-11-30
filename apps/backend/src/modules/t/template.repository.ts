@@ -14,6 +14,10 @@ export class TemplateRepository {
     return TemplateModel.findOne({ name }).lean();
   }
 
+  findBySlug(slug: string) {
+    return TemplateModel.findOne({ slug }).lean();
+  }
+
   updateById(id: string, payload: UpdateQuery<TemplateDocument>) {
     return TemplateModel.findByIdAndUpdate(id, payload, { new: true }).lean();
   }

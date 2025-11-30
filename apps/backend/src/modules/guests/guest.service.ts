@@ -1,5 +1,6 @@
 import httpStatus from 'http-status';
 import { Types } from 'mongoose';
+import crypto from 'crypto';
 import { AppError } from '@/common/errors/app-error';
 import { guestRepository } from './guest.repository';
 import { eventService } from '@/modules/events/event.service';
@@ -181,6 +182,8 @@ class GuestService {
     if (hostId) {
       createPayload.createdBy = new Types.ObjectId(hostId);
     }
+    // Generate invite token (32 bytes base64 encoded)
+    createPayload.inviteToken = crypto.randomBytes(32).toString('base64url');
     const guest = await guestRepository.create(createPayload);
     
     // Increment guest count
@@ -390,6 +393,65 @@ class GuestService {
       page,
       pageSize,
     };
+  }
+
+  /**
+   * Create multiple guests from CSV data
+   */
+  async createBulk(payloads: CreateGuestInput[], hostId?: string): Promise<GuestResponse[]> {
+    const results: GuestResponse[] = [];
+    const errors: Array<{ row: number; error: string }> = [];
+
+    for (let i = 0; i < payloads.length; i++) {
+      try {
+        const guest = await this.create(payloads[i], hostId);
+        results.push(guest);
+      } catch (error) {
+        errors.push({
+          row: i + 1,
+          error: error instanceof AppError ? error.message : 'Unknown error',
+        });
+      }
+    }
+
+    // If all failed, throw error
+    if (results.length === 0 && errors.length > 0) {
+      throw new AppError(
+        `Failed to create guests: ${errors.map(e => `Row ${e.row}: ${e.error}`).join('; ')}`,
+        httpStatus.BAD_REQUEST
+      );
+    }
+
+    return results;
+  }
+
+  /**
+   * Regenerate invite token for a guest
+   */
+  async regenerateToken(guestId: string, hostId?: string): Promise<string> {
+    const guest = await guestRepository.findById(guestId);
+    if (!guest) {
+      throw new AppError('Guest not found', httpStatus.NOT_FOUND);
+    }
+
+    // Verify host owns the event if hostId provided
+    if (hostId) {
+      const eventId = typeof guest.eventId === 'string' ? guest.eventId : (guest.eventId as any)?._id?.toString() || (guest.eventId as any)?.id?.toString();
+      if (eventId) {
+        const event = await eventService.findById(eventId);
+        if (event) {
+          const eventHostId = typeof event.hostId === 'string' ? event.hostId : event.hostId.id;
+          if (eventHostId !== hostId) {
+            throw new AppError('You can only regenerate tokens for your own event guests', httpStatus.FORBIDDEN);
+          }
+        }
+      }
+    }
+
+    // Generate new token
+    const newToken = crypto.randomBytes(32).toString('base64url');
+    await guestRepository.updateById(guestId, { inviteToken: newToken });
+    return newToken;
   }
 }
 

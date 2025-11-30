@@ -17,6 +17,12 @@ export interface GuestDocument extends Document {
   province?: string;
   photo?: string; // URL to guest photo
   hasGivenGift?: boolean;
+  inviteToken?: string; // Unique token for invitation link
+  sentAt?: Date; // When invitation was sent
+  deliveredAt?: Date; // When email was delivered
+  openedAt?: Date; // When invitation was opened (via tracking pixel)
+  clickedAt?: Date; // When guest clicked a link
+  meta?: Record<string, string>; // Custom variables for personalization
   createdAt: Date;
   updatedAt: Date;
 }
@@ -89,6 +95,30 @@ const guestSchema = new Schema<GuestDocument>(
       type: Boolean,
       default: false,
     },
+    inviteToken: {
+      type: String,
+      trim: true,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
+    sentAt: {
+      type: Date,
+    },
+    deliveredAt: {
+      type: Date,
+    },
+    openedAt: {
+      type: Date,
+    },
+    clickedAt: {
+      type: Date,
+    },
+    meta: {
+      type: Map,
+      of: String,
+      default: {},
+    },
   },
   { timestamps: true },
 );
@@ -98,6 +128,7 @@ guestSchema.index({ eventId: 1, status: 1 });
 guestSchema.index({ eventId: 1, email: 1 });
 guestSchema.index({ eventId: 1, phone: 1 });
 guestSchema.index({ createdBy: 1, eventId: 1 });
+guestSchema.index({ inviteToken: 1 }); // Index for fast token lookup
 // guestSchema.index({ userId: 1, eventId: 1 }, { unique: true, sparse: true });
 
 guestSchema.set('toJSON', {

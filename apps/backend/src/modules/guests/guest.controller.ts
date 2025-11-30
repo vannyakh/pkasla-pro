@@ -108,3 +108,54 @@ export const getMyGuestsHandler = async (req: Request, res: Response) => {
   return res.status(httpStatus.OK).json(buildSuccessResponse(guests));
 };
 
+/**
+ * Create guests from CSV upload
+ */
+export const createGuestsFromCSVHandler = async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Authentication required' });
+  }
+
+  const { guests: guestsData, eventId } = req.body;
+
+  if (!Array.isArray(guestsData) || !eventId) {
+    return res.status(httpStatus.BAD_REQUEST).json({
+      success: false,
+      error: 'Invalid request. Expected guests array and eventId',
+    });
+  }
+
+  // Transform CSV data to CreateGuestInput format
+  const payloads = guestsData.map((guest: any) => ({
+    name: guest.name || '',
+    email: guest.email,
+    phone: guest.phone,
+    eventId,
+    occupation: guest.occupation,
+    address: guest.address,
+    province: guest.province,
+    tag: guest.tag,
+    notes: guest.notes,
+    meta: guest.custom1 || guest.custom2 ? {
+      ...(guest.custom1 && { custom1: guest.custom1 }),
+      ...(guest.custom2 && { custom2: guest.custom2 }),
+    } : undefined,
+  }));
+
+  const createdGuests = await guestService.createBulk(payloads, req.user.id);
+  return res.status(httpStatus.CREATED).json(buildSuccessResponse(createdGuests, 'Guests created successfully'));
+};
+
+/**
+ * Regenerate invite token for a guest
+ */
+export const regenerateTokenHandler = async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Authentication required' });
+  }
+
+  const { id } = req.params;
+  const newToken = await guestService.regenerateToken(id, req.user.id);
+  return res.status(httpStatus.OK).json(buildSuccessResponse({ token: newToken }, 'Token regenerated successfully'));
+};
+

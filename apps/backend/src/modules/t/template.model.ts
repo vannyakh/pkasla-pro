@@ -7,6 +7,13 @@ export interface TemplateDocument extends Document {
   price?: number;
   isPremium: boolean;
   previewImage?: string;
+  slug: string; // Next.js route name (e.g., "classic-gold", "modern-minimal")
+  variables?: string[]; // Available variables (e.g., ["event.title", "guest.name", "event.date"])
+  assets?: {
+    images?: string[];
+    colors?: string[];
+    fonts?: string[];
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +48,25 @@ const templateSchema = new Schema<TemplateDocument>(
     },
     previewImage: { 
       type: String,
+    },
+    slug: {
+      type: String,
+      trim: true,
+      unique: true,
+      index: true,
+      sparse: true, // Allow null/undefined but enforce uniqueness when present
+    },
+    variables: {
+      type: [String],
+      default: [],
+    },
+    assets: {
+      type: {
+        images: [String],
+        colors: [String],
+        fonts: [String],
+      },
+      default: {},
     },
   },
   { timestamps: true },

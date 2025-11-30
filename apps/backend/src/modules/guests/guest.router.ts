@@ -10,6 +10,8 @@ import {
   listGuestsHandler,
   getGuestsByEventHandler,
   getMyGuestsHandler,
+  createGuestsFromCSVHandler,
+  regenerateTokenHandler,
 } from './guest.controller';
 import {
   createGuestSchema,
@@ -55,6 +57,20 @@ router.post(
   authenticate,
   validateRequest(createGuestSchema),
   asyncHandler(createGuestHandler),
+);
+
+// Create guests from CSV (authenticated, host only)
+router.post(
+  '/bulk',
+  authenticate,
+  asyncHandler(createGuestsFromCSVHandler),
+);
+
+// Regenerate invite token (authenticated, host only)
+router.post(
+  '/:id/regenerate-token',
+  authenticate,
+  asyncHandler(regenerateTokenHandler),
 );
 
 // Update guest by ID (authenticated, host only)

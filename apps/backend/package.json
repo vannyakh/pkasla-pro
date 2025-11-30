@@ -10,7 +10,9 @@
     "start": "node dist/server.js",
     "lint": "tsc --noEmit",
     "test": "echo \"No tests yet\"",
-    "drop-guest-index": "ts-node -r tsconfig-paths/register --transpile-only src/scripts/drop-guest-index.ts"
+    "drop-guest-index": "ts-node -r tsconfig-paths/register --transpile-only src/scripts/drop-guest-index.ts",
+    "seed-templates": "ts-node -r tsconfig-paths/register --transpile-only src/scripts/seed-templates.ts",
+    "seed-subscription-plans": "ts-node -r tsconfig-paths/register --transpile-only src/scripts/seed-subscription-plans.ts"
   },
   "keywords": [],
   "author": "",

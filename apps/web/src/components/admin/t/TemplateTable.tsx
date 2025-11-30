@@ -65,6 +65,8 @@ export function TemplateTable({
               <TableHead className="text-xs font-semibold text-black">No</TableHead>
               <TableHead className="text-xs font-semibold text-black">Preview</TableHead>
               <TableHead className="text-xs font-semibold text-black">Name</TableHead>
+              <TableHead className="text-xs font-semibold text-black">Slug</TableHead>
+              <TableHead className="text-xs font-semibold text-black">Variables</TableHead>
               <TableHead className="text-xs font-semibold text-black">Title</TableHead>
               <TableHead className="text-xs font-semibold text-black">Category</TableHead>
               <TableHead className="text-xs font-semibold text-black">Price</TableHead>
@@ -76,7 +78,7 @@ export function TemplateTable({
           <TableBody>
             {templates.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-xs text-gray-500">
+                <TableCell colSpan={11} className="text-center py-8 text-xs text-gray-500">
                   No templates found
                 </TableCell>
               </TableRow>
@@ -100,6 +102,31 @@ export function TemplateTable({
                     )}
                   </TableCell>
                   <TableCell className="text-xs text-black font-medium">{template.name}</TableCell>
+                  <TableCell className="text-xs text-gray-600">
+                    {template.slug ? (
+                      <code className="px-2 py-1 bg-gray-100 rounded text-xs">{template.slug}</code>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-xs text-gray-600">
+                    {template.variables && template.variables.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {template.variables.slice(0, 2).map((v, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs">
+                            {v}
+                          </Badge>
+                        ))}
+                        {template.variables.length > 2 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{template.variables.length - 2}
+                          </Badge>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-xs text-gray-600">{template.title}</TableCell>
                   <TableCell>
                     {template.category ? (

@@ -43,6 +43,14 @@ export class GuestRepository {
     return GuestModel.findOne({ eventId, phone }).lean();
   }
 
+  findByInviteToken(token: string) {
+    return GuestModel.findOne({ inviteToken: token })
+      .populate('eventId', 'title description eventType date venue googleMapLink coverImage hostId')
+      .populate('userId', 'name email avatar')
+      .populate('createdBy', 'name email avatar')
+      .lean();
+  }
+
   updateById(id: string, payload: UpdateQuery<GuestDocument>) {
     return GuestModel.findByIdAndUpdate(id, payload, { new: true })
       .populate('eventId', 'title date venue hostId')

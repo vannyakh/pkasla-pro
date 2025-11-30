@@ -48,6 +48,14 @@ export interface EventResponse {
   restrictDuplicateNames: boolean;
   status: EventStatus;
   guestCount: number;
+  templateSlug?: string;
+  userTemplateConfig?: {
+    images?: Record<string, string>;
+    colors?: Record<string, string>;
+    fonts?: Record<string, string>;
+    spacing?: Record<string, number>;
+    customVariables?: Record<string, string>;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
