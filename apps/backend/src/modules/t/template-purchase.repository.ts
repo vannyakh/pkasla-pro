@@ -40,7 +40,7 @@ export class TemplatePurchaseRepository {
   list(filter: FilterQuery<TemplatePurchaseDocument> = {}) {
     return TemplatePurchaseModel.find(filter)
       .populate('userId', 'name email')
-      .populate('templateId')
+      .populate('templateId', 'name title previewImage')
       .sort({ purchaseDate: -1 })
       .lean();
   }

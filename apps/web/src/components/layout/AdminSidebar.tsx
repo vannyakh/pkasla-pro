@@ -47,6 +47,7 @@ const MENU_ITEMS: readonly MenuItem[] = [
     children: [
       { href: '/admin/plans', label: 'Plans' },
       { href: '/admin/subscriptions', label: 'Subscriptions' },
+      { href: '/admin/templatepurchases', label: 'Template Purchases' },
     ]
   },
   { href: '/admin/t', label: 'Template', icon: Component },

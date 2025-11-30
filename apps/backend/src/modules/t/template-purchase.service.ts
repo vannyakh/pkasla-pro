@@ -104,6 +104,65 @@ class TemplatePurchaseService {
     const result = await templatePurchaseRepository.getTotalRevenue();
     return result.length > 0 && result[0].total ? result[0].total : 0;
   }
+
+  async list(
+    page: number = 1,
+    pageSize: number = 10,
+    filters?: {
+      userId?: string;
+      templateId?: string;
+      search?: string;
+    }
+  ): Promise<{
+    items: TemplatePurchaseResponse[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }> {
+    const filter: any = {};
+    
+    if (filters?.userId) {
+      filter.userId = new Types.ObjectId(filters.userId);
+    }
+    
+    if (filters?.templateId) {
+      filter.templateId = new Types.ObjectId(filters.templateId);
+    }
+
+    const skip = (page - 1) * pageSize;
+    const query = templatePurchaseRepository.list(filter);
+    const purchasesQuery = query.skip(skip).limit(pageSize);
+    const [purchases, total] = await Promise.all([
+      purchasesQuery,
+      templatePurchaseRepository.countDocuments(filter),
+    ]);
+
+    let sanitized = purchases
+      .map((purchase) => sanitizeTemplatePurchase(purchase as unknown as TemplatePurchaseDocument))
+      .filter(Boolean) as TemplatePurchaseResponse[];
+
+    // If search filter, filter by user name or template name
+    if (filters?.search) {
+      const searchLower = filters.search.toLowerCase();
+      sanitized = sanitized.filter((purchase) => {
+        const userName = (purchase.userId as any)?.name?.toLowerCase() || '';
+        const userEmail = (purchase.userId as any)?.email?.toLowerCase() || '';
+        const templateName = (purchase.templateId as any)?.name?.toLowerCase() || '';
+        const templateTitle = (purchase.templateId as any)?.title?.toLowerCase() || '';
+        return userName.includes(searchLower) || 
+               userEmail.includes(searchLower) || 
+               templateName.includes(searchLower) || 
+               templateTitle.includes(searchLower);
+      });
+    }
+
+    return {
+      items: sanitized,
+      total: filters?.search ? sanitized.length : total,
+      page,
+      pageSize,
+    };
+  }
 }
 
 export const templatePurchaseService = new TemplatePurchaseService();

@@ -51,3 +51,32 @@ export const getTemplateRevenueHandler = async (req: Request, res: Response) => 
   return res.status(httpStatus.OK).json(buildSuccessResponse({ totalRevenue }));
 };
 
+/**
+ * List all template purchases with pagination (Admin only)
+ */
+export const listTemplatePurchasesHandler = async (req: Request, res: Response) => {
+  const page = Number(req.query.page) || 1;
+  const pageSize = Number(req.query.pageSize) || 10;
+  
+  const filters: {
+    userId?: string;
+    templateId?: string;
+    search?: string;
+  } = {};
+
+  if (req.query.userId) {
+    filters.userId = req.query.userId as string;
+  }
+
+  if (req.query.templateId) {
+    filters.templateId = req.query.templateId as string;
+  }
+
+  if (req.query.search) {
+    filters.search = req.query.search as string;
+  }
+
+  const result = await templatePurchaseService.list(page, pageSize, filters);
+  return res.status(httpStatus.OK).json(buildSuccessResponse(result));
+};
+

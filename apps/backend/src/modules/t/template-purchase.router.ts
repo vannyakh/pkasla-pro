@@ -8,6 +8,7 @@ import {
   getMyTemplatePurchasesHandler,
   checkTemplateOwnershipHandler,
   getTemplateRevenueHandler,
+  listTemplatePurchasesHandler,
 } from './template-purchase.controller';
 import {
   createTemplatePurchaseSchema,
@@ -41,6 +42,13 @@ router.get(
   '/revenue',
   authorize('admin'),
   asyncHandler(getTemplateRevenueHandler),
+);
+
+// List all template purchases (Admin only)
+router.get(
+  '/',
+  authorize('admin'),
+  asyncHandler(listTemplatePurchasesHandler),
 );
 
 export const templatePurchaseRouter: Router = router;

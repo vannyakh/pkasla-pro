@@ -4,18 +4,33 @@ import toast from 'react-hot-toast';
 
 export interface TemplatePurchase {
   id: string;
-  userId: string;
-  templateId: string;
+  userId: string | { id: string; name: string; email: string };
+  templateId: string | { id: string; name: string; title: string; previewImage?: string };
   price: number;
   purchaseDate: string;
   paymentMethod?: string;
   transactionId?: string;
 }
 
+export interface TemplatePurchaseListResponse {
+  items: TemplatePurchase[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface CreateTemplatePurchaseInput {
   templateId: string;
   paymentMethod?: string;
   transactionId?: string;
+}
+
+export interface TemplatePurchaseListFilters {
+  page?: number;
+  pageSize?: number;
+  userId?: string;
+  templateId?: string;
+  search?: string;
 }
 
 export interface BakongPaymentResponse {
@@ -35,9 +50,42 @@ export interface StripePaymentIntentResponse {
 
 export const templatePurchaseKeys = {
   all: ['template-purchases'] as const,
+  lists: () => [...templatePurchaseKeys.all, 'list'] as const,
+  list: (filters?: TemplatePurchaseListFilters) => [...templatePurchaseKeys.lists(), filters] as const,
   myPurchases: () => [...templatePurchaseKeys.all, 'me'] as const,
   check: (templateId: string) => [...templatePurchaseKeys.all, 'check', templateId] as const,
+  revenue: () => [...templatePurchaseKeys.all, 'revenue'] as const,
 };
+
+/**
+ * Get list of all template purchases (Admin only)
+ */
+export function useTemplatePurchases(filters: TemplatePurchaseListFilters = {}) {
+  return useQuery<TemplatePurchaseListResponse, Error>({
+    queryKey: templatePurchaseKeys.list(filters),
+    queryFn: async (): Promise<TemplatePurchaseListResponse> => {
+      const params = new URLSearchParams();
+      if (filters.page) params.append('page', filters.page.toString());
+      if (filters.pageSize) params.append('pageSize', filters.pageSize.toString());
+      if (filters.userId) params.append('userId', filters.userId);
+      if (filters.templateId) params.append('templateId', filters.templateId);
+      if (filters.search) params.append('search', filters.search);
+
+      const response = await api.get<TemplatePurchaseListResponse>(
+        `/template-purchases${params.toString() ? `?${params.toString()}` : ''}`
+      );
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to fetch template purchases');
+      }
+      if (!response.data) {
+        throw new Error('Template purchases data not found');
+      }
+      return response.data;
+    },
+    retry: false,
+    staleTime: 1000 * 30, // 30 seconds
+  });
+}
 
 /**
  * Get current user's template purchases
@@ -58,17 +106,35 @@ export function useMyTemplatePurchases() {
 }
 
 /**
+ * Get total revenue from template purchases (Admin only)
+ */
+export function useTemplatePurchaseRevenue() {
+  return useQuery<{ totalRevenue: number }, Error>({
+    queryKey: templatePurchaseKeys.revenue(),
+    queryFn: async (): Promise<{ totalRevenue: number }> => {
+      const response = await api.get<{ totalRevenue: number }>('/template-purchases/revenue');
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to fetch revenue');
+      }
+      return response.data || { totalRevenue: 0 };
+    },
+    retry: false,
+    staleTime: 1000 * 60, // 1 minute
+  });
+}
+
+/**
  * Check if user owns a template
  */
 export function useCheckTemplateOwnership(templateId: string) {
   return useQuery<boolean, Error>({
     queryKey: templatePurchaseKeys.check(templateId),
     queryFn: async (): Promise<boolean> => {
-      const response = await api.get<{ owns: boolean }>(`/template-purchases/check/${templateId}`);
+      const response = await api.get<{ ownsTemplate: boolean }>(`/template-purchases/check/${templateId}`);
       if (!response.success) {
         throw new Error(response.error || 'Failed to check template ownership');
       }
-      return response.data?.owns || false;
+      return response.data?.ownsTemplate || false;
     },
     enabled: !!templateId,
     retry: false,
@@ -145,4 +211,3 @@ export function useCreateStripeTemplatePayment() {
     },
   });
 }
-
