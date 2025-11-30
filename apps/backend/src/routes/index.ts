@@ -12,6 +12,7 @@ import { templatePurchaseRouter } from '@/modules/t/template-purchase.router';
 import { paymentRouter } from '@/modules/payments/payment.router';
 import { revenueRouter } from '@/modules/analytics/revenue.router';
 import { inviteRouter } from '@/modules/invites';
+import { auditLogRouter } from '@/modules/audit-logs';
 const router = Router();
 
 router.use('/auth', authRouter);
@@ -28,6 +29,7 @@ router.use('/template-purchases', templatePurchaseRouter);
 router.use('/payments', paymentRouter);
 router.use('/analytics/revenue', revenueRouter);
 router.use('/invites', inviteRouter);
+router.use('/audit-logs', auditLogRouter);
 
 export const apiRouter: Router = router;
 
