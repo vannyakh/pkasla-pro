@@ -13,7 +13,8 @@ import {
   ChevronRight,
   type LucideIcon,
   BarChart3,
-  FileText
+  FileText,
+  CreditCard
 } from 'lucide-react'
 import * as Collapsible from '@radix-ui/react-collapsible'
 import {
@@ -54,6 +55,7 @@ const MENU_ITEMS: readonly MenuItem[] = [
   { href: '/admin/t', label: 'Template', icon: Component },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
   { href: '/admin/audit-logs', label: 'Audit Logs', icon: FileText },
+  { href: '/admin/payment-logs', label: 'Payment Logs', icon: CreditCard },
 ] as const
 
 function AdminSidebar() {

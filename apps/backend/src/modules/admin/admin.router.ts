@@ -18,6 +18,16 @@ import {
   updateUserRoleSchema,
   adminQuerySchema,
 } from './admin.validation';
+import {
+  listPaymentLogsHandler,
+  getPaymentLogHandler,
+  getPaymentLogStatsHandler,
+} from '@/modules/payments/payment-log.controller';
+import {
+  listPaymentLogsQuerySchema,
+  getPaymentLogParamsSchema,
+  getPaymentLogStatsQuerySchema,
+} from '@/modules/payments/payment-log.validation';
 import { settingsRouter } from '@/modules/settings';
 import {
   createTemplateHandler,
@@ -116,6 +126,19 @@ router.use('/settings', settingsRouter);
 
 // Cache Management
 router.route('/cache/clear').post(clearCacheHandler);
+
+// Payment Logs Monitoring
+router
+  .route('/payments/logs')
+  .get(validateRequest(listPaymentLogsQuerySchema), listPaymentLogsHandler);
+
+router
+  .route('/payments/logs/stats')
+  .get(validateRequest(getPaymentLogStatsQuerySchema), getPaymentLogStatsHandler);
+
+router
+  .route('/payments/logs/:id')
+  .get(validateRequest(getPaymentLogParamsSchema), getPaymentLogHandler);
 
 export const adminRouter : Router = router;
 

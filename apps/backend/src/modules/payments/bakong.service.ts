@@ -4,6 +4,7 @@ import httpStatus from 'http-status';
 import axios, { AxiosInstance } from 'axios';
 import crypto from 'crypto';
 import { logger } from '@/utils/logger';
+import { logPaymentEvent } from './payment-log.helper';
 
 if (!env.bakong?.accessToken) {
   console.warn('Bakong access token not configured. Bakong payment features will not work.');
@@ -149,6 +150,21 @@ class BakongService {
         expiresAt: paymentResponse.expiresAt,
       }, 'Bakong payment created successfully');
 
+      // Log payment event to database
+      await logPaymentEvent({
+        userId: input.userId,
+        transactionId,
+        paymentMethod: 'bakong',
+        paymentType: input.metadata?.type as 'subscription' | 'template' | undefined,
+        eventType: 'payment_created',
+        status: 'pending',
+        amount: input.amount,
+        currency,
+        planId: input.metadata?.planId,
+        templateId: input.metadata?.templateId,
+        metadata: input.metadata,
+      });
+
       return paymentResponse;
     } catch (error: any) {
       logger.error({
@@ -201,6 +217,21 @@ class BakongService {
         amount: transactionStatus.amount,
         currency: transactionStatus.currency,
       }, 'Bakong transaction status retrieved');
+
+      // Log status check event to database
+      await logPaymentEvent({
+        transactionId,
+        paymentMethod: 'bakong',
+        eventType: 'transaction_status_checked',
+        status: status,
+        amount: transactionStatus.amount,
+        currency: transactionStatus.currency,
+        metadata: {
+          payerAccountId: transactionStatus.payerAccountId,
+          payerName: transactionStatus.payerName,
+          timestamp: transactionStatus.timestamp,
+        },
+      });
 
       return transactionStatus;
     } catch (error: any) {

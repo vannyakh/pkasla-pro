@@ -6,6 +6,7 @@ import { buildSuccessResponse } from '@/helpers/http-response';
 import { subscriptionPlanService } from '@/modules/subscriptions/subscription-plan.service';
 import { templateService } from '@/modules/t/template.service';
 import { logger } from '@/utils/logger';
+import { logPaymentEvent } from './payment-log.helper';
 
 /**
  * Create payment intent for subscription

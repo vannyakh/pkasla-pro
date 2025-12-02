@@ -3,6 +3,7 @@ import { env } from '@/config/environment';
 import { AppError } from '@/common/errors/app-error';
 import httpStatus from 'http-status';
 import { logger } from '@/utils/logger';
+import { logPaymentEvent } from './payment-log.helper';
 
 if (!env.stripe?.secretKey) {
   console.warn('Stripe secret key not configured. Payment features will not work.');
@@ -84,6 +85,23 @@ class StripeService {
         status: paymentIntent.status,
       }, 'Stripe subscription payment intent created successfully');
 
+      // Log payment intent creation to database
+      await logPaymentEvent({
+        userId: input.userId,
+        transactionId: paymentIntent.id,
+        paymentMethod: 'stripe',
+        paymentType: 'subscription',
+        eventType: 'payment_intent_created',
+        status: 'pending',
+        amount: input.amount,
+        currency: input.currency || 'usd',
+        planId: input.planId,
+        metadata: {
+          planName: input.planName,
+          billingCycle: input.billingCycle,
+        },
+      });
+
       return {
         clientSecret: paymentIntent.client_secret!,
         paymentIntentId: paymentIntent.id,
@@ -142,6 +160,22 @@ class StripeService {
         amount: input.amount,
         status: paymentIntent.status,
       }, 'Stripe template payment intent created successfully');
+
+      // Log payment intent creation to database
+      await logPaymentEvent({
+        userId: input.userId,
+        transactionId: paymentIntent.id,
+        paymentMethod: 'stripe',
+        paymentType: 'template',
+        eventType: 'payment_intent_created',
+        status: 'pending',
+        amount: input.amount,
+        currency: input.currency || 'usd',
+        templateId: input.templateId,
+        metadata: {
+          templateName: input.templateName,
+        },
+      });
 
       return {
         clientSecret: paymentIntent.client_secret!,
