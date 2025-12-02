@@ -46,7 +46,7 @@ export default function ModernMinimalTemplate() {
 
   return (
     <section 
-      className="overflow-hidden relative py-20 scroll-smooth min-h-screen"
+      className="overflow-hidden relative py-20 scroll-smooth min-h-screen z-10"
       style={{
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
         backgroundSize: 'cover',
@@ -55,10 +55,10 @@ export default function ModernMinimalTemplate() {
         backgroundAttachment: 'fixed',
       }}
     >
-      {/* Decorative Elements - Fixed with enhanced animations */}
+      {/* Decorative Elements - Fixed position during scroll with enhanced animations */}
       {decorativeTopLeft && (
         <motion.div 
-          className="absolute top-0 left-0 w-48 h-48 md:w-64 md:h-64 z-0 pointer-events-none"
+          className="fixed top-0 left-0 w-48 h-48 md:w-64 md:h-64 z-0 pointer-events-none"
           initial={{ opacity: 0, scale: 0.8, x: -30, y: -30, rotate: -10 }}
           animate={{ 
             opacity: [0, 0.6, 0.5, 0.7, 0.5],
@@ -84,7 +84,7 @@ export default function ModernMinimalTemplate() {
       )}
       {decorativeTopRight && (
         <motion.div 
-          className="absolute top-0 right-0 w-48 h-48 md:w-64 md:h-64 z-0 pointer-events-none"
+          className="fixed top-0 right-0 w-48 h-48 md:w-64 md:h-64 z-0 pointer-events-none"
           initial={{ opacity: 0, scale: 0.8, x: 30, y: -30, rotate: 10 }}
           animate={{ 
             opacity: [0, 0.6, 0.5, 0.7, 0.5],
@@ -110,7 +110,7 @@ export default function ModernMinimalTemplate() {
       )}
       {decorativeBottomLeft && (
         <motion.div 
-          className="absolute bottom-0 left-0 w-48 h-48 md:w-64 md:h-64 z-0 pointer-events-none"
+          className="fixed bottom-0 left-0 w-48 h-48 md:w-64 md:h-64 z-0 pointer-events-none"
           initial={{ opacity: 0, scale: 0.8, x: -30, y: 30, rotate: 10 }}
           animate={{ 
             opacity: [0, 0.6, 0.5, 0.7, 0.5],
@@ -136,7 +136,7 @@ export default function ModernMinimalTemplate() {
       )}
       {decorativeBottomRight && (
         <motion.div 
-          className="absolute bottom-0 right-0 w-48 h-48 md:w-64 md:h-64 z-0 pointer-events-none"
+          className="fixed bottom-0 right-0 w-48 h-48 md:w-64 md:h-64 z-0 pointer-events-none"
           initial={{ opacity: 0, scale: 0.8, x: 30, y: 30, rotate: -10 }}
           animate={{ 
             opacity: [0, 0.6, 0.5, 0.7, 0.5],
@@ -162,7 +162,7 @@ export default function ModernMinimalTemplate() {
       )}
       {decorativeBorder && (
         <motion.div 
-          className="absolute bottom-0 left-0 right-0 h-32 md:h-40 z-0 pointer-events-none"
+          className="fixed bottom-0 left-0 right-0 h-32 md:h-40 z-0 pointer-events-none"
           initial={{ opacity: 0, y: 50 }}
           animate={{ 
             opacity: [0, 0.5, 0.4, 0.6, 0.4],
@@ -184,7 +184,7 @@ export default function ModernMinimalTemplate() {
         />
       )}
 
-      <div className="container relative z-10 px-4 mx-auto max-w-6xl">
+      <div className="container relative z-20 px-4 mx-auto max-w-6xl">
         {/* Hero Section */}
         <motion.div 
           className="mb-16 text-center relative"
