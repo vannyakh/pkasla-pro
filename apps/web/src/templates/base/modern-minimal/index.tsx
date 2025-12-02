@@ -214,7 +214,7 @@ export default function ModernMinimalTemplate() {
           
           {/* Invitation Text Card with Frame */}
           <motion.div 
-            className="relative p-6 mx-auto max-w-4xl rounded-2xl border-2 border-pink-200 shadow-lg backdrop-blur-sm"
+            className="relative p-6 mx-auto max-w-4xl rounded-2xl shadow-lg backdrop-blur-sm"
             initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
@@ -249,7 +249,7 @@ export default function ModernMinimalTemplate() {
           viewport={{ once: false, amount: 0.3, margin: "-100px" }}
           transition={{ duration: 1, ease: "easeOut" }}
         >
-          <div className="relative p-8 rounded-2xl border-2 border-pink-200 shadow-lg backdrop-blur-sm">
+          <div className="relative p-8 rounded-2xl shadow-lg backdrop-blur-sm">
             <div className="relative z-10">
               <h3 className={`text-2xl md:text-3xl ${moulpaliFont} text-center mb-6`} style={{ color: accentColor }}>
                 កម្មវិធីសិរីមង្គល អាពាហ៍ពិពាហ៍
@@ -293,7 +293,7 @@ export default function ModernMinimalTemplate() {
             viewport={{ once: false, amount: 0.3, margin: "-100px" }}
             transition={{ duration: 1, ease: "easeOut" }}
           >
-            <div className="relative p-8 rounded-2xl border-2 border-pink-200 shadow-lg backdrop-blur-sm">
+            <div className="relative p-8 rounded-2xl shadow-lg backdrop-blur-sm">
               <div className="relative z-10">
                 <h3 className={`text-2xl md:text-3xl ${moulpaliFont} text-center mb-6`} style={{ color: accentColor }}>
                   ទីតាំងកម្មវិធី
@@ -350,7 +350,7 @@ export default function ModernMinimalTemplate() {
           viewport={{ once: false, amount: 0.3, margin: "-100px" }}
           transition={{ duration: 1, ease: "easeOut" }}
         >
-          <div className="relative p-8 rounded-2xl border-2 border-pink-200 shadow-lg backdrop-blur-sm">
+          <div className="relative p-8 rounded-2xl shadow-lg backdrop-blur-sm">
             <div className="relative z-10">
               <h3 className={`text-2xl md:text-3xl ${moulpaliFont} text-center mb-6`} style={{ color: accentColor }}>
                 កម្រងរូបភាពអនុស្សាវរីយ៍
@@ -394,7 +394,7 @@ export default function ModernMinimalTemplate() {
           viewport={{ once: false, amount: 0.3, margin: "-100px" }}
           transition={{ duration: 1, ease: "easeOut" }}
         >
-          <div className="relative p-8 rounded-2xl border-2 border-pink-200 shadow-lg backdrop-blur-sm">
+          <div className="relative p-8 rounded-2xl shadow-lg backdrop-blur-sm">
             <div className="relative z-10">
               <h3 className={`text-2xl md:text-3xl ${moulpaliFont} text-center mb-6`} style={{ color: accentColor }}>
                 លិខិតសូមថ្លែងអំណរគុណ
@@ -418,7 +418,7 @@ export default function ModernMinimalTemplate() {
           viewport={{ once: false, amount: 0.3, margin: "-100px" }}
           transition={{ duration: 1, ease: "easeOut" }}
         >
-          <div className="relative p-8 rounded-2xl border-2 border-pink-200 shadow-lg backdrop-blur-sm">
+          <div className="relative p-8 rounded-2xl shadow-lg backdrop-blur-sm">
             <div className="relative z-10">
               <div className="flex flex-col items-center gap-6">
                 {/* Clickable button */}
