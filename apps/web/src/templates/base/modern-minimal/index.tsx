@@ -32,6 +32,7 @@ export default function ModernMinimalTemplate() {
   // Wedding information - UPDATE THESE
   const groomName = "មន្នី ច័ន្ទផល្គុន";
   const brideName = "ម៉ៃ យូរី";
+  const guestName = 'សុវណ្ណ ទេពី'
   const invitationText = "សម្តេច ទ្រង់ ឯកឧត្តម អ្នកឧកញ៉ា លោកជំទាវ លោក លោកស្រី អ្នកនាង កញ្ញា ចូលរួមជាអធិបតី និង ជាភ្ញៀវកិត្តិយសដើម្បីប្រសិទ្ធិពរជ័យ សិរីមង្គល";
   const googleMapLink = "https://maps.google.com/";
   
