@@ -55,13 +55,25 @@ export default function ModernMinimalTemplate() {
         backgroundAttachment: 'fixed',
       }}
     >
-      {/* Decorative Elements - UPDATE IMAGE PATHS */}
+      {/* Decorative Elements - Fixed with enhanced animations */}
       {decorativeTopLeft && (
         <motion.div 
-          className="absolute top-0 left-0 w-48 h-48 md:w-64 md:h-64 opacity-60 pointer-events-none"
-          initial={{ opacity: 0, scale: 0.8, x: -20, y: -20 }}
-          animate={{ opacity: 0.6, scale: 1, x: 0, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
+          className="absolute top-0 left-0 w-48 h-48 md:w-64 md:h-64 z-0 pointer-events-none"
+          initial={{ opacity: 0, scale: 0.8, x: -30, y: -30, rotate: -10 }}
+          animate={{ 
+            opacity: [0, 0.6, 0.5, 0.7, 0.5],
+            scale: [0.8, 1, 1, 1.05, 1],
+            x: [-30, 0, 0, -5, 0],
+            y: [-30, 0, 0, -5, 0],
+            rotate: [-10, -5, -5, 0, -5]
+          }}
+          transition={{ 
+            duration: 5,
+            ease: "easeInOut",
+            repeat: Infinity,
+            delay: 0.2,
+            times: [0, 0.2, 0.2, 0.6, 1]
+          }}
           style={{
             backgroundImage: `url(${decorativeTopLeft})`,
             backgroundSize: 'contain',
@@ -72,10 +84,22 @@ export default function ModernMinimalTemplate() {
       )}
       {decorativeTopRight && (
         <motion.div 
-          className="absolute top-0 right-0 w-48 h-48 md:w-64 md:h-64 opacity-60 pointer-events-none"
-          initial={{ opacity: 0, scale: 0.8, x: 20, y: -20 }}
-          animate={{ opacity: 0.6, scale: 1, x: 0, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
+          className="absolute top-0 right-0 w-48 h-48 md:w-64 md:h-64 z-0 pointer-events-none"
+          initial={{ opacity: 0, scale: 0.8, x: 30, y: -30, rotate: 10 }}
+          animate={{ 
+            opacity: [0, 0.6, 0.5, 0.7, 0.5],
+            scale: [0.8, 1, 1, 1.05, 1],
+            x: [30, 0, 0, 5, 0],
+            y: [-30, 0, 0, -5, 0],
+            rotate: [10, 5, 5, 0, 5]
+          }}
+          transition={{ 
+            duration: 5,
+            ease: "easeInOut",
+            repeat: Infinity,
+            delay: 0.3,
+            times: [0, 0.2, 0.2, 0.6, 1]
+          }}
           style={{
             backgroundImage: `url(${decorativeTopRight})`,
             backgroundSize: 'contain',
@@ -86,10 +110,22 @@ export default function ModernMinimalTemplate() {
       )}
       {decorativeBottomLeft && (
         <motion.div 
-          className="absolute bottom-0 left-0 w-48 h-48 md:w-64 md:h-64 opacity-60 pointer-events-none"
-          initial={{ opacity: 0, scale: 0.8, x: -20, y: 20 }}
-          animate={{ opacity: 0.6, scale: 1, x: 0, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut", delay: 0.4 }}
+          className="absolute bottom-0 left-0 w-48 h-48 md:w-64 md:h-64 z-0 pointer-events-none"
+          initial={{ opacity: 0, scale: 0.8, x: -30, y: 30, rotate: 10 }}
+          animate={{ 
+            opacity: [0, 0.6, 0.5, 0.7, 0.5],
+            scale: [0.8, 1, 1, 1.05, 1],
+            x: [-30, 0, 0, -5, 0],
+            y: [30, 0, 0, 5, 0],
+            rotate: [10, 5, 5, 0, 5]
+          }}
+          transition={{ 
+            duration: 5,
+            ease: "easeInOut",
+            repeat: Infinity,
+            delay: 0.4,
+            times: [0, 0.2, 0.2, 0.6, 1]
+          }}
           style={{
             backgroundImage: `url(${decorativeBottomLeft})`,
             backgroundSize: 'contain',
@@ -100,10 +136,22 @@ export default function ModernMinimalTemplate() {
       )}
       {decorativeBottomRight && (
         <motion.div 
-          className="absolute bottom-0 right-0 w-48 h-48 md:w-64 md:h-64 opacity-60 pointer-events-none"
-          initial={{ opacity: 0, scale: 0.8, x: 20, y: 20 }}
-          animate={{ opacity: 0.6, scale: 1, x: 0, y: 0 }}
-          transition={{ duration: 1, ease: "easeOut", delay: 0.5 }}
+          className="absolute bottom-0 right-0 w-48 h-48 md:w-64 md:h-64 z-0 pointer-events-none"
+          initial={{ opacity: 0, scale: 0.8, x: 30, y: 30, rotate: -10 }}
+          animate={{ 
+            opacity: [0, 0.6, 0.5, 0.7, 0.5],
+            scale: [0.8, 1, 1, 1.05, 1],
+            x: [30, 0, 0, 5, 0],
+            y: [30, 0, 0, 5, 0],
+            rotate: [-10, -5, -5, 0, -5]
+          }}
+          transition={{ 
+            duration: 5,
+            ease: "easeInOut",
+            repeat: Infinity,
+            delay: 0.5,
+            times: [0, 0.2, 0.2, 0.6, 1]
+          }}
           style={{
             backgroundImage: `url(${decorativeBottomRight})`,
             backgroundSize: 'contain',
@@ -114,10 +162,19 @@ export default function ModernMinimalTemplate() {
       )}
       {decorativeBorder && (
         <motion.div 
-          className="absolute bottom-0 left-0 right-0 h-32 opacity-50 pointer-events-none"
+          className="absolute bottom-0 left-0 right-0 h-32 md:h-40 z-0 pointer-events-none"
           initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 0.5, y: 0 }}
-          transition={{ duration: 1.2, ease: "easeOut", delay: 0.6 }}
+          animate={{ 
+            opacity: [0, 0.5, 0.4, 0.6, 0.4],
+            y: [50, 0, 0, -3, 0]
+          }}
+          transition={{ 
+            duration: 4.2,
+            ease: "easeInOut",
+            repeat: Infinity,
+            delay: 0.6,
+            times: [0, 0.3, 0.3, 0.65, 1]
+          }}
           style={{
             backgroundImage: `url(${decorativeBorder})`,
             backgroundSize: 'cover',
