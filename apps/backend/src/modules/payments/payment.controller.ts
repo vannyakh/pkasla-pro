@@ -5,29 +5,52 @@ import { bakongService } from './bakong.service';
 import { buildSuccessResponse } from '@/helpers/http-response';
 import { subscriptionPlanService } from '@/modules/subscriptions/subscription-plan.service';
 import { templateService } from '@/modules/t/template.service';
+import { logger } from '@/utils/logger';
 
 /**
  * Create payment intent for subscription
  */
 export const createSubscriptionPaymentIntentHandler = async (req: Request, res: Response) => {
   if (!req.user) {
+    logger.warn({ ip: req.ip }, 'Unauthorized attempt to create subscription payment intent');
     return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Authentication required' });
   }
 
   const { planId } = req.body;
 
-  // Get plan details
-  const plan = await subscriptionPlanService.findByIdOrFail(planId);
-
-  const paymentIntent = await stripeService.createSubscriptionPaymentIntent({
+  logger.info({
     userId: req.user.id,
-    planId: plan.id,
-    planName: plan.displayName,
-    amount: plan.price,
-    billingCycle: plan.billingCycle,
-  });
+    planId,
+    ip: req.ip,
+  }, 'Creating subscription payment intent request received');
 
-  return res.status(httpStatus.OK).json(buildSuccessResponse(paymentIntent));
+  try {
+    // Get plan details
+    const plan = await subscriptionPlanService.findByIdOrFail(planId);
+
+    const paymentIntent = await stripeService.createSubscriptionPaymentIntent({
+      userId: req.user.id,
+      planId: plan.id,
+      planName: plan.displayName,
+      amount: plan.price,
+      billingCycle: plan.billingCycle,
+    });
+
+    logger.info({
+      userId: req.user.id,
+      planId,
+      paymentIntentId: paymentIntent.paymentIntentId,
+    }, 'Subscription payment intent created successfully');
+
+    return res.status(httpStatus.OK).json(buildSuccessResponse(paymentIntent));
+  } catch (error: any) {
+    logger.error({
+      error: error.message,
+      userId: req.user.id,
+      planId,
+    }, 'Failed to create subscription payment intent');
+    throw error;
+  }
 };
 
 /**
@@ -35,28 +58,54 @@ export const createSubscriptionPaymentIntentHandler = async (req: Request, res: 
  */
 export const createTemplatePaymentIntentHandler = async (req: Request, res: Response) => {
   if (!req.user) {
+    logger.warn({ ip: req.ip }, 'Unauthorized attempt to create template payment intent');
     return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Authentication required' });
   }
 
   const { templateId } = req.body;
 
-  // Get template details
-  const template = await templateService.findByIdOrFail(templateId);
-
-  if (!template.price || template.price === 0) {
-    return res.status(httpStatus.BAD_REQUEST).json({ 
-      error: 'This template is free and does not require payment' 
-    });
-  }
-
-  const paymentIntent = await stripeService.createTemplatePaymentIntent({
+  logger.info({
     userId: req.user.id,
-    templateId: template.id,
-    templateName: template.title,
-    amount: template.price,
-  });
+    templateId,
+    ip: req.ip,
+  }, 'Creating template payment intent request received');
 
-  return res.status(httpStatus.OK).json(buildSuccessResponse(paymentIntent));
+  try {
+    // Get template details
+    const template = await templateService.findByIdOrFail(templateId);
+
+    if (!template.price || template.price === 0) {
+      logger.info({
+        userId: req.user.id,
+        templateId,
+      }, 'Template is free, no payment required');
+      return res.status(httpStatus.BAD_REQUEST).json({ 
+        error: 'This template is free and does not require payment' 
+      });
+    }
+
+    const paymentIntent = await stripeService.createTemplatePaymentIntent({
+      userId: req.user.id,
+      templateId: template.id,
+      templateName: template.title,
+      amount: template.price,
+    });
+
+    logger.info({
+      userId: req.user.id,
+      templateId,
+      paymentIntentId: paymentIntent.paymentIntentId,
+    }, 'Template payment intent created successfully');
+
+    return res.status(httpStatus.OK).json(buildSuccessResponse(paymentIntent));
+  } catch (error: any) {
+    logger.error({
+      error: error.message,
+      userId: req.user.id,
+      templateId,
+    }, 'Failed to create template payment intent');
+    throw error;
+  }
 };
 
 /**
@@ -64,27 +113,49 @@ export const createTemplatePaymentIntentHandler = async (req: Request, res: Resp
  */
 export const createBakongSubscriptionPaymentHandler = async (req: Request, res: Response) => {
   if (!req.user) {
+    logger.warn({ ip: req.ip }, 'Unauthorized attempt to create Bakong subscription payment');
     return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Authentication required' });
   }
 
   const { planId } = req.body;
 
-  // Get plan details
-  const plan = await subscriptionPlanService.findByIdOrFail(planId);
-
-  const payment = await bakongService.createSubscriptionPayment({
+  logger.info({
     userId: req.user.id,
-    amount: plan.price,
-    currency: 'KHR',
-    metadata: {
-      planId: plan.id,
-      planName: plan.displayName,
-      billingCycle: plan.billingCycle,
-      type: 'subscription',
-    },
-  });
+    planId,
+    ip: req.ip,
+  }, 'Creating Bakong subscription payment request received');
 
-  return res.status(httpStatus.OK).json(buildSuccessResponse(payment));
+  try {
+    // Get plan details
+    const plan = await subscriptionPlanService.findByIdOrFail(planId);
+
+    const payment = await bakongService.createSubscriptionPayment({
+      userId: req.user.id,
+      amount: plan.price,
+      currency: 'KHR',
+      metadata: {
+        planId: plan.id,
+        planName: plan.displayName,
+        billingCycle: plan.billingCycle,
+        type: 'subscription',
+      },
+    });
+
+    logger.info({
+      userId: req.user.id,
+      planId,
+      transactionId: payment.transactionId,
+    }, 'Bakong subscription payment created successfully');
+
+    return res.status(httpStatus.OK).json(buildSuccessResponse(payment));
+  } catch (error: any) {
+    logger.error({
+      error: error.message,
+      userId: req.user.id,
+      planId,
+    }, 'Failed to create Bakong subscription payment');
+    throw error;
+  }
 };
 
 /**
@@ -92,32 +163,58 @@ export const createBakongSubscriptionPaymentHandler = async (req: Request, res: 
  */
 export const createBakongTemplatePaymentHandler = async (req: Request, res: Response) => {
   if (!req.user) {
+    logger.warn({ ip: req.ip }, 'Unauthorized attempt to create Bakong template payment');
     return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Authentication required' });
   }
 
   const { templateId } = req.body;
 
-  // Get template details
-  const template = await templateService.findByIdOrFail(templateId);
-
-  if (!template.price || template.price === 0) {
-    return res.status(httpStatus.BAD_REQUEST).json({ 
-      error: 'This template is free and does not require payment' 
-    });
-  }
-
-  const payment = await bakongService.createTemplatePayment({
+  logger.info({
     userId: req.user.id,
-    amount: template.price,
-    currency: 'KHR',
-    metadata: {
-      templateId: template.id,
-      templateName: template.title,
-      type: 'template',
-    },
-  });
+    templateId,
+    ip: req.ip,
+  }, 'Creating Bakong template payment request received');
 
-  return res.status(httpStatus.OK).json(buildSuccessResponse(payment));
+  try {
+    // Get template details
+    const template = await templateService.findByIdOrFail(templateId);
+
+    if (!template.price || template.price === 0) {
+      logger.info({
+        userId: req.user.id,
+        templateId,
+      }, 'Template is free, no payment required');
+      return res.status(httpStatus.BAD_REQUEST).json({ 
+        error: 'This template is free and does not require payment' 
+      });
+    }
+
+    const payment = await bakongService.createTemplatePayment({
+      userId: req.user.id,
+      amount: template.price,
+      currency: 'KHR',
+      metadata: {
+        templateId: template.id,
+        templateName: template.title,
+        type: 'template',
+      },
+    });
+
+    logger.info({
+      userId: req.user.id,
+      templateId,
+      transactionId: payment.transactionId,
+    }, 'Bakong template payment created successfully');
+
+    return res.status(httpStatus.OK).json(buildSuccessResponse(payment));
+  } catch (error: any) {
+    logger.error({
+      error: error.message,
+      userId: req.user.id,
+      templateId,
+    }, 'Failed to create Bakong template payment');
+    throw error;
+  }
 };
 
 /**
@@ -125,13 +222,35 @@ export const createBakongTemplatePaymentHandler = async (req: Request, res: Resp
  */
 export const getBakongTransactionStatusHandler = async (req: Request, res: Response) => {
   if (!req.user) {
+    logger.warn({ ip: req.ip }, 'Unauthorized attempt to get Bakong transaction status');
     return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Authentication required' });
   }
 
   const { transactionId } = req.params;
 
-  const status = await bakongService.getTransactionStatus(transactionId);
+  logger.info({
+    userId: req.user.id,
+    transactionId,
+    ip: req.ip,
+  }, 'Getting Bakong transaction status request received');
 
-  return res.status(httpStatus.OK).json(buildSuccessResponse(status));
+  try {
+    const status = await bakongService.getTransactionStatus(transactionId);
+
+    logger.info({
+      userId: req.user.id,
+      transactionId,
+      status: status.status,
+    }, 'Bakong transaction status retrieved successfully');
+
+    return res.status(httpStatus.OK).json(buildSuccessResponse(status));
+  } catch (error: any) {
+    logger.error({
+      error: error.message,
+      userId: req.user.id,
+      transactionId,
+    }, 'Failed to get Bakong transaction status');
+    throw error;
+  }
 };
 

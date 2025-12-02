@@ -3,6 +3,7 @@ import { AppError } from '@/common/errors/app-error';
 import httpStatus from 'http-status';
 import axios, { AxiosInstance } from 'axios';
 import crypto from 'crypto';
+import { logger } from '@/utils/logger';
 
 if (!env.bakong?.accessToken) {
   console.warn('Bakong access token not configured. Bakong payment features will not work.');
@@ -74,6 +75,13 @@ class BakongService {
    */
   async createPayment(input: CreateBakongPaymentInput): Promise<BakongPaymentResponse> {
     try {
+      logger.info({
+        userId: input.userId,
+        amount: input.amount,
+        currency: input.currency,
+        metadata: input.metadata,
+      }, 'Creating Bakong payment');
+
       const bakongInstance = this.ensureBakong();
       const currency = input.currency || 'KHR';
       
@@ -101,6 +109,13 @@ class BakongService {
         },
       };
 
+      logger.debug({
+        transactionId,
+        merchantAccountId,
+        amountInSmallestUnit,
+        currency,
+      }, 'Calling Bakong API to generate QR code');
+
       // Call Bakong API to generate QR code
       // Note: Actual API endpoint may vary based on Bakong documentation
       const response = await bakongInstance.post('/api/v1/payments/qr/generate', paymentData);
@@ -115,7 +130,7 @@ class BakongService {
         description: paymentData.description,
       });
 
-      return {
+      const paymentResponse = {
         qrCode: response.data.qrCode || khqrData,
         qrCodeData: khqrData,
         transactionId: transactionId,
@@ -124,7 +139,27 @@ class BakongService {
         currency: currency,
         expiresAt: response.data.expiresAt,
       };
+
+      logger.info({
+        transactionId,
+        userId: input.userId,
+        amount: input.amount,
+        currency,
+        paymentType: input.metadata?.type,
+        expiresAt: paymentResponse.expiresAt,
+      }, 'Bakong payment created successfully');
+
+      return paymentResponse;
     } catch (error: any) {
+      logger.error({
+        error: error.message,
+        userId: input.userId,
+        amount: input.amount,
+        currency: input.currency,
+        responseStatus: error.response?.status,
+        responseData: error.response?.data,
+      }, 'Failed to create Bakong payment');
+
       if (error.response) {
         throw new AppError(
           `Bakong API error: ${error.response.data?.message || error.response.statusText}`,
@@ -143,20 +178,39 @@ class BakongService {
    */
   async getTransactionStatus(transactionId: string): Promise<BakongTransactionStatus> {
     try {
+      logger.debug({ transactionId }, 'Checking Bakong transaction status');
+
       const bakongInstance = this.ensureBakong();
 
       const response = await bakongInstance.get(`/api/v1/transactions/${transactionId}`);
 
-      return {
+      const status = this.mapBakongStatus(response.data.status);
+      const transactionStatus = {
         transactionId: response.data.transactionId || transactionId,
-        status: this.mapBakongStatus(response.data.status),
+        status,
         amount: response.data.amount || 0,
         currency: response.data.currency || 'KHR',
         timestamp: response.data.timestamp,
         payerAccountId: response.data.payerAccountId,
         payerName: response.data.payerName,
       };
+
+      logger.info({
+        transactionId,
+        status,
+        amount: transactionStatus.amount,
+        currency: transactionStatus.currency,
+      }, 'Bakong transaction status retrieved');
+
+      return transactionStatus;
     } catch (error: any) {
+      logger.error({
+        error: error.message,
+        transactionId,
+        responseStatus: error.response?.status,
+        responseData: error.response?.data,
+      }, 'Failed to get Bakong transaction status');
+
       if (error.response?.status === 404) {
         throw new AppError('Transaction not found', httpStatus.NOT_FOUND);
       }
@@ -178,7 +232,13 @@ class BakongService {
    */
   verifyWebhookSignature(payload: any, signature: string): boolean {
     try {
+      logger.debug({
+        hasSignature: !!signature,
+        payloadKeys: Object.keys(payload || {}),
+      }, 'Verifying Bakong webhook signature');
+
       if (!env.bakong?.webhookSecret) {
+        logger.error({}, 'Bakong webhook secret not configured');
         throw new AppError('Bakong webhook secret not configured', httpStatus.INTERNAL_SERVER_ERROR);
       }
 
@@ -189,11 +249,27 @@ class BakongService {
         .update(JSON.stringify(payload))
         .digest('hex');
 
-      return crypto.timingSafeEqual(
+      const isValid = crypto.timingSafeEqual(
         Buffer.from(signature),
         Buffer.from(expectedSignature)
       );
+
+      if (!isValid) {
+        logger.warn({
+          receivedSignature: signature.substring(0, 10) + '...',
+          expectedSignaturePrefix: expectedSignature.substring(0, 10) + '...',
+        }, 'Bakong webhook signature verification failed');
+      } else {
+        logger.debug({}, 'Bakong webhook signature verified successfully');
+      }
+
+      return isValid;
     } catch (error: any) {
+      logger.error({
+        error: error.message,
+        hasSignature: !!signature,
+      }, 'Bakong webhook signature verification error');
+
       throw new AppError(
         `Webhook signature verification failed: ${error.message}`,
         httpStatus.BAD_REQUEST
@@ -288,6 +364,13 @@ class BakongService {
   async createSubscriptionPayment(
     input: CreateBakongPaymentInput
   ): Promise<BakongPaymentResponse> {
+    logger.info({
+      userId: input.userId,
+      planId: input.metadata?.planId,
+      planName: input.metadata?.planName,
+      amount: input.amount,
+    }, 'Creating Bakong subscription payment');
+
     return this.createPayment({
       ...input,
       metadata: {
@@ -304,6 +387,13 @@ class BakongService {
   async createTemplatePayment(
     input: CreateBakongPaymentInput
   ): Promise<BakongPaymentResponse> {
+    logger.info({
+      userId: input.userId,
+      templateId: input.metadata?.templateId,
+      templateName: input.metadata?.templateName,
+      amount: input.amount,
+    }, 'Creating Bakong template payment');
+
     return this.createPayment({
       ...input,
       metadata: {
