@@ -96,7 +96,7 @@ export default function DashboardPage() {
             >
               <AppleHelloEnglishEffect className="h-16 md:h-20" />
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -218,7 +218,7 @@ export default function DashboardPage() {
             {upcomingEvents.map((event, index) => {
               const eventDate = new Date(event.date)
               const isToday = format(eventDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')
-              
+
               return (
                 <motion.div
                   key={event.id}
@@ -228,7 +228,7 @@ export default function DashboardPage() {
                   whileHover={{ y: -4, transition: { duration: 0.2 } }}
                 >
                   <Link href={`/dashboard/events/${event.id}`}>
-                    <Card className="h-full border-border/50 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group">
+                    <Card className="h-full p-0 border-border/50 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group">
                       {event.coverImage && (
                         <div className="relative h-48 overflow-hidden rounded-t-xl">
                           <Image
