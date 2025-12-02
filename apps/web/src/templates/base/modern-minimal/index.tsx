@@ -16,10 +16,10 @@ export default function ModernMinimalTemplate() {
   
   // Images - UPDATE THESE PATHS with your actual images
   const backgroundImage = '/images/assets/frame/modern-minimal.png'; // Main background
-  const decorativeTopLeft = '/images/assets/frame/frame-bg.png'; // Top left decorative
-  const decorativeTopRight = '/images/assets/frame/frame-bg.png'; // Top right decorative
-  const decorativeBottomLeft = '/images/assets/frame/frame-bg.png'; // Bottom left decorative
-  const decorativeBottomRight = '/images/assets/frame/frame-bg.png'; // Bottom right decorative
+  const decorativeTopLeft = '/images/assets/frame/frame-top-left.png'; // Top left decorative
+  const decorativeTopRight = '/images/assets/frame/frame-top-right.png'; // Top right decorative
+  const decorativeBottomLeft = '/images/assets/frame/frame-bottom-left.png'; // Bottom left decorative
+  const decorativeBottomRight = '/images/assets/frame/frame-bottom-right.png'; // Bottom right decorative
   const decorativeBorder = '/images/assets/frame/frame-bg.png'; // Bottom border
   const galleryImages = [ // Photo gallery images
     '/images/assets/frame/modern-minimal.png',
