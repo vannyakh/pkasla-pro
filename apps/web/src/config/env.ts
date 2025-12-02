@@ -10,6 +10,8 @@ export const env = {
   isProduction: process.env.NODE_ENV === 'production',
   nextAuthSecret: process.env.NEXTAUTH_SECRET || 'your-secret-key-change-in-production',
   nextAuthUrl: process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_URL || 'http://localhost:3000',
+  // Stripe
+  stripePublishableKey: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   // OAuth Providers
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,

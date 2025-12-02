@@ -17,6 +17,8 @@ import {
   usePurchaseTemplate, 
   useCheckTemplateOwnership 
 } from '@/hooks/api/useTemplatePurchase'
+import { StripeProvider } from '@/providers/StripeProvider'
+import { StripePaymentForm } from '@/components/payments/StripePaymentForm'
 import type { Template } from '@/types/template'
 import toast from 'react-hot-toast'
 
@@ -326,25 +328,40 @@ export default function TemplatePaymentDialog({
                 </div>
               ) : stripePaymentIntent ? (
                 <div className="space-y-4">
-                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <CreditCard className="h-5 w-5 text-blue-600" />
-                      <p className="text-sm font-semibold text-black">Stripe Payment</p>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      Stripe payment integration is coming soon. Please use Bakong payment method for now.
-                    </p>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
+                  <StripeProvider
+                    options={{
+                      clientSecret: stripePaymentIntent.clientSecret,
+                      appearance: {
+                        theme: 'stripe',
+                      },
+                    }}
+                  >
+                    <StripePaymentForm
+                      clientSecret={stripePaymentIntent.clientSecret}
+                      paymentIntentId={stripePaymentIntent.paymentIntentId}
+                      amount={template.price || 0}
+                      currency="usd"
+                      onSuccess={() => {
+                        // Check ownership after successful payment
+                        setTimeout(async () => {
+                          const { data: owns } = await refetchOwnership()
+                          if (owns) {
+                            toast.success('Payment successful! Template purchased.')
+                            onSuccess?.()
+                            onOpenChange(false)
+                          } else {
+                            // Start checking payment status
+                            setIsCheckingPayment(true)
+                            checkPaymentStatus()
+                          }
+                        }, 2000)
+                      }}
+                      onCancel={() => {
                         setStripePaymentIntent(null)
                         setPaymentMethod('bakong')
                       }}
-                      className="w-full mt-3"
-                    >
-                      ត្រឡប់ទៅ Bakong
-                    </Button>
-                  </div>
+                    />
+                  </StripeProvider>
                 </div>
               ) : null}
             </div>

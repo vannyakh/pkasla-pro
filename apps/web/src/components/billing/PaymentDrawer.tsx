@@ -13,6 +13,8 @@ import {
   useCreateBakongSubscriptionPayment,
   useCreateStripeSubscriptionPayment,
 } from "@/hooks/api/usePayment";
+import { StripeProvider } from "@/providers/StripeProvider";
+import { StripePaymentForm } from "@/components/payments/StripePaymentForm";
 import toast from "react-hot-toast";
 
 interface PaymentDrawerProps {
@@ -34,6 +36,8 @@ export function PaymentDrawer({
     transactionId?: string;
     clientSecret?: string;
     paymentIntentId?: string;
+    amount?: number;
+    currency?: string;
   } | null>(null);
 
   const createBakongSubscriptionPaymentMutation = useCreateBakongSubscriptionPayment();
@@ -59,6 +63,8 @@ export function PaymentDrawer({
         setPaymentData({
           clientSecret: paymentIntent.clientSecret,
           paymentIntentId: paymentIntent.paymentIntentId,
+          amount: paymentIntent.amount,
+          currency: paymentIntent.currency,
         });
         toast.success("Stripe payment initialized. Please complete payment.");
       }
@@ -166,19 +172,31 @@ export function PaymentDrawer({
                 Back
               </Button>
             </div>
-          ) : (
+          ) : paymentData.clientSecret ? (
             <div className="space-y-4">
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-gray-600">
-                  Stripe payment integration is coming soon. Please use Bakong payment method for
-                  now.
-                </p>
-              </div>
-              <Button variant="outline" onClick={handleBack} className="w-full">
-                Back
-              </Button>
+              <StripeProvider
+                options={{
+                  clientSecret: paymentData.clientSecret,
+                  appearance: {
+                    theme: 'stripe',
+                  },
+                }}
+              >
+                <StripePaymentForm
+                  clientSecret={paymentData.clientSecret}
+                  paymentIntentId={paymentData.paymentIntentId || ''}
+                  amount={paymentData.amount || 0}
+                  currency={paymentData.currency || 'usd'}
+                  onSuccess={() => {
+                    toast.success('Payment successful! Subscription activated.');
+                    onPaymentComplete?.();
+                    handleClose(false);
+                  }}
+                  onCancel={handleBack}
+                />
+              </StripeProvider>
             </div>
-          )}
+          ) : null}
         </div>
       </DrawerContent>
     </Drawer>

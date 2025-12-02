@@ -152,9 +152,9 @@ export const env = {
   bakong: parsedEnv.data.BAKONG_ACCESS_TOKEN
     ? {
         apiUrl: parsedEnv.data.BAKONG_API_URL || 
-          (parsedEnv.data.BAKONG_ENVIRONMENT === 'production' 
-            ? 'https://api-bakong.nbc.org.kh' 
-            : 'https://sit-api-bakong.nbc.org.kh'),
+          (parsedEnv.data.BAKONG_ENVIRONMENT === 'production'
+            ? 'https://api-bakong.nbc.gov.kh'
+            : 'https://sit-api-bakong.nbc.gov.kh'),
         accessToken: parsedEnv.data.BAKONG_ACCESS_TOKEN,
         merchantAccountId: parsedEnv.data.BAKONG_MERCHANT_ACCOUNT_ID,
         webhookSecret: parsedEnv.data.BAKONG_WEBHOOK_SECRET,
@@ -164,7 +164,7 @@ export const env = {
   api: {
     baseUrl: parsedEnv.data.API_BASE_URL || parsedEnv.data.API_URL || 
       (parsedEnv.data.NODE_ENV === 'production' 
-        ? `https://api.yourdomain.com` 
+        ? `https://api.phkasla.com` 
         : `http://localhost:${parsedEnv.data.PORT || 4000}`),
   },
   cors: {

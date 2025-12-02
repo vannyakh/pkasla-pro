@@ -67,6 +67,7 @@ export default function TemplatePreviewPage() {
     
     // Use window.location for client-side redirect to preserve query params
     if (typeof window !== 'undefined') {
+      // eslint-disable-next-line react-hooks/immutability
       window.location.href = `/templates/base/${template.slug}?${params.toString()}`
       return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
