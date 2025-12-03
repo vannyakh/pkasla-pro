@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import Image from "next/image";
 import { useState } from "react";
+import { X, Heart } from "lucide-react";
 
 export default function ModernMinimalTemplate() {
   const [showCoupleQR, setShowCoupleQR] = useState(false);
@@ -681,18 +682,26 @@ export default function ModernMinimalTemplate() {
                   {/* Clickable button */}
                   <motion.button
                     onClick={() => setShowCoupleQR(!showCoupleQR)}
-                    className={`px-8 py-4 font-medium ${khmerFont} flex items-center gap-3`}
+                    className={`px-8 py-4 font-medium ${khmerFont} flex items-center justify-center gap-3 relative`}
                     style={{
-                      color: showCoupleQR ? "white" : accentColor,
-                      backgroundColor: showCoupleQR
-                        ? accentColor
-                        : "transparent",
+                      color: accentColor,
+                      backgroundImage: `url(${frameBtn})`,
+                      backgroundSize: "contain",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                      backgroundColor: "transparent",
+                      minWidth: "200px",
+                      minHeight: "60px",
                     }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <span>{showCoupleQR ? "✕" : "💑"}</span>
-                    <span>ចំណងដៃ</span>
+                    {showCoupleQR ? (
+                      <X className="relative z-10 w-5 h-5" />
+                    ) : (
+                      <Heart className="relative z-10 w-5 h-5" />
+                    )}
+                    <span className="relative z-10">ចំណងដៃ</span>
                   </motion.button>
 
                   {/* QR Codes - shown when clicked */}
