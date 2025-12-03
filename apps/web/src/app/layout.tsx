@@ -13,6 +13,7 @@ import {
   preahvihear,
   sedgwickAveDisplay,
   zenKakuGothicNew,
+  moulpali
 } from "@/constants/fonts";
 
 export const metadata: Metadata = {
@@ -28,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${beVietnamPro.variable} ${craftyGirls.variable} ${monsieurLaDoulaise.variable} ${preahvihear.variable} ${sedgwickAveDisplay.variable} ${zenKakuGothicNew.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${beVietnamPro.variable} ${craftyGirls.variable} ${monsieurLaDoulaise.variable} ${preahvihear.variable} ${sedgwickAveDisplay.variable} ${zenKakuGothicNew.variable} ${moulpali.variable} antialiased`}
       >
        <SessionProvider>
           <QueryProvider>

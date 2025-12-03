@@ -171,3 +171,9 @@ export const zenKakuGothicNew = localFont({
   display: "swap",
 });
 
+// Moulpali 
+export const moulpali = localFont({
+  src: "../../public/fonts/Moulpali/Moulpali-Regular.ttf",
+  variable: "--font-moulpali",
+  display: "swap",
+});
