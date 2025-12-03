@@ -30,40 +30,96 @@ interface BakongQRDisplayProps {
   expiresAt?: string;
   isCheckingPayment?: boolean;
   onExpired: () => void;
+  amount?: number;
+  currency?: string;
+  merchantName?: string;
 }
 
-function BakongQRDisplay({ qrCode, expiresAt, isCheckingPayment, onExpired }: BakongQRDisplayProps) {
+function BakongQRDisplay({ 
+  qrCode, 
+  expiresAt, 
+  isCheckingPayment, 
+  onExpired,
+  amount,
+  currency = 'KHR',
+  merchantName = 'Merchant'
+}: BakongQRDisplayProps) {
   const countdown = useCountdown({
     targetDate: expiresAt || null,
     onExpire: onExpired,
   });
 
+  // Format amount with thousand separators
+  const formatAmount = (amt: number | undefined) => {
+    if (!amt) return '0';
+    return amt.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  };
+
+  // Convert USD to KHR if needed (approximate rate: 1 USD = 4000 KHR)
+  const displayAmount = currency === 'USD' && amount ? amount * 4000 : amount;
+  const displayCurrency = currency === 'USD' ? 'KHR' : currency;
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-6 border border-gray-200">
-        <div className="flex items-center gap-2 mb-4">
-          <QrCode className="h-5 w-5 text-gray-600" />
-          <p className="text-sm font-semibold text-black">ស្កេនដើម្បីបង់ប្រាក់</p>
+      {/* KHQR Card Design */}
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 max-w-sm mx-auto">
+        {/* Red Header with KHQR */}
+        <div className="bg-[#DC2626] relative px-4 py-3 overflow-hidden">
+          <div className="flex items-center justify-between">
+            <h2 className="text-white text-xl font-bold tracking-wide" style={{ fontFamily: 'sans-serif' }}>
+              KHQR
+            </h2>
+            {/* Triangular cutout on the right */}
+            <div 
+              className="absolute right-0 top-0 w-5 h-full"
+              style={{
+                clipPath: 'polygon(0 0, 100% 0, 100% 100%)',
+                backgroundColor: '#DC2626'
+              }}
+            ></div>
+          </div>
         </div>
-        <div className="w-64 h-64 bg-white rounded-lg mb-4 flex items-center justify-center border border-gray-200 relative overflow-hidden">
-          {countdown.isExpired ? (
-            <div className="flex flex-col items-center justify-center p-4 text-center">
-              <AlertCircle className="h-12 w-12 text-red-500 mb-2" />
-              <p className="text-sm font-semibold text-red-600">QR Code ផុតកំណត់</p>
-            </div>
-          ) : (
-            <Image
-              src={qrCode}
-              alt="Payment QR Code"
-              fill
-              className="object-cover"
-              unoptimized
-            />
-          )}
+
+        {/* Card Content */}
+        <div className="px-4 py-4 bg-white">
+          {/* Merchant Name */}
+          <p className="text-sm font-medium text-black mb-2">{merchantName}</p>
+          
+          {/* Amount */}
+          <div className="mb-3">
+            <p className="text-3xl font-bold text-black">
+              {formatAmount(displayAmount)}
+            </p>
+            <p className="text-sm font-normal text-black mt-1">{displayCurrency}</p>
+          </div>
+
+          {/* Dashed Line Separator */}
+          <div className="border-t border-dashed border-gray-300 my-4"></div>
+
+          {/* QR Code */}
+          <div className="w-full aspect-square bg-white rounded-lg flex items-center justify-center relative overflow-hidden">
+            {countdown.isExpired ? (
+              <div className="flex flex-col items-center justify-center p-4 text-center">
+                <AlertCircle className="h-12 w-12 text-red-500 mb-2" />
+                <p className="text-sm font-semibold text-red-600">QR Code ផុតកំណត់</p>
+              </div>
+            ) : (
+              <Image
+                src={qrCode}
+                alt="Payment QR Code"
+                fill
+                className="object-contain p-2"
+                unoptimized
+              />
+            )}
+          </div>
         </div>
-        
+      </div>
+
+      {/* Additional Info and Actions */}
+      <div className="space-y-3">
         {expiresAt && !countdown.isExpired && (
-          <div className="flex items-center gap-2 mb-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
             <Clock className="h-4 w-4 text-orange-600" />
             <span className="text-sm font-semibold text-orange-700">
               ផុតកំណត់ក្នុង: {countdown.formatted}
@@ -72,7 +128,7 @@ function BakongQRDisplay({ qrCode, expiresAt, isCheckingPayment, onExpired }: Ba
         )}
         
         {countdown.isExpired ? (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg mb-2">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg">
             <AlertCircle className="h-4 w-4 text-red-600" />
             <p className="text-xs text-red-700 text-center">
               QR Code នេះផុតកំណត់ហើយ។ សូមបង្កើតថ្មី។
@@ -82,7 +138,7 @@ function BakongQRDisplay({ qrCode, expiresAt, isCheckingPayment, onExpired }: Ba
           <a
             href={qrCode}
             download
-            className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer mb-2"
+            className="text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer justify-center"
           >
             <Download className="h-3 w-3" />
             ទាញយក QR Code
@@ -90,7 +146,7 @@ function BakongQRDisplay({ qrCode, expiresAt, isCheckingPayment, onExpired }: Ba
         )}
 
         {isCheckingPayment && !countdown.isExpired && (
-          <div className="flex items-center justify-center gap-2 p-4 bg-blue-50 rounded-lg border border-blue-200 mt-2">
+          <div className="flex items-center justify-center gap-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
             <p className="text-sm text-blue-700">
               កំពុងពិនិត្យការទូទាត់...
@@ -99,7 +155,7 @@ function BakongQRDisplay({ qrCode, expiresAt, isCheckingPayment, onExpired }: Ba
         )}
 
         {!countdown.isExpired && (
-          <div className="text-xs text-gray-500 text-center space-y-1 mt-2">
+          <div className="text-xs text-gray-500 text-center space-y-1">
             <p>សូមស្កេន QR Code ដោយប្រើកម្មវិធី Bakong របស់អ្នក</p>
             <p>ការទូទាត់នឹងត្រូវបានពិនិត្យដោយស្វ័យប្រវត្តិ</p>
           </div>
@@ -123,7 +179,7 @@ export default function TemplatePaymentDialog({
   onSuccess,
 }: TemplatePaymentDialogProps) {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bakong')
-  const [paymentData, setPaymentData] = useState<{ qrCode: string; transactionId: string; expiresAt?: string } | null>(null)
+  const [paymentData, setPaymentData] = useState<{ qrCode: string; transactionId: string; expiresAt?: string; amount?: number; currency?: string } | null>(null)
   const [stripePaymentIntent, setStripePaymentIntent] = useState<{ clientSecret: string; paymentIntentId: string } | null>(null)
   const [isCheckingPayment, setIsCheckingPayment] = useState(false)
   
@@ -182,6 +238,8 @@ export default function TemplatePaymentDialog({
           qrCode: payment.qrCode,
           transactionId: payment.transactionId,
           expiresAt: payment.expiresAt,
+          amount: payment.amount,
+          currency: payment.currency,
         })
         // Start checking payment status
         setIsCheckingPayment(true)
@@ -377,6 +435,9 @@ export default function TemplatePaymentDialog({
                   qrCode={paymentData.qrCode}
                   expiresAt={paymentData.expiresAt}
                   isCheckingPayment={isCheckingPayment}
+                  amount={paymentData.amount || template.price}
+                  currency={paymentData.currency || 'KHR'}
+                  merchantName={template.name || 'Merchant'}
                   onExpired={() => {
                     toast.error("QR code has expired. Please generate a new one.");
                     setPaymentData(null);

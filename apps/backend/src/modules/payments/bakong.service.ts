@@ -164,8 +164,9 @@ class BakongService {
         );
       }
 
-      // Extract QR string from response data
+      // Extract QR string and MD5 from response data
       const khqrString = (khqrResponse.data as KHQRResponse['data'])?.qr;
+      const md5Hash = (khqrResponse.data as KHQRResponse['data'])?.md5;
       
       if (!khqrString) {
         throw new AppError(
@@ -173,6 +174,9 @@ class BakongService {
           httpStatus.INTERNAL_SERVER_ERROR
         );
       }
+
+      // Generate MD5 hash from KHQR string if not provided
+      const finalMd5Hash = md5Hash || crypto.createHash('md5').update(khqrString).digest('hex');
 
       // Generate QR code image from KHQR string
       let qrCodeImage: string;
@@ -255,7 +259,11 @@ class BakongService {
         currency,
         planId: input.metadata?.planId,
         templateId: input.metadata?.templateId,
-        metadata: input.metadata,
+        metadata: {
+          ...input.metadata,
+          qrCodeData: khqrString,
+          md5Hash: finalMd5Hash,
+        },
       });
 
       return paymentResponse;
@@ -286,7 +294,7 @@ class BakongService {
   }
 
   /**
-   * Check transaction status
+   * Check transaction status using MD5 hash
    */
   async getTransactionStatus(
     transactionId: string
@@ -296,8 +304,34 @@ class BakongService {
 
       const bakongInstance = this.ensureBakong();
 
-      const response = await bakongInstance.get(
-        `/v1/transactions/${transactionId}`
+      // Retrieve payment log to get MD5 hash or qrCodeData
+      const { PaymentLogModel } = await import("./payment-log.model");
+      const paymentLog = await PaymentLogModel.findOne({
+        transactionId,
+        paymentMethod: "bakong",
+        eventType: "payment_created",
+      }).sort({ createdAt: -1 });
+
+      let md5Hash: string | null = null;
+
+      if (paymentLog?.metadata?.md5Hash) {
+        md5Hash = paymentLog.metadata.md5Hash;
+      } else if (paymentLog?.metadata?.qrCodeData) {
+        // Generate MD5 from stored KHQR string
+        md5Hash = crypto.createHash('md5').update(paymentLog.metadata.qrCodeData).digest('hex');
+      } else {
+        throw new AppError(
+          "MD5 hash not found for transaction. Cannot check status.",
+          httpStatus.NOT_FOUND
+        );
+      }
+
+      logger.debug({ transactionId, md5Hash }, "Using MD5 hash to check transaction status");
+
+      // Use MD5 hash to check transaction status
+      const response = await bakongInstance.post(
+        `/v1/check_transaction_by_md5`,
+        { md5: md5Hash }
       );
 
       const status = this.mapBakongStatus(response.data.status);
@@ -305,7 +339,7 @@ class BakongService {
         transactionId: response.data.transactionId || transactionId,
         status,
         amount: response.data.amount || 0,
-        currency: response.data.currency || "KHR",
+        currency: response.data.currency || "USD",
         timestamp: response.data.timestamp,
         payerAccountId: response.data.payerAccountId,
         payerName: response.data.payerName,
