@@ -177,3 +177,10 @@ export const moulpali = localFont({
   variable: "--font-moulpali",
   display: "swap",
 });
+
+// Khangkomutt
+export const khangkomutt = localFont({
+  src: "../../public/fonts/Kh_Ang_Komutt_A/KhAngKomuttA.ttf",
+  variable: "--font-khangkomutt",
+  display: "swap",
+});

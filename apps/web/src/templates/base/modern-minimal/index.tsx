@@ -289,11 +289,11 @@ export default function ModernMinimalTemplate() {
           </h2>
           <div className="flex justify-center items-center flex-col gap-3 mb-8">
             <h3 className={`text-3xl md:text-4xl lg:text-5xl ${khangkomuttFont}`} style={{ color: textColor }}>
-              {groomName}
+              {brideName}
             </h3>
             <Image src="/images/assets/2hearts.gif" alt="Heart" width={48} height={48} className="md:w-16 md:h-16" />
             <h3 className={`text-3xl md:text-4xl lg:text-5xl ${khangkomuttFont}`} style={{ color: textColor }}>
-              {brideName}
+              {groomName}
             </h3>
           </div>
           
