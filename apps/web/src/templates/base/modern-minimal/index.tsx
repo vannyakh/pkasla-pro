@@ -186,15 +186,13 @@ export default function ModernMinimalTemplate() {
           className="fixed bottom-0 left-0 right-0 h-32 md:h-40 z-30 pointer-events-none"
           initial={{ opacity: 0, y: 50 }}
           animate={{
-            opacity: [0, 0.5, 0.4, 0.6, 0.4],
-            y: [50, 0, 0, -3, 0],
+            opacity: 0.5,
+            y: 0,
           }}
           transition={{
-            duration: 4.2,
-            ease: "easeInOut",
-            repeat: Infinity,
+            duration: 1,
+            ease: "easeOut",
             delay: 0.6,
-            times: [0, 0.3, 0.3, 0.65, 1],
           }}
           style={{
             backgroundImage: `url(${decorativeBorder})`,
