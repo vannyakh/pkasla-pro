@@ -1,14 +1,15 @@
 import { paymentLogService } from './payment-log.service';
 import { logger } from '@/utils/logger';
 import type { Types } from 'mongoose';
+import type { PaymentMethod, PaymentType, PaymentStatus } from './payment-log.model';
 
 export interface LogPaymentEventInput {
   userId?: Types.ObjectId | string;
   transactionId?: string;
-  paymentMethod?: 'stripe' | 'bakong';
-  paymentType?: 'subscription' | 'template';
+  paymentMethod?: PaymentMethod;
+  paymentType?: PaymentType;
   eventType: string;
-  status: 'pending' | 'completed' | 'failed' | 'expired' | 'cancelled';
+  status: PaymentStatus;
   amount?: number;
   currency?: string;
   planId?: Types.ObjectId | string;
