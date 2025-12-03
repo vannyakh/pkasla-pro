@@ -207,7 +207,16 @@ export const createBakongTemplatePaymentHandler = async (req: Request, res: Resp
       transactionId: payment.transactionId,
     }, 'Bakong template payment created successfully');
 
-    return res.status(httpStatus.OK).json(buildSuccessResponse(payment));
+    // Return response with explicit fields (including transactionId for frontend compatibility)
+    const response = {
+      qrCode: payment.qrCode,
+      expiresAt: payment.expiresAt,
+      currency: payment.currency,
+      amount: payment.amount,
+      transactionId: payment.transactionId,
+    };
+
+    return res.status(httpStatus.OK).json(buildSuccessResponse(response));
   } catch (error: any) {
     logger.error({
       error: error.message,

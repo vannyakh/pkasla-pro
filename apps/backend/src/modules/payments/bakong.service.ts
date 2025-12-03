@@ -3,10 +3,11 @@ import { AppError } from "@/common/errors/app-error";
 import httpStatus from "http-status";
 import axios, { AxiosInstance } from "axios";
 import crypto from "crypto";
+import QRCode from "qrcode";
 import { logger } from "@/utils/logger";
 import { logPaymentEvent } from "./payment-log.helper";
 
-import {BakongKHQR, khqrData, IndividualInfo, MerchantInfo, SourceInfo} from "bakong-khqr";
+import { BakongKHQR } from "bakong-khqr";
 
 if (!env.bakong?.accessToken) {
   console.warn(
@@ -47,6 +48,51 @@ export interface BakongTransactionStatus {
   timestamp?: string;
   payerAccountId?: string;
   payerName?: string;
+}
+
+// export type KHQRCurrency = Record<'usd' | 'khr', number>
+export interface khqrData {
+  currency: {
+    usd: number;
+    khr: number;
+  };
+}
+
+export type merchantType = "merchant" | "individual";
+
+export interface IndividualInfo {
+  bakongAccountID: string;
+  merchantName: string;
+  merchantCity?: string;
+  accountInformation?: string;
+  acquiringBank: string;
+  currency?: number;
+  amount?: number;
+  billNumber?: string;
+  storeLabel?: string;
+  terminalLabel?: string;
+  mobileNumber?: string;
+  purposeOfTransaction?: string;
+  languagePreference?: string;
+  merchantNameAlternateLanguage?: string;
+  merchantCityAlternateLanguage?: string;
+  upiMerchantAccount?: string;
+  expirationTimestamp?: number;
+}
+
+export interface MerchantInfo extends IndividualInfo {
+  merchantID: string;
+}
+
+export interface SourceInfo {
+  appIconUrl: string;
+  appName: string;
+  appDeepLinkCallback: string;
+}
+
+export interface KHQRResponse {
+  status: { code: number; errorCode: null | number; message: null | string };
+  data: null | unknown;
 }
 
 class BakongService {
@@ -145,40 +191,31 @@ class BakongService {
       // expirationTimestamp is required if amount is not null or zero
       const expirationTimestamp = Date.now() + 15 * 60 * 1000;
 
-      // Prepare optional data for KHQR following the documentation format
-      const optionalData: any = {
-        currency:
-          currency === "KHR" ? khqrData.currency.khr : khqrData.currency.usd,
-        amount: amountInSmallestUnit,
-        billNumber: transactionId,
-        expirationTimestamp: expirationTimestamp, // required if amount is not null or zero
-      };
-
-      // Add optional fields if available
-      if (paymentData.description) {
-        optionalData.storeLabel = paymentData.description.substring(0, 25); // Max 25 chars
-      }
+      // Currency codes according to ISO 4217
+      const currencyCode = currency === "KHR" ? 116 : 840; // KHR = 116, USD = 840
 
       // Get merchant configuration from environment variables
       // These should be configured in your environment or settings
       const merchantName = process.env.BAKONG_MERCHANT_NAME || "Merchant";
       const merchantCity = process.env.BAKONG_MERCHANT_CITY || "Phnom Penh";
-      const acquiringBankCode = parseInt(
-        process.env.BAKONG_ACQUIRING_BANK_CODE || "0"
-      );
       const acquiringBankName =
         process.env.BAKONG_ACQUIRING_BANK_NAME || "BANK";
 
-      // Create MerchantInfo for KHQR generation
-      // Parameters: accountId, merchantName, merchantCity, acquiringBankCode, acquiringBankName, optionalData
-      const merchantInfo = new MerchantInfo(
-        merchantAccountId,
-        merchantName,
-        merchantCity,
-        acquiringBankCode,
-        acquiringBankName,
-        optionalData
-      );
+      // Create MerchantInfo for KHQR generation following the interface definition
+      const merchantInfo: MerchantInfo = {
+        merchantID: merchantAccountId,
+        bakongAccountID: merchantAccountId,
+        merchantName: merchantName,
+        merchantCity: merchantCity,
+        acquiringBank: acquiringBankName,
+        currency: currencyCode,
+        amount: amountInSmallestUnit,
+        billNumber: transactionId,
+        expirationTimestamp: expirationTimestamp, // Required for dynamic KHQR with amount
+        storeLabel: paymentData.description
+          ? paymentData.description.substring(0, 25)
+          : undefined, // Max 25 chars
+      };
 
       // Generate KHQR code
       const khqrResponse = khqr.generateMerchant(merchantInfo);
@@ -201,6 +238,32 @@ class BakongService {
       // Extract QR string from response data
       const khqrString = (khqrResponse.data as { qr: string; md5?: string }).qr;
 
+      // Generate QR code image from KHQR string
+      let qrCodeImage: string;
+      try {
+        qrCodeImage = await QRCode.toDataURL(khqrString, {
+          errorCorrectionLevel: 'M',
+          margin: 1,
+          width: 512,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF',
+          },
+        });
+      } catch (qrError: any) {
+        logger.error(
+          {
+            transactionId,
+            error: qrError.message,
+          },
+          "Failed to generate QR code image"
+        );
+        throw new AppError(
+          "Failed to generate QR code image",
+          httpStatus.INTERNAL_SERVER_ERROR
+        );
+      }
+
       // Optionally call Bakong API for deeplink generation if needed
       // This is kept for backward compatibility but KHQR is now generated locally
       let apiResponse: any = null;
@@ -221,7 +284,7 @@ class BakongService {
       }
 
       const paymentResponse = {
-        qrCode: apiResponse?.data?.qrCode || khqrString,
+        qrCode: apiResponse?.data?.qrCode || qrCodeImage,
         qrCodeData: khqrString,
         transactionId: transactionId,
         merchantAccountId: merchantAccountId,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CreditCard, Loader2, QrCode } from "lucide-react";
+import { CreditCard, Loader2, QrCode, Clock, AlertCircle } from "lucide-react";
 import {
   Drawer,
   DrawerContent,
@@ -15,7 +15,71 @@ import {
 } from "@/hooks/api/usePayment";
 import { StripeProvider } from "@/providers/StripeProvider";
 import { StripePaymentForm } from "@/components/payments/StripePaymentForm";
+import { useCountdown } from "@/hooks/useCountdown";
 import toast from "react-hot-toast";
+
+interface BakongQRDisplayProps {
+  qrCode: string;
+  expiresAt?: string;
+  onBack: () => void;
+  onExpired: () => void;
+}
+
+function BakongQRDisplay({ qrCode, expiresAt, onBack, onExpired }: BakongQRDisplayProps) {
+  const countdown = useCountdown({
+    targetDate: expiresAt || null,
+    onExpire: onExpired,
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-6 border border-gray-200">
+        <p className="text-sm font-semibold text-black mb-4">Scan QR Code to Pay</p>
+        <div className="w-64 h-64 bg-white rounded-lg mb-4 flex items-center justify-center border border-gray-200 relative overflow-hidden">
+          {countdown.isExpired ? (
+            <div className="flex flex-col items-center justify-center p-4 text-center">
+              <AlertCircle className="h-12 w-12 text-red-500 mb-2" />
+              <p className="text-sm font-semibold text-red-600">QR Code Expired</p>
+            </div>
+          ) : (
+            <Image
+              src={qrCode}
+              alt="Payment QR Code"
+              fill
+              className="object-cover"
+              unoptimized
+            />
+          )}
+        </div>
+        
+        {expiresAt && !countdown.isExpired && (
+          <div className="flex items-center gap-2 mb-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
+            <Clock className="h-4 w-4 text-orange-600" />
+            <span className="text-sm font-semibold text-orange-700">
+              Expires in: {countdown.formatted}
+            </span>
+          </div>
+        )}
+        
+        {countdown.isExpired ? (
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg">
+            <AlertCircle className="h-4 w-4 text-red-600" />
+            <p className="text-xs text-red-700 text-center">
+              This QR code has expired. Please generate a new one.
+            </p>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-500 text-center">
+            Payment will be verified automatically
+          </p>
+        )}
+      </div>
+      <Button variant="outline" onClick={onBack} className="w-full">
+        Back
+      </Button>
+    </div>
+  );
+}
 
 interface PaymentDrawerProps {
   open: boolean;
@@ -34,6 +98,7 @@ export function PaymentDrawer({
   const [paymentData, setPaymentData] = useState<{
     qrCode?: string;
     transactionId?: string;
+    expiresAt?: string;
     clientSecret?: string;
     paymentIntentId?: string;
     amount?: number;
@@ -54,6 +119,7 @@ export function PaymentDrawer({
         setPaymentData({
           qrCode: payment.qrCode,
           transactionId: payment.transactionId,
+          expiresAt: payment.expiresAt,
         });
         toast.success("Bakong QR code generated. Please scan to complete payment.");
       } else if (paymentMethod === "stripe") {
@@ -152,26 +218,15 @@ export function PaymentDrawer({
               </Button>
             </>
           ) : paymentData.qrCode ? (
-            <div className="space-y-4">
-              <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-6 border border-gray-200">
-                <p className="text-sm font-semibold text-black mb-4">Scan QR Code to Pay</p>
-                <div className="w-64 h-64 bg-white rounded-lg mb-4 flex items-center justify-center border border-gray-200 relative overflow-hidden">
-                  <Image
-                    src={paymentData.qrCode}
-                    alt="Payment QR Code"
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                </div>
-                <p className="text-xs text-gray-500 text-center">
-                  Payment will be verified automatically
-                </p>
-              </div>
-              <Button variant="outline" onClick={handleBack} className="w-full">
-                Back
-              </Button>
-            </div>
+            <BakongQRDisplay
+              qrCode={paymentData.qrCode}
+              expiresAt={paymentData.expiresAt}
+              onBack={handleBack}
+              onExpired={() => {
+                toast.error("QR code has expired. Please generate a new one.");
+                handleBack();
+              }}
+            />
           ) : paymentData.clientSecret ? (
             <div className="space-y-4">
               <StripeProvider
