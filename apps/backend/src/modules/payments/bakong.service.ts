@@ -5,6 +5,7 @@ import axios, { AxiosInstance } from 'axios';
 import crypto from 'crypto';
 import { logger } from '@/utils/logger';
 import { logPaymentEvent } from './payment-log.helper';
+import {BakongKHQR, khqrData} from 'bakong-khqr'
 
 if (!env.bakong?.accessToken) {
   console.warn('Bakong access token not configured. Bakong payment features will not work.');
@@ -119,7 +120,7 @@ class BakongService {
 
       // Call Bakong API to generate QR code
       // Note: Actual API endpoint may vary based on Bakong documentation
-      const response = await bakongInstance.post('/api/v1/payments/qr/generate', paymentData);
+      const response = await bakongInstance.post('/v1/generate_deeplink_by_qr', paymentData);
 
       // Generate KHQR string format
       // KHQR format: 000201010212... (EMV QR Code standard)
@@ -198,7 +199,7 @@ class BakongService {
 
       const bakongInstance = this.ensureBakong();
 
-      const response = await bakongInstance.get(`/api/v1/transactions/${transactionId}`);
+      const response = await bakongInstance.get(`/v1/transactions/${transactionId}`);
 
       const status = this.mapBakongStatus(response.data.status);
       const transactionStatus = {
