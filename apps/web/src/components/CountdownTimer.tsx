@@ -10,7 +10,13 @@ interface CountdownTimerProps {
 }
 
 export default function CountdownTimer({ targetDate, className = '', variant = 'absolute' }: CountdownTimerProps) {
-  const countdown = useCountdown(targetDate)
+  const countdown = useCountdown({ targetDate })
+
+  // Calculate days, hours, minutes, and seconds from timeRemaining (in milliseconds)
+  const days = Math.floor(countdown.timeRemaining / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((countdown.timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  const minutes = Math.floor((countdown.timeRemaining % (1000 * 60 * 60)) / (1000 * 60))
+  const seconds = Math.floor((countdown.timeRemaining % (1000 * 60)) / 1000)
 
   const containerClass = variant === 'absolute' 
     ? 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10'
@@ -21,19 +27,19 @@ export default function CountdownTimer({ targetDate, className = '', variant = '
       <div className="backdrop-blur-sm rounded-lg px-4 py-3">
         <div className="flex items-center gap-3 text-xs font-semibold text-white drop-shadow-lg">
           <div className="text-center">
-            <div className="text-lg font-bold">{countdown.days}</div>
+            <div className="text-lg font-bold">{days}</div>
             <div className="text-[10px] text-white/90 uppercase">Days</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-bold">{countdown.hours.toString().padStart(2, '0')}</div>
+            <div className="text-lg font-bold">{hours.toString().padStart(2, '0')}</div>
             <div className="text-[10px] text-white/90 uppercase">Hrs</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-bold">{countdown.minutes.toString().padStart(2, '0')}</div>
+            <div className="text-lg font-bold">{minutes.toString().padStart(2, '0')}</div>
             <div className="text-[10px] text-white/90 uppercase">Min</div>
           </div>
           <div className="text-center">
-            <div className="text-lg font-bold">{countdown.seconds.toString().padStart(2, '0')}</div>
+            <div className="text-lg font-bold">{seconds.toString().padStart(2, '0')}</div>
             <div className="text-[10px] text-white/90 uppercase">Sec</div>
           </div>
         </div>
