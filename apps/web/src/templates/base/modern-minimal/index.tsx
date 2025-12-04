@@ -20,12 +20,12 @@ export default function ModernMinimalTemplate() {
   const khangkomuttFont = "font-khangkomutt";
 
   // Images - UPDATE THESE PATHS with your actual images
-  const backgroundImage = "/images/assets/frame/modern-minimal.png"; // Main background
-  const decorativeTopLeft = "/images/assets/frame/frame-top-left.png"; // Top left decorative
-  const decorativeTopRight = "/images/assets/frame/frame-top-right.png"; // Top right decorative
-  const decorativeBottomLeft = "/images/assets/frame/frame-bottom-left.png"; // Bottom left decorative
-  const decorativeBottomRight = "/images/assets/frame/frame-bottom-right.png"; // Bottom right decorative
-  const decorativeBorder = "/images/assets/frame/frame-bg.png"; // Bottom border
+  const backgroundImage = "/images/assets/modern-minimal/modern-minimal.png"; // Main background
+  const decorativeTopLeft = "/images/assets/modern-minimal/frame-top-left.png"; // Top left decorative
+  const decorativeTopRight = "/images/assets/modern-minimal/frame-top-right.png"; // Top right decorative
+  const decorativeBottomLeft = "/images/assets/modern-minimal/frame-bottom-left.png"; // Bottom left decorative
+  const decorativeBottomRight = "/images/assets/modern-minimal/frame-bottom-right.png"; // Bottom right decorative
+  const decorativeBorder = "/images/assets/modern-minimal/frame-bg.png"; // Bottom border
   // Butterfly decorative elements - UPDATE THESE PATHS with your butterfly images
   const butterfly1 = "/images/assets/butterfly1.png"; // Butterfly image 1
   const butterfly2 = "/images/assets/butterfly2.png"; // Butterfly image 2
@@ -39,8 +39,8 @@ export default function ModernMinimalTemplate() {
   const qrCodeImage = "/images/KHQR-KH.png"; // QR code image for location
   const qrCodeCoupleKH = "/images/KHQR-KH.png"; // QR code for couple (Khmer)
   const qrCodeCoupleUS = "/images/KHQR-US.png"; // QR code for couple (English)
-  const frameBtn = "/images/assets/frame/frame-btn.png"; // Frame for button
-  const frameGuestName = "/images/assets/frame/frame-guest-name.png"; // Frame for guest name
+  const frameBtn = "/images/assets/modern-minimal/frame-btn.png"; // Frame for button
+  const frameGuestName = "/images/assets/modern-minimal/frame-guest-name.png"; // Frame for guest name
 
   // Wedding information - UPDATE THESE
   const groomName = "មន្នី ច័ន្ទផល្គុន";
