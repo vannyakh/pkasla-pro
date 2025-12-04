@@ -2,12 +2,28 @@
 
 import { motion } from "motion/react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, Heart } from "lucide-react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+// Register GSAP plugins
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export default function TropicalParadiseTemplate() {
   const [showCoupleQR, setShowCoupleQR] = useState(false);
   const [showInvitation, setShowInvitation] = useState(false);
+
+  // Refs for GSAP scroll animations
+  const programScheduleRef = useRef<HTMLDivElement>(null);
+  const locationRef = useRef<HTMLDivElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const thankYouRef = useRef<HTMLDivElement>(null);
+  const coupleQRRef = useRef<HTMLDivElement>(null);
+  const invitationTextRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Colors - Tropical Paradise theme
   const primaryColor = "#00BCD4"; // Cyan
@@ -61,6 +77,276 @@ export default function TropicalParadiseTemplate() {
     },
     { time: "វេលាម៉ោង ០៩:០០-១០:០០ព្រឹក", event: "ពិធីកាត់សក់បង្កក់សិរី" },
   ];
+
+  // GSAP Scroll Animations
+  useEffect(() => {
+    if (typeof window === "undefined" || !showInvitation) return;
+
+    let ctx: gsap.Context | null = null;
+
+    // Wait for DOM to be ready
+    const timer = setTimeout(() => {
+      // Set initial styles immediately - zoom out effect (start large, zoom to normal)
+      const setInitialStyles = () => {
+        if (invitationTextRef.current) {
+          gsap.set(invitationTextRef.current, {
+            opacity: 0,
+            y: 30,
+            scale: 1.15,
+            filter: "blur(10px)",
+          });
+        }
+        if (programScheduleRef.current) {
+          gsap.set(programScheduleRef.current, {
+            opacity: 0,
+            y: 40,
+            scale: 1.2,
+            filter: "blur(8px)",
+          });
+        }
+        if (locationRef.current) {
+          gsap.set(locationRef.current, {
+            opacity: 0,
+            y: 40,
+            scale: 1.2,
+            filter: "blur(8px)",
+          });
+        }
+        if (galleryRef.current) {
+          gsap.set(galleryRef.current, {
+            opacity: 0,
+            y: 40,
+            scale: 1.2,
+            filter: "blur(8px)",
+          });
+        }
+        if (thankYouRef.current) {
+          gsap.set(thankYouRef.current, {
+            opacity: 0,
+            y: 40,
+            scale: 1.2,
+            filter: "blur(8px)",
+          });
+        }
+        if (coupleQRRef.current) {
+          gsap.set(coupleQRRef.current, {
+            opacity: 0,
+            y: 40,
+            scale: 1.2,
+            filter: "blur(8px)",
+          });
+        }
+      };
+
+      setInitialStyles();
+
+      ctx = gsap.context(() => {
+        // Animate invitation text on scroll with zoom out
+        if (invitationTextRef.current) {
+          gsap.to(invitationTextRef.current, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 1,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: invitationTextRef.current,
+              start: "top 80%",
+              end: "top 50%",
+              toggleActions: "play none none reverse",
+              markers: false,
+            },
+          });
+        }
+
+        // Animate program schedule on scroll with zoom out
+        if (programScheduleRef.current) {
+          gsap.to(programScheduleRef.current, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 1.2,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: programScheduleRef.current,
+              start: "top 80%",
+              end: "top 50%",
+              toggleActions: "play none none reverse",
+              markers: false,
+            },
+          });
+
+          // Animate individual schedule items with zoom out
+          const scheduleItems = programScheduleRef.current.querySelectorAll(
+            ".schedule-item"
+          );
+          scheduleItems.forEach((item, index) => {
+            gsap.set(item, {
+              opacity: 0,
+              x: -30,
+              scale: 1.15,
+            });
+            gsap.to(item, {
+              opacity: 1,
+              x: 0,
+              scale: 1,
+              duration: 0.6,
+              delay: index * 0.1,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: item,
+                start: "top 85%",
+                toggleActions: "play none none reverse",
+                markers: false,
+              },
+            });
+          });
+        }
+
+        // Animate location section on scroll with zoom out
+        if (locationRef.current) {
+          gsap.to(locationRef.current, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 1.2,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: locationRef.current,
+              start: "top 80%",
+              end: "top 50%",
+              toggleActions: "play none none reverse",
+              markers: false,
+            },
+          });
+
+          // Animate QR code with zoom out
+          const qrCode = locationRef.current.querySelector(".qr-code");
+          if (qrCode) {
+            gsap.set(qrCode, {
+              opacity: 0,
+              scale: 1.4,
+              y: 20,
+            });
+            gsap.to(qrCode, {
+              opacity: 1,
+              scale: 1,
+              y: 0,
+              duration: 0.9,
+              ease: "back.out(1.7)",
+              scrollTrigger: {
+                trigger: qrCode,
+                start: "top 85%",
+                toggleActions: "play none none reverse",
+                markers: false,
+              },
+            });
+          }
+        }
+
+        // Animate gallery section on scroll with zoom out
+        if (galleryRef.current) {
+          gsap.to(galleryRef.current, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 1.2,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: galleryRef.current,
+              start: "top 80%",
+              end: "top 50%",
+              toggleActions: "play none none reverse",
+              markers: false,
+            },
+          });
+
+          // Animate gallery images with zoom out
+          const galleryImages = galleryRef.current.querySelectorAll(
+            ".gallery-image"
+          );
+          galleryImages.forEach((img, index) => {
+            gsap.set(img, {
+              opacity: 0,
+              scale: 1.3,
+              y: 30,
+              filter: "blur(5px)",
+            });
+            gsap.to(img, {
+              opacity: 1,
+              scale: 1,
+              y: 0,
+              filter: "blur(0px)",
+              duration: 0.9,
+              delay: index * 0.15,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: img,
+                start: "top 85%",
+                toggleActions: "play none none reverse",
+                markers: false,
+              },
+            });
+          });
+        }
+
+        // Animate thank you section on scroll with zoom out
+        if (thankYouRef.current) {
+          gsap.to(thankYouRef.current, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 1.2,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: thankYouRef.current,
+              start: "top 80%",
+              end: "top 50%",
+              toggleActions: "play none none reverse",
+              markers: false,
+            },
+          });
+        }
+
+        // Animate couple QR section on scroll with zoom out
+        if (coupleQRRef.current) {
+          gsap.to(coupleQRRef.current, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            filter: "blur(0px)",
+            duration: 1.2,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: coupleQRRef.current,
+              start: "top 80%",
+              end: "top 50%",
+              toggleActions: "play none none reverse",
+              markers: false,
+            },
+          });
+        }
+
+        // Refresh ScrollTrigger after all animations are set up
+        setTimeout(() => {
+          ScrollTrigger.refresh();
+        }, 150);
+      });
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      if (ctx) {
+        ctx.revert();
+      }
+      ScrollTrigger.refresh();
+    };
+  }, [showInvitation]);
 
   return (
     <section
@@ -322,12 +608,8 @@ export default function TropicalParadiseTemplate() {
       )}
 
       <div
-        className="container relative z-10 px-4 mx-auto max-w-6xl flex flex-col items-center justify-start py-8 overflow-y-auto"
-        style={{
-          maxHeight: "60vh",
-          height: "60vh",
-          marginTop: "20vh",
-        }}
+        ref={containerRef}
+        className="container relative z-10 px-4 mx-auto max-w-6xl flex flex-col items-center justify-start py-8"
       >
         {/* Hero Section */}
         <motion.div
@@ -454,6 +736,7 @@ export default function TropicalParadiseTemplate() {
 
               {/* Invitation Text Card with Frame */}
               <motion.div
+                ref={invitationTextRef}
                 className="relative p-6 mx-auto max-w-4xl"
                 initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -486,6 +769,7 @@ export default function TropicalParadiseTemplate() {
         {/* Program Schedule with Frame */}
         {showInvitation && (
           <motion.div
+            ref={programScheduleRef}
             className="mx-auto max-w-4xl mb-16 relative w-full"
             initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
             whileInView={{
@@ -508,7 +792,7 @@ export default function TropicalParadiseTemplate() {
                   {programSchedule.map((item, index) => (
                     <motion.div
                       key={index}
-                      className="flex items-start gap-4"
+                      className="schedule-item flex items-start gap-4"
                       initial={{ opacity: 0, x: -20 }}
                       whileInView={{ opacity: 1, x: 0 }}
                       viewport={{ once: true }}
@@ -543,6 +827,7 @@ export default function TropicalParadiseTemplate() {
         {/* Google Map Link with QR Code */}
         {showInvitation && googleMapLink && (
           <motion.div
+            ref={locationRef}
             className="mx-auto max-w-4xl mb-16 relative w-full"
             initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
             whileInView={{
@@ -571,7 +856,7 @@ export default function TropicalParadiseTemplate() {
                     viewport={{ once: true }}
                     transition={{ duration: 0.5 }}
                   >
-                    <div className="relative w-48 h-48 md:w-64 md:h-64 p-4 bg-white rounded-lg">
+                    <div className="qr-code relative w-48 h-48 md:w-64 md:h-64 p-4 bg-white rounded-lg">
                       <Image
                         src={qrCodeImage}
                         alt="QR Code"
@@ -607,6 +892,7 @@ export default function TropicalParadiseTemplate() {
         {/* Photo Gallery with Frame */}
         {showInvitation && (
           <motion.div
+            ref={galleryRef}
             className="mx-auto max-w-4xl mb-16 relative w-full"
             initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
             whileInView={{
@@ -636,7 +922,7 @@ export default function TropicalParadiseTemplate() {
                   {galleryImages.map((img, index) => (
                     <motion.div
                       key={index}
-                      className="relative aspect-square overflow-hidden rounded-lg"
+                      className="gallery-image relative aspect-square overflow-hidden rounded-lg"
                       initial={{ opacity: 0, scale: 0.8 }}
                       whileInView={{ opacity: 1, scale: 1 }}
                       viewport={{ once: true }}
@@ -660,6 +946,7 @@ export default function TropicalParadiseTemplate() {
         {/* Thank You Letter with Frame */}
         {showInvitation && (
           <motion.div
+            ref={thankYouRef}
             className="mx-auto max-w-4xl mb-16 relative w-full"
             initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
             whileInView={{
@@ -697,6 +984,7 @@ export default function TropicalParadiseTemplate() {
         {/* Couple QR Code Section */}
         {showInvitation && (
           <motion.div
+            ref={coupleQRRef}
             className="mx-auto max-w-4xl mb-16 relative w-full"
             initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
             whileInView={{
