@@ -12,6 +12,7 @@ import {
   getMyGuestsHandler,
   createGuestsFromCSVHandler,
   regenerateTokenHandler,
+  joinEventByQRHandler,
 } from './guest.controller';
 import {
   createGuestSchema,
@@ -19,6 +20,7 @@ import {
   getGuestSchema,
   deleteGuestSchema,
   listGuestsQuerySchema,
+  joinEventByQRSchema,
 } from './guest.validation';
 import { giftRouter } from './gift.router';
 
@@ -42,6 +44,13 @@ router.get(
 router.get(
   '/event/:eventId',
   asyncHandler(getGuestsByEventHandler),
+);
+
+// Join event by scanning QR code (public endpoint)
+router.post(
+  '/qr/:token/join',
+  validateRequest(joinEventByQRSchema),
+  asyncHandler(joinEventByQRHandler),
 );
 
 // Get guest by ID

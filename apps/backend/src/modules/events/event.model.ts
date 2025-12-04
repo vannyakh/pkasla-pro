@@ -25,6 +25,7 @@ export interface EventDocument extends Document {
     spacing?: Record<string, number>; // Custom spacing values
     customVariables?: Record<string, string>; // Additional custom variables
   };
+  qrCodeToken?: string; // Unique token for event QR code (for guests to scan and join)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -105,6 +106,13 @@ const eventSchema = new Schema<EventDocument>(
         customVariables: Map,
       },
       default: {},
+    },
+    qrCodeToken: {
+      type: String,
+      trim: true,
+      unique: true,
+      sparse: true,
+      index: true,
     },
   },
   { timestamps: true },

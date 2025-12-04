@@ -24,6 +24,7 @@ export interface Event {
     spacing?: Record<string, number>
     customVariables?: Record<string, string>
   }
+  qrCodeToken?: string
   createdAt: string | Date
   updatedAt: string | Date
 }

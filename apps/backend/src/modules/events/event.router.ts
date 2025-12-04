@@ -12,6 +12,8 @@ import {
   getMyEventsHandler,
   getEventsByTypeHandler,
   getEventCategoriesHandler,
+  generateQRCodeTokenHandler,
+  getEventByQRTokenHandler,
 } from './event.controller';
 import {
   createEventSchema,
@@ -20,6 +22,8 @@ import {
   deleteEventSchema,
   listEventsQuerySchema,
   getEventsByTypeSchema,
+  generateQRCodeTokenSchema,
+  getEventByQRTokenSchema,
 } from './event.validation';
 
 const router = Router();
@@ -88,6 +92,21 @@ router.delete(
   authenticate,
   validateRequest(deleteEventSchema),
   asyncHandler(deleteEventHandler),
+);
+
+// Generate or regenerate QR code token for event (authenticated, host only)
+router.post(
+  '/:id/qr-code/generate',
+  authenticate,
+  validateRequest(generateQRCodeTokenSchema),
+  asyncHandler(generateQRCodeTokenHandler),
+);
+
+// Get event by QR code token (public endpoint for scanning)
+router.get(
+  '/qr/:token',
+  validateRequest(getEventByQRTokenSchema),
+  asyncHandler(getEventByQRTokenHandler),
 );
 
 export const eventRouter: Router = router;

@@ -236,3 +236,21 @@ export const getEventsByTypeSchema = z.object({
  */
 export type ListEventsQuery = z.infer<typeof listEventsQuerySchema>['query'];
 
+/**
+ * Generate QR code token validation schema
+ */
+export const generateQRCodeTokenSchema = z.object({
+  params: z.object({
+    id: z.string().min(1, { message: 'Event ID is required' }),
+  }),
+});
+
+/**
+ * Get event by QR token validation schema
+ */
+export const getEventByQRTokenSchema = z.object({
+  params: z.object({
+    token: z.string().min(1, { message: 'QR token is required' }),
+  }),
+});
+

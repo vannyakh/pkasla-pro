@@ -16,6 +16,7 @@ export interface Guest {
   province?: string
   photo?: string
   hasGivenGift: boolean
+  inviteToken?: string
   createdAt: string | Date
   updatedAt: string | Date
 }

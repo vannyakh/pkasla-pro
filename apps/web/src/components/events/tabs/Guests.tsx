@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useCallback } from 'react'
 import { type ColumnDef } from '@tanstack/react-table'
-import { Filter, Plus, CheckCircle2, Eye, QrCode, MoreVertical, Trash2, Share2 } from 'lucide-react'
+import { Filter, Plus, CheckCircle2, Eye, QrCode, MoreVertical, Trash2, Share2, ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent } from '@/components/ui/card'
@@ -19,7 +19,9 @@ import CreateGuestDrawer from '@/components/guests/CreateGuestDrawer'
 import GuestDetailsDrawer, { type DisplayGuest } from '@/components/guests/GuestDetailsDrawer'
 import GiftPaymentDrawer from '@/components/guests/GiftPaymentDrawer'
 import ViewGiftDrawer from '@/components/guests/ViewGiftDrawer'
+import InviteCardDialog from '@/components/events/InviteCardDialog'
 import { useGiftsByGuest } from '@/hooks/api/useGift'
+import { useEvent } from '@/hooks/api/useEvent'
 import toast from 'react-hot-toast'
 import { api } from '@/lib/axios-client'
 
@@ -55,6 +57,7 @@ interface GuestsProps {
   updateGuestMutation: { isPending: boolean }
   deleteGuestMutation: { isPending: boolean }
   getTagColor: (color?: string) => string
+  rawGuests?: Guest[]
 }
 
 export default function Guests({
@@ -68,7 +71,6 @@ export default function Guests({
   onSelectedGuestForGiftChange,
   selectedGuestForView,
   onSelectedGuestForViewChange,
-  onCreateGuest: _onCreateGuest, // Unused - CreateGuestDrawer handles creation internally
   onGiftPayment,
   onDeleteGuest,
   eventId,
@@ -76,10 +78,25 @@ export default function Guests({
   createGuestMutation,
   deleteGuestMutation,
   getTagColor,
+  rawGuests,
 }: GuestsProps) {
   // State for full screen view
   const [selectedGuestForFullScreen, setSelectedGuestForFullScreen] = useState<DisplayGuest | null>(null)
   const [sharingGuestId, setSharingGuestId] = useState<string | null>(null)
+  const [isInviteCardDialogOpen, setIsInviteCardDialogOpen] = useState(false)
+  
+  // Fetch event data for invitation cards
+  const { data: event } = useEvent(eventId)
+  
+  // Fetch raw guests if not provided (convert displayGuests back to Guest type)
+  const guestsForInvite = useMemo(() => {
+    if (rawGuests) return rawGuests
+    // Convert displayGuests back to Guest type
+    return displayGuests.map((dg) => ({
+      ...dg,
+      tag: typeof dg.tag === 'object' ? dg.tag.label : dg.tag,
+    })) as Guest[]
+  }, [rawGuests, displayGuests])
   
   // Fetch gift data for the selected guest (for table row actions)
   const { data: guestGifts = [] } = useGiftsByGuest(selectedGuestForView?.id || '')
@@ -374,6 +391,16 @@ export default function Guests({
                 <Button variant="outline" size="sm" className="text-xs h-9 hidden sm:flex">
                   <span className="hidden md:inline">នាំចូល</span>
                 </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-xs h-9"
+                  onClick={() => setIsInviteCardDialogOpen(true)}
+                >
+                  <ImageIcon className="h-3.5 w-3.5 mr-1.5" />
+                  <span className="hidden md:inline">ធៀបអញ្ជើញ</span>
+                  <span className="md:hidden">ធៀប</span>
+                </Button>
                 <CreateGuestDrawer
                   open={isGuestDrawerOpen}
                   onOpenChange={(open) => {
@@ -449,6 +476,14 @@ export default function Guests({
         onOpenEditDrawer={() => {
           onGuestDrawerOpenChange(true)
         }}
+      />
+
+      {/* Invitation Card Designer Dialog */}
+      <InviteCardDialog
+        open={isInviteCardDialogOpen}
+        onOpenChange={setIsInviteCardDialogOpen}
+        guests={guestsForInvite}
+        event={event}
       />
     </div>
   )
