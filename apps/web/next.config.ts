@@ -1,10 +1,23 @@
 import type { NextConfig } from "next";
 import path from "path";
 
+// Get asset prefix from environment variable (for CDN or custom domain)
+// Example: NEXT_PUBLIC_ASSET_PREFIX=https://cdn.example.com
+const assetPrefix = process.env.NEXT_PUBLIC_ASSET_PREFIX || '';
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 const nextConfig: NextConfig = {
   // Standalone output for server deployment
   // This creates a minimal server.js file that can run independently
   output: "standalone",
+  
+  // Asset prefix for CDN or custom domain (e.g., https://cdn.example.com)
+  // Set NEXT_PUBLIC_ASSET_PREFIX environment variable to enable
+  ...(assetPrefix && { assetPrefix }),
+  
+  // Base path if app is not at root (e.g., /app)
+  // Set NEXT_PUBLIC_BASE_PATH environment variable to enable
+  ...(basePath && { basePath }),
   
   // Turbopack configuration - set root to workspace root to silence warnings
   // This helps Next.js correctly identify the monorepo root
