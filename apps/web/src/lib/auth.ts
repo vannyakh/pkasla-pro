@@ -40,6 +40,7 @@ export const REFRESH_TOKEN_COOKIE = 'refreshToken';
 const isProduction = process.env.NODE_ENV === 'production';
 
 export const authConfig: NextAuthConfig = {
+  trustHost: true, // Allow custom hostnames (e.g., phkasla) in development/staging
   providers: [
     Credentials({
       name: 'Credentials',
