@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:clean": "rm -rf .next && next build",
     "postbuild": "node scripts/copy-public.js",
     "start": "next start",
-    "start:standalone": "node .next/standalone/server.js",
+    "start:standalone": "node .next/standalone/apps/web/server.js",
     "lint": "eslint .",
     "deploy": "npx wrangler pages deploy .next",
     "pages:deploy": "npx wrangler pages deploy .next",

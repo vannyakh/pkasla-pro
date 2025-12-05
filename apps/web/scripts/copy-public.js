@@ -76,3 +76,18 @@ if (!staticCopied) {
   process.exit(1);
 }
 
+// Verify critical static files exist
+const chunksDir = path.join(staticTarget, 'chunks');
+if (fs.existsSync(chunksDir)) {
+  const chunkFiles = fs.readdirSync(chunksDir);
+  const jsFiles = chunkFiles.filter(f => f.endsWith('.js'));
+  const cssFiles = chunkFiles.filter(f => f.endsWith('.css'));
+  console.log(`✅ Verified: ${jsFiles.length} JS chunks, ${cssFiles.length} CSS chunks copied`);
+  
+  if (jsFiles.length === 0 && cssFiles.length === 0) {
+    console.warn('⚠️  Warning: No chunk files found in static/chunks directory');
+  }
+} else {
+  console.warn('⚠️  Warning: chunks directory not found after copy');
+}
+
