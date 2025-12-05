@@ -32,7 +32,7 @@ module.exports = {
     },
     {
       name: 'web',
-      script: './apps/web/.next/standalone/server.js',
+      script: './apps/web/.next/standalone/apps/web/server.js',
       cwd: process.cwd(),
       instances: 1,
       exec_mode: 'fork',
@@ -73,7 +73,7 @@ module.exports = {
     },
     {
       name: 'web-dev',
-      script: './apps/web/.next/standalone/server.js',
+      script: './apps/web/.next/standalone/apps/web/server.js',
       cwd: process.cwd(),
       instances: 1,
       exec_mode: 'fork',
