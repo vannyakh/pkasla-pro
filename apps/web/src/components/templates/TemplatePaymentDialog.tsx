@@ -52,16 +52,16 @@ function BakongQRDisplay({
   return (
     <div className="space-y-4">
       {/* KHQR Card Design */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 max-w-sm mx-auto">
+      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 max-w-xs mx-auto">
         {/* Red Header with KHQR */}
-        <div className="bg-[#DC2626] relative px-4 py-3 overflow-hidden">
+        <div className="bg-[#DC2626] relative px-4 py-2.5 overflow-hidden">
           <div className="flex items-center justify-between">
-            <h2 className="text-white text-xl font-bold tracking-wide" style={{ fontFamily: 'sans-serif' }}>
+            <h2 className="text-white text-base font-bold tracking-wide" style={{ fontFamily: 'sans-serif' }}>
               KHQR
             </h2>
             {/* Triangular cutout on the right */}
             <div 
-              className="absolute right-0 top-0 w-5 h-full"
+              className="absolute right-0 top-0 w-4 h-full"
               style={{
                 clipPath: 'polygon(0 0, 100% 0, 100% 100%)',
                 backgroundColor: '#DC2626'
@@ -73,32 +73,32 @@ function BakongQRDisplay({
         {/* Card Content */}
         <div className="px-4 py-4 bg-white">
           {/* Merchant Name */}
-          <p className="text-sm font-medium text-black mb-2">{merchantName}</p>
+          <p className="text-xs font-medium text-gray-700 mb-2 truncate">{merchantName}</p>
           
           {/* Amount */}
           <div className="mb-3">
-            <p className="text-3xl font-bold text-black">
-              {amount}
+            <p className="text-2xl font-bold text-black">
+              {amount?.toLocaleString()}
             </p>
-            <p className="text-sm font-normal text-black mt-1">{currency}</p>
+            <p className="text-xs font-normal text-gray-600 mt-0.5">{currency}</p>
           </div>
 
           {/* Dashed Line Separator */}
-          <div className="border-t border-dashed border-gray-300 my-4"></div>
+          <div className="border-t border-dashed border-gray-300 my-3"></div>
 
           {/* QR Code */}
-          <div className="w-full aspect-square bg-white rounded-lg flex items-center justify-center relative overflow-hidden">
+          <div className="w-full aspect-square bg-gray-50 rounded-lg flex items-center justify-center relative overflow-hidden border border-gray-100">
             {countdown.isExpired ? (
               <div className="flex flex-col items-center justify-center p-4 text-center">
-                <AlertCircle className="h-12 w-12 text-red-500 mb-2" />
-                <p className="text-sm font-semibold text-red-600">QR Code ផុតកំណត់</p>
+                <AlertCircle className="h-10 w-10 text-red-500 mb-2" />
+                <p className="text-xs font-semibold text-red-600">QR Code ផុតកំណត់</p>
               </div>
             ) : (
               <Image
                 src={qrCode}
                 alt="Payment QR Code"
                 fill
-                className="object-contain p-2"
+                className="object-contain p-3"
                 unoptimized
               />
             )}
@@ -110,7 +110,7 @@ function BakongQRDisplay({
       <div className="space-y-3">
         {expiresAt && !countdown.isExpired && (
           <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 border border-orange-200 rounded-lg">
-            <Clock className="h-4 w-4 text-orange-600" />
+            <Clock className="h-4 w-4 text-orange-600 shrink-0" />
             <span className="text-sm font-semibold text-orange-700">
               ផុតកំណត់ក្នុង: {countdown.formatted}
             </span>
@@ -119,8 +119,8 @@ function BakongQRDisplay({
         
         {countdown.isExpired ? (
           <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg">
-            <AlertCircle className="h-4 w-4 text-red-600" />
-            <p className="text-xs text-red-700 text-center">
+            <AlertCircle className="h-4 w-4 text-red-600 shrink-0" />
+            <p className="text-xs text-red-700 text-center flex-1">
               QR Code នេះផុតកំណត់ហើយ។ សូមបង្កើតថ្មី។
             </p>
           </div>
