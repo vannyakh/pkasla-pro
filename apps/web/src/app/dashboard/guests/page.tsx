@@ -25,8 +25,10 @@ import {
 import { useGuests } from '@/hooks/api/useGuest'
 import { useMyEvents } from '@/hooks/api/useEvent'
 import GuestDrawer from '@/components/guests/CreateGuestDrawer'
+import Empty from '@/components/Empty'
 import type { Guest, GuestStatus } from '@/types/guest'
 import type { User } from '@/types/user'
+import PageLoading from '@/components/PageLoading'
 
 export default function GuestPage() {
   const { data: session } = useSession()
@@ -234,17 +236,40 @@ export default function GuestPage() {
         <CardContent className="p-0">
           {guestsLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              <span className="ml-2 text-muted-foreground">Loading guests...</span>
-            </div>
+             <PageLoading size='sm' fullScreen={false} text='Loading guests...' />
+             </div>
           ) : guestsError ? (
-            <div className="flex items-center justify-center py-12">
-              <p className="text-red-600">Error loading guests: {guestsError.message}</p>
-            </div>
+            <Empty
+              title="Error loading guests"
+              description={`Error loading guests: ${guestsError.message}`}
+              animationUrl="/anim/error.lottie"
+              size="default"
+              action={undefined}
+              padding="none"
+            />
           ) : guests.length === 0 ? (
-            <div className="flex items-center justify-center py-12">
-              <p className="text-muted-foreground">No guests found</p>
-            </div>
+            <Empty
+              title={searchQuery || selectedEventId !== 'all' || selectedStatus !== 'all' 
+                ? 'No guests found' 
+                : 'No guests yet'}
+              description={
+                searchQuery || selectedEventId !== 'all' || selectedStatus !== 'all'
+                  ? 'Try adjusting your search or filters to find guests.'
+                  : 'Start by adding your first guest to manage your event invitations.'
+              }
+              animationUrl="/anim/list.lottie"
+              size="default"
+              action={
+                !searchQuery && selectedEventId === 'all' && selectedStatus === 'all'
+                  ? {
+                      label: 'Add Guest',
+                      onClick: handleCreateGuest,
+                      icon: <Plus className="mr-2 h-4 w-4" />,
+                    }
+                  : undefined
+              }
+              padding="none"
+            />
           ) : (
             <>
               <Table>

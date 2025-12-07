@@ -5,42 +5,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { DatePicker, TimePicker } from '@/components/pickers'
-import { Clock, Edit, Trash2, Save, Plus } from 'lucide-react'
+import { Clock, Edit, Trash2, Save, Plus, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
+import type { AgendaItem } from '@/types/agenda'
+import {
+  useAgendaItems,
+  useCreateAgendaItem,
+  useUpdateAgendaItem,
+  useDeleteAgendaItem,
+} from '@/hooks/api/useAgenda'
 
-type ScheduleItem = {
-  id: string
-  date: string // ISO date string, e.g. "2025-12-31"
-  time: string // "07:00"
-  description?: string
+interface AgendaProps {
+  eventId: string
 }
 
-export default function Schedules() {
-  const [items, setItems] = useState<ScheduleItem[]>([
-    // sample demo data for UX preview; can be removed when wired to API
-    {
-      id: 'a',
-      date: '2025-10-24',
-      time: '07:00',
-      description:
-        'បុណ្យភ្ជុំបិណ្ឌសម្របសម្រួលនៅភូមិ និងសួរសុខទុក្ខអ្នកចាស់ៗ',
-    },
-    {
-      id: 'b',
-      date: '2025-12-31',
-      time: '07:30',
-      description:
-        'គីឡូទឹកដោះ ទទួលភ្ញៀវ និងត្រៀមពិធីខាងក្នុងសម្មាធានកម្មត្រូវការបង្កើត',
-    },
-    { id: 'c', date: '2025-12-31', time: '08:15', description: 'ពិធីរៀបចំគ្រួសារ និងទទួលភ្ញៀវ' },
-    { id: 'd', date: '2025-12-31', time: '08:30', description: 'ពិធីកាន់បួស បុណ្យជ័យ' },
-    {
-      id: 'e',
-      date: '2026-01-01',
-      time: '05:00',
-      description: 'បើកពិធីជាផ្លូវការនៅសាលាជាតិអាមេរស៊្តាន',
-    },
-  ])
+export default function Agenda({ eventId }: AgendaProps) {
+  const { data: items = [], isLoading, error } = useAgendaItems(eventId)
+  const createAgendaMutation = useCreateAgendaItem()
+  const updateAgendaMutation = useUpdateAgendaItem()
+  const deleteAgendaMutation = useDeleteAgendaItem()
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined)
@@ -53,9 +36,10 @@ export default function Schedules() {
   })
 
   const isEditing = editingId !== null
+  const isPending = createAgendaMutation.isPending || updateAgendaMutation.isPending || deleteAgendaMutation.isPending
 
   const grouped = useMemo(() => {
-    const byDate: Record<string, ScheduleItem[]> = {}
+    const byDate: Record<string, AgendaItem[]> = {}
     for (const it of items) {
       byDate[it.date] ??= []
       byDate[it.date].push(it)
@@ -96,21 +80,36 @@ export default function Schedules() {
     }
   }, [selectedHour, selectedMinute])
 
-  const onAddOrSave = () => {
+  const onAddOrSave = async () => {
     if (!form.date || !form.time) return
-    if (isEditing) {
-      setItems((prev) =>
-        prev.map((it) => (it.id === editingId ? { ...it, ...form } : it)),
-      )
-      setEditingId(null)
-      resetForm()
+    if (isEditing && editingId) {
+      try {
+        await updateAgendaMutation.mutateAsync({
+          id: editingId,
+          data: {
+            date: form.date,
+            time: form.time,
+            description: form.description || undefined,
+          },
+        })
+        setEditingId(null)
+        resetForm()
+      } catch {
+        // Error is handled by the mutation
+      }
       return
     }
-    setItems((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), date: form.date, time: form.time, description: form.description },
-    ])
-    resetForm()
+    try {
+      await createAgendaMutation.mutateAsync({
+        eventId,
+        date: form.date,
+        time: form.time,
+        description: form.description || undefined,
+      })
+      resetForm()
+    } catch {
+      // Error is handled by the mutation
+    }
   }
 
   const onEdit = (id: string) => {
@@ -124,12 +123,45 @@ export default function Schedules() {
     setEditingId(id)
   }
 
-  const onDelete = (id: string) => {
-    setItems((prev) => prev.filter((x) => x.id !== id))
-    if (editingId === id) {
-      setEditingId(null)
-      resetForm()
+  const onDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this agenda item?')) return
+    try {
+      await deleteAgendaMutation.mutateAsync({ id, eventId })
+      if (editingId === id) {
+        setEditingId(null)
+        resetForm()
+      }
+    } catch {
+      // Error is handled by the mutation
     }
+  }
+
+  if (isLoading) {
+    return (
+      <Card className="border border-gray-200 shadow-none">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-black">កាលវិភាគ (Schedule)</CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center py-8">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+        </CardContent>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card className="border border-gray-200 shadow-none">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-black">កាលវិភាគ (Schedule)</CardTitle>
+        </CardHeader>
+        <CardContent className="py-8">
+          <div className="text-center text-sm text-red-600">
+            {error.message || 'Failed to load agenda items'}
+          </div>
+        </CardContent>
+      </Card>
+    )
   }
 
   return (
@@ -176,6 +208,7 @@ export default function Schedules() {
                           className="h-8 w-8 p-0"
                           onClick={() => onEdit(it.id)}
                           title="កែប្រែ"
+                          disabled={isPending}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -185,6 +218,7 @@ export default function Schedules() {
                           className="h-8 w-8 p-0 text-red-600 hover:text-red-700"
                           onClick={() => onDelete(it.id)}
                           title="លុប"
+                          disabled={isPending}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -230,8 +264,17 @@ export default function Schedules() {
             </div>
           </div>
           <div className="sticky bottom-0 bg-white border-t border-gray-200 p-3 flex justify-center">
-            <Button onClick={onAddOrSave} className="w-full sm:w-auto px-6">
-              {isEditing ? (
+            <Button 
+              onClick={onAddOrSave} 
+              className="w-full sm:w-auto px-6"
+              disabled={isPending || !form.date || !form.time}
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  កំពុងធ្វើ...
+                </>
+              ) : isEditing ? (
                 <>
                   <Save className="h-4 w-4 mr-2" />
                   បន្ទាន់សម័យ

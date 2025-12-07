@@ -179,20 +179,22 @@ export function EventCoverHeader({
 
         {/* Description with divider */}
         {event.description && (
-          <div className="px-3  w-full max-w-full overflow-hidden sm:px-4">
+          <div className="px-3 sm:px-4 pb-3 sm:pb-4">
             <div className="border-t border-white/20 mb-3 sm:mb-4"></div>
-            <div className="w-full max-w-full overflow-hidden">
-            <Marquee className="w-full max-w-full overflow-hidden">
-              <MarqueeContent speed={30} pauseOnHover>
-                <MarqueeItem className="px-4">
-                  <p className="text-xs sm:text-sm md:text-base text-white/95 drop-shadow-md whitespace-nowrap">
-                    {event.description}
-                  </p>
-                </MarqueeItem>
-              </MarqueeContent>
-            </Marquee>
+            <div className="w-full overflow-hidden">
+            <p className="text-xs sm:text-sm md:text-base text-white/95 drop-shadow-md whitespace-nowrap">
+                      {event.description}
+                    </p>
+              {/* <Marquee>
+                <MarqueeContent speed={30} pauseOnHover>
+                  <MarqueeItem className="px-4">
+                    <p className="text-xs sm:text-sm md:text-base text-white/95 drop-shadow-md whitespace-nowrap">
+                      {event.description}
+                    </p>
+                  </MarqueeItem>
+                </MarqueeContent>
+              </Marquee> */}
             </div>
-    
           </div>
         )}
       </Card>

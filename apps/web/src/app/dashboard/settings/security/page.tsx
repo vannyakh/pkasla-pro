@@ -193,7 +193,7 @@ export default function SecurityPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-11 text-sm font-medium bg-black hover:bg-gray-900 disabled:opacity-50"
+              className="w-full h-11 text-sm font-medium disabled:opacity-50"
             >
               {isLoading ? (
                 <>

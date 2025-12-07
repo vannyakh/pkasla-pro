@@ -9,7 +9,6 @@ import {
   QrCode,
   Info,
   UserCheck,
-  Loader2,
   ArrowLeft,
   DollarSign,
   MoreHorizontal,
@@ -35,7 +34,7 @@ import type { Guest as GuestType } from "@/types/guest";
 import {
   Overview,
   Guests,
-  Schedules,
+  Agenda,
   Settings,
   Templates,
   QRGenerate,
@@ -43,6 +42,7 @@ import {
 } from "@/components/events/tabs";
 import { EventCoverHeader } from "@/components/events";
 import { getGuestTagColor } from "@/helpers";
+import PageLoading from "@/components/PageLoading";
 
 // Extended guest interface for UI display (includes gift info)
 interface DisplayGuest extends Omit<GuestType, "tag"> {
@@ -139,7 +139,7 @@ export default function EventDetailPage({
   if (eventLoading || guestsLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+        <PageLoading fullScreen={false} size="sm" />
       </div>
     );
   }
@@ -419,7 +419,7 @@ export default function EventDetailPage({
 
         {/* Schedule Tab */}
         <TabsContent value="schedule" className="mt-4 md:mt-4 mb-16 md:mb-4">
-          <Schedules />
+          <Agenda eventId={id} />
         </TabsContent>
 
         {/* Settings Tab */}

@@ -12,6 +12,7 @@ interface MetadataConfig {
   description?: string;
   keywords?: string[];
   image?: string;
+  icon?: string; // Favicon/icon URL
   url?: string;
   type?: "website" | "article" | "profile" | "book";
   noIndex?: boolean;
@@ -24,6 +25,7 @@ export function generateMetadata(config?: MetadataConfig): Metadata {
     description = defaultDescription,
     keywords = [],
     image = `${siteUrl}/og-image.png`,
+    icon,
     url = siteUrl,
     type = "website",
     noIndex = false,
@@ -32,7 +34,10 @@ export function generateMetadata(config?: MetadataConfig): Metadata {
 
   const fullTitle = title.includes(siteName)
     ? title
-    : `${title} | ${siteName}`;
+    : `${title}`;
+
+  // Default favicon if not provided
+  const favicon = icon || `${siteUrl}/favicon.ico`;
 
   return {
     title: {
@@ -45,6 +50,11 @@ export function generateMetadata(config?: MetadataConfig): Metadata {
     creator: siteName,
     publisher: siteName,
     metadataBase: new URL(siteUrl),
+    icons: {
+      icon: favicon,
+      shortcut: favicon,
+      apple: favicon,
+    },
     alternates: {
       canonical: url,
     },
