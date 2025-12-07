@@ -18,6 +18,7 @@ import TemplatePaymentDialog from '@/components/templates/TemplatePaymentDialog'
 import { useUserTemplates, useUserTemplateCategories } from '@/hooks/api/useTemplate'
 import { useTemplateStore } from '@/store/templates'
 import type { Template as APITemplate } from '@/types/template'
+import PageLoading from '@/components/PageLoading'
 
 export default function StoresPage() {
   const { filters, setPage, setSearch, setCategory, setIsPremium, resetFilters } = useTemplateStore()
@@ -195,9 +196,11 @@ export default function StoresPage() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Spinner className="h-8 w-8" />
-        </div>
+         <div className="flex items-center justify-center">
+         <div className="text-center space-y-4">
+           <PageLoading fullScreen={false} size="sm" text="Loading..." />
+         </div>
+       </div>
       ) : (
         <>
           <Stores

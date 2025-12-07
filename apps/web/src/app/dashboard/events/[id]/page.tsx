@@ -4,29 +4,18 @@ import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Calendar,
-  Users,
-  MapPin,
   Settings as SettingsIcon,
   FileText,
   QrCode,
   Info,
   UserCheck,
-  CheckCircle2,
   Loader2,
   ArrowLeft,
   DollarSign,
   MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Drawer,
   DrawerContent,
@@ -51,8 +40,9 @@ import {
   Templates,
   QRGenerate,
   Payments,
-  Stores,
 } from "@/components/events/tabs";
+import { EventCoverHeader } from "@/components/events";
+import { getGuestTagColor } from "@/helpers";
 
 // Extended guest interface for UI display (includes gift info)
 interface DisplayGuest extends Omit<GuestType, "tag"> {
@@ -179,16 +169,6 @@ export default function EventDetailPage({
     });
   };
 
-  const getStatusLabel = (status: EventStatus) => {
-    const labels: Record<EventStatus, string> = {
-      draft: "ព្រាង",
-      published: "បានចុះផ្សាយ",
-      completed: "បានបញ្ចប់",
-      cancelled: "បានលុបចោល",
-    };
-    return labels[status];
-  };
-
   // Handle create guest
   const handleCreateGuest = async (formData: {
     name: string;
@@ -232,239 +212,14 @@ export default function EventDetailPage({
     }
   };
 
-  const getTagColor = (color?: string) => {
-    switch (color) {
-      case "red":
-        return "bg-gray-100 text-gray-700 border-gray-200";
-      case "blue":
-        return "bg-blue-100 text-blue-700 border-blue-200";
-      case "green":
-        return "bg-green-100 text-green-700 border-green-200";
-      default:
-        return "bg-gray-100 text-gray-700 border-gray-200";
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "published":
-        return "default";
-      case "draft":
-        return "secondary";
-      case "completed":
-        return "outline";
-      case "cancelled":
-        return "destructive";
-      default:
-        return "outline";
-    }
-  };
-
-  // mockup data for stores template
-  const handleViewSample = (templateId: string) => {
-    window.open(`/templates/preview/${templateId}`, '_blank')
-  };
-  const handleBuyNow = (templateId: string) => {
-    console.log("Buy now template", templateId);
-  };
-  interface StoresProps {
-    id: string;
-    name: string;
-    image: string;
-    price: number;
-    category: string;
-    previewUrl?: string;
-  }
-  const templates: StoresProps[] = [
-    {
-      id: "1",
-      name: "Sample Template 1",
-      image:
-        "https://i.pinimg.com/1200x/88/c1/0d/88c10d4fb189790cb4cf673c9f604665.jpg",
-      price: 100,
-      category: "Sample Category",
-    },
-    {
-      id: "2",
-      name: "Sample Template 2",
-      image:
-        "https://i.pinimg.com/1200x/97/8d/71/978d715a8ede8b69000f3d0eaf6d8cbc.jpg",
-      price: 200,
-      category: "Sample Category",
-    },
-    {
-      id: "3",
-      name: "Sample Template 3",
-      image:
-        "https://i.pinimg.com/1200x/7a/07/ae/7a07aef417a460bd23706a6cb6976bc7.jpg",
-      price: 300,
-      category: "Sample Category",
-    },
-  ];
   return (
     <div className="space-y-6">
       {/* Event Info Block */}
-      <div
-        className="relative bg-cover bg-center rounded-xl overflow-hidden border border-gray-200 shadow-lg"
-        style={{
-          backgroundImage: `url(${event.coverImage})`,
-        }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60 z-0" />
-        <Card className="shadow-none border-none bg-transparent z-10 relative w-full h-full">
-          <div className="flex items-start justify-between gap-2 sm:gap-4 px-3 sm:px-4 py-3 sm:py-4">
-            <div className="flex-1 space-y-2 min-w-0">
-              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg break-words">
-                  {event.title}
-                </CardTitle>
-                <Badge
-                  variant={getStatusColor(event.status)}
-                  className="capitalize text-xs px-2.5 py-1 bg-white/10 backdrop-blur-sm border-white/20 text-white"
-                >
-                  {event.status}
-                </Badge>
-              </div>
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 shrink-0"
-                  disabled={updateEventMutation.isPending}
-                >
-                  <SettingsIcon className="h-4 w-4 mr-1.5" />
-                  {updateEventMutation.isPending
-                    ? "កំពុងធ្វើ..."
-                    : `ស្ថានភាព: ${getStatusLabel(event.status)}`}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[180px] z-50">
-                {(
-                  [
-                    "draft",
-                    "published",
-                    "completed",
-                    "cancelled",
-                  ] as EventStatus[]
-                ).map((status) => (
-                  <DropdownMenuItem
-                    key={status}
-                    onSelect={(e) => {
-                      e.preventDefault();
-                      if (
-                        event.status !== status &&
-                        !updateEventMutation.isPending
-                      ) {
-                        handleUpdateStatus(status);
-                      }
-                    }}
-                    disabled={
-                      event.status === status || updateEventMutation.isPending
-                    }
-                    className={
-                      event.status === status ? "bg-gray-100" : "cursor-pointer"
-                    }
-                  >
-                    <span className="flex-1">{getStatusLabel(status)}</span>
-                    {event.status === status && (
-                      <CheckCircle2 className="h-4 w-4 ml-auto" />
-                    )}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          {/* box content info */}
-          <div className="px-3 sm:px-4 pb-3 sm:pb-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 hover:bg-white/15 transition-colors">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-white/90" />
-                  <p className="text-xs font-medium text-white/80 uppercase tracking-wide">
-                    កាលបរិច្ឆេទ
-                  </p>
-                </div>
-                <p className="text-base font-bold text-white">
-                  {formatDate(
-                    typeof event.date === "string"
-                      ? event.date
-                      : event.date.toISOString()
-                  )}
-                </p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 hover:bg-white/15 transition-colors">
-                <div className="flex items-center gap-2 mb-2">
-                  <MapPin className="h-4 w-4 text-white/90" />
-                  <p className="text-xs font-medium text-white/80 uppercase tracking-wide">
-                    ទីតាំង
-                  </p>
-                </div>
-                <p className="text-base font-bold text-white">{event.venue}</p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 hover:bg-white/15 transition-colors">
-                <div className="flex items-center gap-2 mb-2">
-                  <Users className="h-4 w-4 text-white/90" />
-                  <p className="text-xs font-medium text-white/80 uppercase tracking-wide">
-                    ភ្ញៀវ
-                  </p>
-                </div>
-                <p className="text-base font-bold text-white">
-                  {event.guestCount} នាក់
-                </p>
-              </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 border border-white/20 hover:bg-white/15 transition-colors">
-                <div className="flex items-center gap-2 mb-2">
-                  <Calendar className="h-4 w-4 text-white/90" />
-                  <p className="text-xs font-medium text-white/80 uppercase tracking-wide">
-                    បានបង្កើត
-                  </p>
-                </div>
-                <p className="text-base font-bold text-white">
-                  {formatDateTime(
-                    typeof event.createdAt === "string"
-                      ? event.createdAt
-                      : event.createdAt.toISOString()
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Description with divider */}
-          {event.description && (
-            <>
-              <div className="px-3 sm:px-4">
-                <div className="border-t border-white/20 mb-3 sm:mb-4"></div>
-                <p className="text-xs sm:text-sm md:text-base text-white/95 drop-shadow-md break-words">
-                  {event.description}
-                </p>
-              </div>
-            </>
-          )}
-        </Card>
-      </div>
+      <EventCoverHeader
+        event={event}
+        onUpdateStatus={handleUpdateStatus}
+        updateEventMutation={updateEventMutation}
+      />
       {/* Tabs Section */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         {/* Desktop/Tablet Tabs - Hidden on mobile */}
@@ -489,10 +244,6 @@ export default function EventDetailPage({
             <TabsTrigger value="templates" className="text-xs">
               <FileText className="h-3.5 w-3.5 mr-1.5" />
               គំរូធៀបខ្ញុំ
-            </TabsTrigger>
-            <TabsTrigger value="stores" className="text-xs">
-              <FileText className="h-3.5 w-3.5 mr-1.5" />
-              ហាងគំរូធៀប
             </TabsTrigger>
             <TabsTrigger value="qr" className="text-xs">
               <QrCode className="h-3.5 w-3.5 mr-1.5" />
@@ -658,7 +409,7 @@ export default function EventDetailPage({
             createGuestMutation={createGuestMutation}
             updateGuestMutation={updateGuestMutation}
             deleteGuestMutation={deleteGuestMutation}
-            getTagColor={getTagColor}
+            getTagColor={getGuestTagColor}
           />
         </TabsContent>
         {/* Payments Tab */}
@@ -683,15 +434,6 @@ export default function EventDetailPage({
         {/* Templates Tab */}
         <TabsContent value="templates" className="mt-4 md:mt-4 mb-16 md:mb-4">
           <Templates eventId={id} />
-        </TabsContent>
-
-        {/* Stores Tab */}
-        <TabsContent value="stores" className="mt-4 md:mt-4 mb-16 md:mb-4">
-          <Stores
-            templates={templates}
-            onViewSample={handleViewSample}
-            onBuyNow={handleBuyNow}
-          />
         </TabsContent>
 
         {/* QR Code Tab */}

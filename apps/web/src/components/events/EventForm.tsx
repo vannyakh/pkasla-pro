@@ -269,7 +269,7 @@ export function EventForm({ event, onSuccess, onCancel }: EventFormProps) {
           value={formData.title}
           onChange={(e) => handleInputChange('title', e.target.value)}
           placeholder="ចំណងជើងកម្មវិធី"
-          className="w-full h-10 text-sm"
+          className="w-full h-10 text-sm rounded-lg"
         />
       </div>
 
@@ -283,7 +283,7 @@ export function EventForm({ event, onSuccess, onCancel }: EventFormProps) {
           onValueChange={(value) => handleInputChange('eventType', value)}
           disabled={isLoadingCategories || eventTypes.length === 0}
         >
-          <SelectTrigger className="w-full h-10 text-sm">
+          <SelectTrigger className="w-full h-10 text-sm rounded-lg">
             <SelectValue placeholder={isLoadingCategories ? 'កំពុងផ្ទុក...' : eventTypes.length === 0 ? 'មិនមានប្រភេទ' : 'ជ្រើសរើសប្រភេទកម្មវិធី'} />
           </SelectTrigger>
           {eventTypes.length > 0 && (
@@ -309,7 +309,7 @@ export function EventForm({ event, onSuccess, onCancel }: EventFormProps) {
           type="datetime-local"
           value={formData.startDate}
           onChange={(e) => handleInputChange('startDate', e.target.value)}
-          className="w-full h-10 text-sm"
+          className="w-full h-10 text-sm rounded-lg"
           required
         />
       </div>
@@ -327,7 +327,7 @@ export function EventForm({ event, onSuccess, onCancel }: EventFormProps) {
           value={formData.address}
           onChange={(e) => handleInputChange('address', e.target.value)}
           placeholder="ទីតាំងកម្មវិធីដែលត្រូវប្រព្រឹត្តឡើង"
-          className="w-full h-10 text-sm"
+          className="w-full h-10 text-sm rounded-lg"
           required
         />
       </div>
@@ -343,7 +343,7 @@ export function EventForm({ event, onSuccess, onCancel }: EventFormProps) {
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
           placeholder="ពិព័រណ៍អំពីកម្មវិធី"
-          className="w-full h-10 text-sm"
+          className="w-full h-10 text-sm rounded-lg"
         />
       </div>
 
@@ -360,7 +360,7 @@ export function EventForm({ event, onSuccess, onCancel }: EventFormProps) {
           value={formData.googleMapLink}
           onChange={(e) => handleInputChange('googleMapLink', e.target.value)}
           placeholder="តំណភ្ជាប់ Google Map"
-          className="w-full h-10 text-sm"
+          className="w-full h-10 text-sm rounded-lg"
         />
       </div>
 
@@ -370,7 +370,7 @@ export function EventForm({ event, onSuccess, onCancel }: EventFormProps) {
           id="restrictDuplicateNames"
           checked={formData.restrictDuplicateNames}
           onCheckedChange={(checked) => handleInputChange('restrictDuplicateNames', checked as boolean)}
-          className="border-red-500 data-[state=checked]:bg-red-500"
+          className="border-primary data-[state=checked]:bg-primary"
         />
         <Label
           htmlFor="restrictDuplicateNames"
@@ -429,22 +429,22 @@ export function EventForm({ event, onSuccess, onCancel }: EventFormProps) {
       </div>
 
       {/* Action Buttons */}
-      <div className="pt-4 flex gap-2">
+      <div className="pt-4 flex gap-3">
         {onCancel && (
           <Button
             type="button"
             variant="outline"
             onClick={onCancel}
-            className="flex-1"
+            className="flex-1 border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-3 rounded-lg"
             disabled={isSubmitting}
           >
-            Cancel
+            បោះបង់
           </Button>
         )}
         <Button
           type="submit"
           disabled={isSubmitting}
-          className={`${onCancel ? 'flex-1' : 'w-full'} bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg`}
+          className={`${onCancel ? 'flex-1' : 'w-full'} bg-primary hover:bg-primary/90 text-white font-semibold py-3 rounded-lg`}
         >
           {isSubmitting ? 'កំពុងរក្សាទុក...' : isEditMode ? 'អាប់ដេត' : 'រក្សាទុក'}
         </Button>
@@ -520,8 +520,8 @@ function FileUpload({
   return (
     <div
       className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-        isDragging ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-gray-50'
-      } ${uploadState?.error ? 'border-red-500' : ''}`}
+        isDragging ? 'border-primary bg-primary/10' : 'border-gray-300 bg-gray-50'
+      } ${uploadState?.error ? 'border-primary' : ''}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -537,6 +537,7 @@ function FileUpload({
       {displayImage ? (
         <div className="space-y-3">
           <div className="relative">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={displayImage}
               alt="Preview"
@@ -555,12 +556,12 @@ function FileUpload({
             <div className="flex-1 min-w-0">
               <p className="text-sm text-gray-700 truncate">{file?.name || 'Uploaded'}</p>
               {uploadState?.error && (
-                <p className="text-xs text-red-600 mt-1">{uploadState.error}</p>
+                <p className="text-xs text-primary mt-1">{uploadState.error}</p>
               )}
               {uploadState?.isUploading && (
                 <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
                   <div
-                    className="bg-red-500 h-1.5 rounded-full transition-all"
+                    className="bg-primary h-1.5 rounded-full transition-all"
                     style={{ width: `${uploadState.progress}%` }}
                   />
                 </div>
@@ -570,7 +571,7 @@ function FileUpload({
               <button
                 type="button"
                 onClick={() => onFileChange(null)}
-                className="text-red-500 hover:text-red-600 ml-2"
+                className="text-primary hover:text-primary/90 ml-2"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -579,7 +580,7 @@ function FileUpload({
           {!uploadState?.isUploading && (
             <label
               htmlFor={`file-${fieldName}`}
-              className="text-xs text-red-500 cursor-pointer hover:underline block"
+              className="text-xs text-primary cursor-pointer hover:underline block"
             >
               Click to change
             </label>
@@ -588,10 +589,10 @@ function FileUpload({
       ) : (
         <label htmlFor={`file-${fieldName}`} className="cursor-pointer">
           <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-          <p className="text-sm text-red-500 font-medium mb-1">Click to upload or drag and drop</p>
+          <p className="text-sm text-primary font-medium mb-1">Click to upload or drag and drop</p>
           <p className="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 5MB</p>
           {uploadState?.error && (
-            <p className="text-xs text-red-600 mt-1">{uploadState.error}</p>
+            <p className="text-xs text-primary mt-1">{uploadState.error}</p>
           )}
         </label>
       )}

@@ -1,9 +1,12 @@
+'use client'
+
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Info, Calendar, MapPin, Users, QrCode, Download } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
+import { formatDate } from '@/helpers'
 import { Event } from '@/types/event'
 import Image from 'next/image'
+import { ImageZoom } from '@/components/ui/shadcn-io/image-zoom'
 
 interface DisplayGuest {
   id: string
@@ -41,7 +44,7 @@ export default function Overview({ event, guestsWithGifts = [], giftCount = 0 }:
                   <CardTitle className="text-sm font-semibold text-black">Event Date & Time</CardTitle>
                 </div>
                 <p className="text-sm text-black">
-                  {formatDate(typeof event.date === 'string' ? event.date : event.date.toISOString())}
+                  {formatDate(typeof event.date === 'string' ? event.date : event.date)}
                 </p>
               </CardContent>
             </Card>
@@ -82,13 +85,16 @@ export default function Overview({ event, guestsWithGifts = [], giftCount = 0 }:
                     </div>
                     <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-4 border border-gray-200">
                       <div className="w-48 h-48 bg-white rounded-lg mb-3 flex items-center justify-center border border-gray-200 relative overflow-hidden">
+                        <ImageZoom className="relative w-full h-full">
                         <Image
                           src={event.khqrKhr}
                           alt="KHQR KHR"
-                          fill
-                          className="object-cover"
+                            width={192}
+                            height={192}
+                            className="object-cover w-full h-full"
                           unoptimized
                         />
+                        </ImageZoom>
                       </div>
                       <a
                         href={event.khqrKhr}
@@ -113,13 +119,16 @@ export default function Overview({ event, guestsWithGifts = [], giftCount = 0 }:
                     </div>
                     <div className="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-4 border border-gray-200">
                       <div className="w-48 h-48 bg-white rounded-lg mb-3 flex items-center justify-center border border-gray-200 relative overflow-hidden">
+                        <ImageZoom className="relative w-full h-full">
                         <Image
                           src={event.khqrUsd}
                           alt="KHQR USD"
-                          fill
-                          className="object-cover"
+                            width={192}
+                            height={192}
+                            className="object-cover w-full h-full"
                           unoptimized
                         />
+                        </ImageZoom>
                       </div>
                       <a
                         href={event.khqrUsd}

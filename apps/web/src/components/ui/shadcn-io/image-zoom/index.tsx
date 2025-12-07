@@ -46,7 +46,7 @@ export const ImageZoom = ({
         'motion-reduce:[&_[data-rmiz-modal-img]]:transition-none motion-reduce:[&_[data-rmiz-modal-overlay]]:transition-none',
         backdropClassName
       )}
-      {...props}
+      {...(props as any)}
     />
   </div>
 );

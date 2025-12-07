@@ -10,6 +10,7 @@ import { format } from 'date-fns'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import PageLoading from '@/components/PageLoading'
 
 export default function DashboardPage() {
   const { data: user, isLoading: userLoading } = useMe()
@@ -59,10 +60,9 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground mx-auto"></div>
-          <p className="text-muted-foreground">Loading your dashboard...</p>
+          <PageLoading fullScreen={false} size="sm" text="Loading..." />
         </div>
       </div>
     )
