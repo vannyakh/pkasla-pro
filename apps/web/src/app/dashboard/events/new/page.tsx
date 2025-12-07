@@ -82,8 +82,8 @@ export default function CreateEventPage() {
         khqrKhr: formData.khqrKhr || undefined,
       }
 
-      await createEvent.mutateAsync({ data: eventData, files })
-      router.push('/dashboard/events')
+      const createdEvent = await createEvent.mutateAsync({ data: eventData, files })
+      router.push(`/dashboard/events/${createdEvent.id}`)
     } catch (error) {
       console.error('Error creating event:', error)
     }

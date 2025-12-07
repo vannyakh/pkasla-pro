@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import Image from 'next/image'
+import confetti from 'canvas-confetti'
 import { Loader2, CheckCircle2, QrCode, Download, CreditCard, Clock, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -178,6 +179,39 @@ export default function TemplatePaymentDialog({
   
   const queryClient = useQueryClient()
   const checkIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Confetti celebration function
+  const triggerConfetti = useCallback(() => {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    function randomInRange(min: number, max: number) {
+      return Math.random() * (max - min) + min;
+    }
+
+    const interval: NodeJS.Timeout = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      
+      // Launch confetti from both sides
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+      });
+    }, 250);
+  }, []);
   
   const createBakongPaymentMutation = useCreateBakongTemplatePayment()
   const createStripePaymentMutation = useCreateStripeTemplatePayment()
@@ -279,6 +313,7 @@ export default function TemplatePaymentDialog({
           
           if (owns) {
             toast.success('Payment successful! Template purchased.')
+            triggerConfetti()
             onSuccess?.()
             onOpenChange(false)
           } else {
@@ -287,6 +322,7 @@ export default function TemplatePaymentDialog({
             const { data: ownsRetry } = await refetchOwnership()
             if (ownsRetry) {
               toast.success('Payment successful! Template purchased.')
+              triggerConfetti()
               onSuccess?.()
               onOpenChange(false)
             } else {
@@ -345,6 +381,7 @@ export default function TemplatePaymentDialog({
         templateId: template.id,
         paymentMethod: 'free',
       })
+      triggerConfetti()
       onSuccess?.()
       onOpenChange(false)
     } catch {
@@ -571,6 +608,7 @@ export default function TemplatePaymentDialog({
                         const { data: owns } = await refetchOwnership()
                         if (owns) {
                           toast.success('Payment successful! Template purchased.')
+                          triggerConfetti()
                           onSuccess?.()
                           onOpenChange(false)
                         } else {
@@ -579,6 +617,7 @@ export default function TemplatePaymentDialog({
                           const { data: ownsRetry } = await refetchOwnership()
                           if (ownsRetry) {
                             toast.success('Payment successful! Template purchased.')
+                            triggerConfetti()
                             onSuccess?.()
                             onOpenChange(false)
                           } else {

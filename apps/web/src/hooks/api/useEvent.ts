@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Event, CreateEventDto, UpdateEventDto, EventListFilters, EventListResponse } from '@/types/event';
 import { api, axiosInstance } from '@/lib/axios-client';
 import toast from 'react-hot-toast';
+import confetti from 'canvas-confetti';
 
 /**
  * Query keys for events
@@ -113,6 +114,41 @@ export function useEventCategories() {
 }
 
 /**
+ * Confetti celebration function
+ */
+function triggerConfetti() {
+  const duration = 3000;
+  const animationEnd = Date.now() + duration;
+  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+  function randomInRange(min: number, max: number) {
+    return Math.random() * (max - min) + min;
+  }
+
+  const interval: NodeJS.Timeout = setInterval(function() {
+    const timeLeft = animationEnd - Date.now();
+
+    if (timeLeft <= 0) {
+      return clearInterval(interval);
+    }
+
+    const particleCount = 50 * (timeLeft / duration);
+    
+    // Launch confetti from both sides
+    confetti({
+      ...defaults,
+      particleCount,
+      origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+    });
+    confetti({
+      ...defaults,
+      particleCount,
+      origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+    });
+  }, 250);
+}
+
+/**
  * Create event mutation
  */
 export function useCreateEvent() {
@@ -206,6 +242,8 @@ export function useCreateEvent() {
       // Set the new event in cache
       queryClient.setQueryData(eventKeys.detail(event.id), event);
       toast.success('Event created successfully');
+      // Trigger confetti celebration
+      triggerConfetti();
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to create event');

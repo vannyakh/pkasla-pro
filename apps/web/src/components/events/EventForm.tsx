@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Calendar, MapPin, Globe, Upload, X, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -34,6 +35,7 @@ interface EventFormProps {
 }
 
 export function EventForm({ event, onSuccess, onCancel }: EventFormProps) {
+  const router = useRouter()
   const isEditMode = !!event
   const createEvent = useCreateEvent()
   const updateEvent = useUpdateEvent()
@@ -239,12 +241,14 @@ export function EventForm({ event, onSuccess, onCancel }: EventFormProps) {
       if (isEditMode && event) {
         // Update existing event
         await updateEvent.mutateAsync({ id: event.id, data: eventData, files: undefined })
+        onSuccess?.()
       } else {
         // Create new event
-        await createEvent.mutateAsync({ data: eventData, files: undefined })
+        const createdEvent = await createEvent.mutateAsync({ data: eventData, files: undefined })
+        // Redirect to event detail page
+        router.push(`/dashboard/events/${createdEvent.id}`)
+        onSuccess?.()
       }
-      
-      onSuccess?.()
     } catch (error) {
       console.error(`Error ${isEditMode ? 'updating' : 'creating'} event:`, error)
     }

@@ -27,12 +27,12 @@ import {
 
 const menuItems = [
   { href: '/dashboard', label: 'ផ្ទាំងគ្រប់គ្រង', icon: LayoutDashboard },
-  { href: '/dashboard/events', label: 'ព្រឹត្តិការណ៍', icon: Calendar },
-  { href: '/dashboard/guests', label: 'ភ្ញៀវ', icon: Users },
+  { href: '/dashboard/events', label: 'កម្មវិធី', icon: Calendar },
+  { href: '/dashboard/guests', label: 'ភ្ញៀវកិត្តយស', icon: Users },
   { href: '/dashboard/templates', label: 'គំរូធៀបខ្ញុំ', icon: FileCheck },
   { href: '/dashboard/stores', label: 'ហាងគំរូធៀប', icon: Store },
   { href: '/dashboard/billing', label: 'វិក័យប័ត្រ', icon: CreditCard },
-  { href: '/dashboard/reports', label: 'របាយការណ៍', icon: FileText },
+  { href: '/dashboard/reports', label: 'របាយការណ៍កម្មវិធី', icon: FileText },
   { href: '/dashboard/settings', label: 'ការកំណត់', icon: Settings },
 ]
 

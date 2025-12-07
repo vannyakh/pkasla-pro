@@ -4,6 +4,7 @@ import React, { useState, useCallback } from 'react'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EventCard } from '@/components/events/EventCard'
+import EmptyEvent from '@/components/events/EmptyEvent'
 import { useMyEvents, useDeleteEvent, useUpdateEvent } from '@/hooks/api/useEvent'
 import { useRouter } from 'next/navigation'
 import { Spinner } from '@/components/ui/shadcn-io/spinner'
@@ -130,9 +131,7 @@ export default function EventPage() {
       </div>
 
       {!events || events.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-sm text-gray-600">No events found. Create your first event!</p>
-        </div>
+        <EmptyEvent animationUrl='/anim/Email.json' onCreateEvent={handleCreateEvent} />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
           {events.map((event) => (

@@ -5,6 +5,7 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import confetti from "canvas-confetti";
 import { ROUTES } from "@/constants";
 import type { LoginDto, User } from "@/types";
 import { useLogin } from "@/hooks/api/useAuth";
@@ -49,6 +50,39 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const emailInputRef = useRef<HTMLInputElement>(null);
 
+  // Confetti celebration function
+  const triggerConfetti = useCallback(() => {
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+    function randomInRange(min: number, max: number) {
+      return Math.random() * (max - min) + min;
+    }
+
+    const interval: NodeJS.Timeout = setInterval(function() {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        return clearInterval(interval);
+      }
+
+      const particleCount = 50 * (timeLeft / duration);
+      
+      // Launch confetti from both sides
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+      });
+      confetti({
+        ...defaults,
+        particleCount,
+        origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+      });
+    }, 250);
+  }, []);
+
   // Handle OAuth callback success
   useEffect(() => {
     const oauthSuccess = searchParams.get("oauth_success");
@@ -56,10 +90,11 @@ export function LoginForm() {
 
     if (oauthSuccess === "true" && provider) {
       toast.success(`Successfully signed in with ${provider}!`);
+      triggerConfetti();
       // Clean up URL
       router.replace("/login");
     }
-  }, [searchParams, router]);
+  }, [searchParams, router, triggerConfetti]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,6 +134,9 @@ export function LoginForm() {
       }
 
       toast.success("ចុូលប្រព័ន្ធជោគជ័យ!");
+
+      // Trigger confetti celebration
+      triggerConfetti();
 
       // Update session to get latest user data
       await updateSession();
