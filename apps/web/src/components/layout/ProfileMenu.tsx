@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
-import { User, Settings, LogOut, Shield } from 'lucide-react'
+import { User, Settings, LogOut, Shield, UserPlus } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,6 +85,13 @@ export default function ProfileMenu({ className }: ProfileMenuProps) {
         >
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => router.push('/dashboard/invitations')}
+          className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
+        >
+          <UserPlus className="mr-2 h-4 w-4" />
+          <span>My Invitations</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => router.push('/dashboard/settings')}

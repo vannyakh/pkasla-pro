@@ -12,7 +12,8 @@ import {
   FileText, 
   Settings,
   Store,
-  FileCheck
+  FileCheck,
+  UserPlus
 } from 'lucide-react'
 import {
   Sidebar,
@@ -29,6 +30,7 @@ const menuItems = [
   { href: '/dashboard', label: 'ផ្ទាំងគ្រប់គ្រង', icon: LayoutDashboard },
   { href: '/dashboard/events', label: 'កម្មវិធី', icon: Calendar },
   { href: '/dashboard/guests', label: 'ភ្ញៀវកិត្តយស', icon: Users },
+  { href: '/dashboard/invitations', label: 'ការអញ្ជើញ', icon: UserPlus },
   { href: '/dashboard/templates', label: 'គំរូធៀបខ្ញុំ', icon: FileCheck },
   { href: '/dashboard/stores', label: 'ហាងគំរូធៀប', icon: Store },
   { href: '/dashboard/billing', label: 'វិក័យប័ត្រ', icon: CreditCard },

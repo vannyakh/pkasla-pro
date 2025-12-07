@@ -5,4 +5,5 @@ export * from './useAdmin';
 export * from './useSettings';
 export * from './useTemplate';
 export * from './useTemplatePurchase';
+export * from './useInvitation';
 

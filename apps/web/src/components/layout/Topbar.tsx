@@ -4,6 +4,7 @@ import { useSidebar } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import { PanelLeftIcon } from 'lucide-react'
 import ProfileMenu from './ProfileMenu'
+import InvitationNotification from './InvitationNotification'
 
 function CustomSidebarTrigger() {
   const { toggleSidebar } = useSidebar()
@@ -39,7 +40,8 @@ export default function Topbar() {
         </div> */}
       </div>
 
-      <div className="flex items-center gap-2">        
+      <div className="flex items-center gap-2">
+        <InvitationNotification />
         <ProfileMenu />
       </div>
     </div>
