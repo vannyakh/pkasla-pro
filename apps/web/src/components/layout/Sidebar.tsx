@@ -26,14 +26,14 @@ import {
 } from '@/components/ui/sidebar'
 
 const menuItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/events', label: 'Events', icon: Calendar },
-  { href: '/dashboard/guests', label: 'Guests', icon: Users },
-  { href: '/dashboard/templates', label: 'My Templates', icon: FileCheck },
-  { href: '/dashboard/stores', label: 'Template Store', icon: Store },
-  { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
-  { href: '/dashboard/reports', label: 'Reports', icon: FileText },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+  { href: '/dashboard', label: 'ផ្ទាំងគ្រប់គ្រង', icon: LayoutDashboard },
+  { href: '/dashboard/events', label: 'ព្រឹត្តិការណ៍', icon: Calendar },
+  { href: '/dashboard/guests', label: 'ភ្ញៀវ', icon: Users },
+  { href: '/dashboard/templates', label: 'គំរូធៀបខ្ញុំ', icon: FileCheck },
+  { href: '/dashboard/stores', label: 'ហាងគំរូធៀប', icon: Store },
+  { href: '/dashboard/billing', label: 'វិក័យប័ត្រ', icon: CreditCard },
+  { href: '/dashboard/reports', label: 'របាយការណ៍', icon: FileText },
+  { href: '/dashboard/settings', label: 'ការកំណត់', icon: Settings },
 ]
 
 export default function UserSidebar() {
@@ -46,9 +46,9 @@ export default function UserSidebar() {
           <Image
             src="/logo.png"
             alt="Pkasla Logo"
-            width={32}
-            height={32}
-            className="h-8 w-8 shrink-0 object-contain"
+            width={512}
+            height={512}
+            className="h-12 w-full shrink-0 object-contain"
             priority
           />
         </Link>

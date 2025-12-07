@@ -78,7 +78,7 @@ export default function DashboardPage() {
       {/* Welcome Section */}
       <motion.div
         variants={itemVariants}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-background via-background to-muted/20 border border-border/50 shadow-lg"
+        className="relative overflow-hidden rounded-3xl to-muted/20 border border-border/50 shadow-sm"
       >
         <div className="absolute inset-0 opacity-[0.02]">
           <div className="absolute inset-0" style={{
@@ -120,10 +120,9 @@ export default function DashboardPage() {
         className="grid grid-cols-1 md:grid-cols-3 gap-6"
       >
         <motion.div
-          whileHover={{ y: -4, transition: { duration: 0.2 } }}
           className="h-full"
         >
-          <Card className="h-full border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <Card className="h-full border-border/50 shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -144,10 +143,9 @@ export default function DashboardPage() {
         </motion.div>
 
         <motion.div
-          whileHover={{ y: -4, transition: { duration: 0.2 } }}
           className="h-full"
         >
-          <Card className="h-full border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <Card className="h-full border-border/50 shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -170,10 +168,9 @@ export default function DashboardPage() {
         </motion.div>
 
         <motion.div
-          whileHover={{ y: -4, transition: { duration: 0.2 } }}
           className="h-full"
         >
-          <Card className="h-full border-border/50 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <Card className="h-full border-border/50 shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -225,10 +222,9 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * index, duration: 0.5 }}
-                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
                 >
                   <Link href={`/dashboard/events/${event.id}`}>
-                    <Card className="h-full p-0 border-border/50 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group">
+                    <Card className="h-full p-0 border-border/50 shadow-sm cursor-pointer group">
                       {event.coverImage && (
                         <div className="relative h-48 overflow-hidden rounded-t-xl">
                           <Image

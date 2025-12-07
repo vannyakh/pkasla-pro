@@ -1,8 +1,23 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Settings, User, Eye, Edit, Trash2, MapPin, Calendar, Users, MoreVertical } from 'lucide-react'
+import { 
+  Settings, 
+  User, 
+  Eye, 
+  Edit, 
+  Trash2, 
+  MapPin, 
+  Calendar, 
+  Users, 
+  MoreVertical,
+  Share2,
+  Copy,
+  QrCode,
+  Globe,
+  FileText
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -10,64 +25,42 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import CountdownTimer from '@/components/CountdownTimer'
 import { Event } from '@/types/event'
-import { useDeleteEvent } from '@/hooks/api/useEvent'
+import { formatDate, formatTime, formatDateTime } from '@/helpers/format'
+import { getEventStatusColor } from '@/helpers/event'
 
 interface EventCardProps {
   event: Event
-}
-
-// Memoized formatting functions
-const formatDate = (dateString: string | Date): string => {
-  const date = typeof dateString === 'string' ? new Date(dateString) : dateString
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-}
-
-const formatTime = (dateString: string | Date): string => {
-  const date = typeof dateString === 'string' ? new Date(dateString) : dateString
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-const formatDateTime = (dateString: string | Date): string => {
-  const date = typeof dateString === 'string' ? new Date(dateString) : dateString
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
-
-const getStatusColor = (status: string): 'default' | 'secondary' | 'outline' | 'destructive' => {
-  switch (status) {
-    case 'published':
-      return 'default'
-    case 'draft':
-      return 'secondary'
-    case 'completed':
-      return 'outline'
-    case 'cancelled':
-      return 'destructive'
-    default:
-      return 'outline'
-  }
+  onShare: () => void
+  onDuplicate: () => void
+  onToggleStatus: () => void
+  onViewQR: () => void
+  onViewPublic: () => void
+  onDelete: () => void
+  onManage: () => void
+  isDeleting?: boolean
+  isUpdating?: boolean
 }
 
 const DEFAULT_EVENT_IMAGE = 'https://images.unsplash.com/photo-1519162808019-7de1683fa2ad?w=800&q=80'
 
-export const EventCard = React.memo(function EventCard({ event }: EventCardProps) {
-  const deleteEvent = useDeleteEvent()
+export const EventCard = React.memo(function EventCard({
+  event,
+  onShare,
+  onDuplicate,
+  onToggleStatus,
+  onViewQR,
+  onViewPublic,
+  onDelete,
+  onManage,
+  isDeleting = false,
+  isUpdating = false,
+}: EventCardProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   // Memoize computed values
   const eventImage = useMemo(
@@ -82,13 +75,7 @@ export const EventCard = React.memo(function EventCard({ event }: EventCardProps
   const formattedDate = useMemo(() => formatDate(event.date), [event.date])
   const formattedTime = useMemo(() => formatTime(event.date), [event.date])
   const formattedCreatedAt = useMemo(() => formatDateTime(event.createdAt), [event.createdAt])
-  const statusColor = useMemo(() => getStatusColor(event.status), [event.status])
-
-  const handleDelete = async () => {
-    if (confirm('Are you sure you want to delete this event?')) {
-      await deleteEvent.mutateAsync(event.id)
-    }
-  }
+  const statusColor = useMemo(() => getEventStatusColor(event.status), [event.status])
 
   return (
     <Card className="relative overflow-hidden p-0 border-0">
@@ -163,24 +150,83 @@ export const EventCard = React.memo(function EventCard({ event }: EventCardProps
               Edit
             </Button>
           </Link>
-          <DropdownMenu>
+          <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="text-xs h-8 border-gray-300 hover:bg-gray-50 px-2" size="sm">
                 <MoreVertical className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem className="text-xs">
-                <Settings className="h-3.5 w-3.5 mr-2" />
-                Manage
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                className="text-xs text-red-600" 
-                onClick={handleDelete} 
-                disabled={deleteEvent.isPending}
+            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-lg border-gray-200 dark:border-gray-800 p-2">
+              {/* Quick Actions */}
+              <DropdownMenuItem
+                onClick={onShare}
+                className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
               >
-                <Trash2 className="h-3.5 w-3.5 mr-2" />
-                {deleteEvent.isPending ? 'Deleting...' : 'Delete'}
+                <Share2 className="h-4 w-4 mr-2" />
+                <span>Share Event</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={onViewQR}
+                className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
+              >
+                <QrCode className="h-4 w-4 mr-2" />
+                <span>View QR Code</span>
+              </DropdownMenuItem>
+              {event.status === 'published' && (
+                <DropdownMenuItem
+                  onClick={onViewPublic}
+                  className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
+                >
+                  <Globe className="h-4 w-4 mr-2" />
+                  <span>View Public Page</span>
+                </DropdownMenuItem>
+              )}
+              
+              <DropdownMenuSeparator className="my-2" />
+              
+              {/* Event Management */}
+              <DropdownMenuItem
+                onClick={onManage}
+                className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                <span>Manage Event</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={onDuplicate}
+                className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
+              >
+                <Copy className="h-4 w-4 mr-2" />
+                <span>Duplicate Event</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={onToggleStatus}
+                className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
+                disabled={isUpdating}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                <span>
+                  {isUpdating 
+                    ? 'Updating...' 
+                    : event.status === 'published' 
+                    ? 'Move to Draft' 
+                    : 'Publish Event'}
+                </span>
+              </DropdownMenuItem>
+              
+              <DropdownMenuSeparator className="my-2" />
+              
+              {/* Danger Zone */}
+              <DropdownMenuItem
+                onClick={() => {
+                  onDelete()
+                  setIsMenuOpen(false)
+                }}
+                className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5 text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20"
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                <span>Delete Event</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

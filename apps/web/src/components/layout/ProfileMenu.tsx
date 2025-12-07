@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
-import { User, Settings, LogOut, ChevronDown, Shield } from 'lucide-react'
+import { User, Settings, LogOut, Shield } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,61 +56,60 @@ export default function ProfileMenu({ className }: ProfileMenuProps) {
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
-            'flex items-center gap-2 p-1 hover:bg-gray-100 rounded transition-colors focus:outline-none',
+            'flex items-center justify-center p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 dark:focus:ring-gray-600',
             className
           )}
           aria-label="User menu"
         >
-          <Avatar className="h-7 w-7">
+          <Avatar className="h-8 w-8 ring-2 ring-gray-200 dark:ring-gray-700 ring-offset-2 ring-offset-white dark:ring-offset-gray-900">
             {user?.avatar && (
               <AvatarImage src={user.avatar} alt={user.name || user.email} />
             )}
-            <AvatarFallback className="bg-gray-200 text-black text-xs font-medium">
+            <AvatarFallback className="bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-800 text-black dark:text-white text-xs font-semibold">
               {getInitials()}
             </AvatarFallback>
           </Avatar>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-lg border-gray-200 dark:border-gray-800 p-2">
+        <DropdownMenuLabel className="px-3 py-2.5 rounded-lg">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.name || 'User'}</p>
-            <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
-            
+            <p className="text-sm font-semibold leading-none">{user?.name || 'User'}</p>
+            <p className="text-xs leading-none text-muted-foreground truncate">{user?.email}</p>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="my-2" />
         <DropdownMenuItem
           onClick={() => router.push('/dashboard/settings/profile')}
-          className="cursor-pointer"
+          className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
         >
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => router.push('/dashboard/settings')}
-          className="cursor-pointer"
+          className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
         >
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
         {user?.role === 'admin' && (
           <>
-            <DropdownMenuSeparator />
+            <DropdownMenuSeparator className="my-2" />
             <DropdownMenuItem
               onClick={() => router.push('/admin')}
-              className="cursor-pointer"
+              className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
             >
               <Shield className="mr-2 h-4 w-4" />
               <span>Admin Panel</span>
             </DropdownMenuItem>
           </>
         )}
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator className="my-2" />
         <DropdownMenuItem
           onClick={handleSignOut}
           variant="destructive"
-          className="cursor-pointer"
+          className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
         >
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
