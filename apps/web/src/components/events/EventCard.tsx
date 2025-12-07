@@ -1,52 +1,53 @@
-'use client'
+"use client";
 
-import React, { useMemo, useState } from 'react'
-import Link from 'next/link'
-import { 
-  Settings, 
-  User, 
-  Eye, 
-  Edit, 
-  Trash2, 
-  MapPin, 
-  Calendar, 
-  Users, 
+import React, { useMemo, useState } from "react";
+import Link from "next/link";
+import {
+  Settings,
+  User,
+  Eye,
+  Edit,
+  Trash2,
+  MapPin,
+  Calendar,
+  Users,
   MoreVertical,
   Share2,
   Copy,
   QrCode,
   Globe,
-  FileText
-} from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+  FileText,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import CountdownTimer from '@/components/CountdownTimer'
-import { Event } from '@/types/event'
-import { formatDate, formatTime, formatDateTime } from '@/helpers/format'
-import { getEventStatusColor } from '@/helpers/event'
+} from "@/components/ui/dropdown-menu";
+import CountdownTimer from "@/components/CountdownTimer";
+import { Event } from "@/types/event";
+import { formatDate, formatTime, formatDateTime } from "@/helpers/format";
+import { getEventStatusColor } from "@/helpers/event";
 
 interface EventCardProps {
-  event: Event
-  onShare: () => void
-  onDuplicate: () => void
-  onToggleStatus: () => void
-  onViewQR: () => void
-  onViewPublic: () => void
-  onDelete: () => void
-  onManage: () => void
-  isDeleting?: boolean
-  isUpdating?: boolean
+  event: Event;
+  onShare: () => void;
+  onDuplicate: () => void;
+  onToggleStatus: () => void;
+  onViewQR: () => void;
+  onViewPublic: () => void;
+  onDelete: () => void;
+  onManage: () => void;
+  isDeleting?: boolean;
+  isUpdating?: boolean;
 }
 
-const DEFAULT_EVENT_IMAGE = 'https://images.unsplash.com/photo-1519162808019-7de1683fa2ad?w=800&q=80'
+const DEFAULT_EVENT_IMAGE =
+  "https://images.unsplash.com/photo-1519162808019-7de1683fa2ad?w=800&q=80";
 
 export const EventCard = React.memo(function EventCard({
   event,
@@ -60,22 +61,30 @@ export const EventCard = React.memo(function EventCard({
   isDeleting = false,
   isUpdating = false,
 }: EventCardProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Memoize computed values
   const eventImage = useMemo(
     () => event.coverImage || DEFAULT_EVENT_IMAGE,
     [event.coverImage]
-  )
+  );
 
   const eventDate = useMemo(() => {
-    return typeof event.date === 'string' ? event.date : event.date.toISOString()
-  }, [event.date])
+    return typeof event.date === "string"
+      ? event.date
+      : event.date.toISOString();
+  }, [event.date]);
 
-  const formattedDate = useMemo(() => formatDate(event.date), [event.date])
-  const formattedTime = useMemo(() => formatTime(event.date), [event.date])
-  const formattedCreatedAt = useMemo(() => formatDateTime(event.createdAt), [event.createdAt])
-  const statusColor = useMemo(() => getEventStatusColor(event.status), [event.status])
+  const formattedDate = useMemo(() => formatDate(event.date), [event.date]);
+  const formattedTime = useMemo(() => formatTime(event.date), [event.date]);
+  const formattedCreatedAt = useMemo(
+    () => formatDateTime(event.createdAt),
+    [event.createdAt]
+  );
+  const statusColor = useMemo(
+    () => getEventStatusColor(event.status),
+    [event.status]
+  );
 
   return (
     <Card className="relative overflow-hidden p-0 border-0">
@@ -94,10 +103,12 @@ export const EventCard = React.memo(function EventCard({
             <div className="w-full flex justify-center">
               <CountdownTimer targetDate={eventDate} variant="relative" />
             </div>
-            
+
             {/* Event Title */}
             <div className="text-center">
-              <h3 className="text-white text-lg font-semibold mb-1 drop-shadow-lg">{event.title}</h3>
+              <h3 className="text-white text-lg font-semibold mb-1 drop-shadow-lg">
+                {event.title}
+              </h3>
               <p className="text-white/90 text-xs drop-shadow">
                 {formattedDate} at {formattedTime}
               </p>
@@ -108,55 +119,70 @@ export const EventCard = React.memo(function EventCard({
 
       {/* Bottom Section */}
       <div className="p-4 bg-white">
-        <div className="flex items-start gap-3 mb-3">
-          <div className="h-10 w-10 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
-            <User className="h-5 w-5 text-pink-600" />
+        <div className="mb-3">
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <h4 className="text-sm font-semibold text-black truncate">
+              {event.description || event.title}
+            </h4>
+            <Badge
+              variant={statusColor}
+              className="text-xs shrink-0 capitalize"
+            >
+              {event.status}
+            </Badge>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <h4 className="text-sm font-semibold text-black truncate">{event.description || event.title}</h4>
-              <Badge variant={statusColor} className="text-xs shrink-0 capitalize">
-                {event.status}
-              </Badge>
+          <div className="space-y-1 text-xs text-gray-600">
+            <div className="flex items-center gap-1.5">
+              <MapPin className="h-3 w-3" />
+              <span className="truncate">{event.venue}</span>
             </div>
-            <div className="space-y-1 text-xs text-gray-600">
-              <div className="flex items-center gap-1.5">
-                <MapPin className="h-3 w-3" />
-                <span className="truncate">{event.venue}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Users className="h-3 w-3" />
-                <span>ចំនួនភ្ញៀវ {event.guestCount} នាក់</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Calendar className="h-3 w-3" />
-                <span>Created: {formattedCreatedAt}</span>
-              </div>
+            <div className="flex items-center gap-1.5">
+              <Users className="h-3 w-3" />
+              <span>ចំនួនភ្ញៀវ {event.guestCount} នាក់</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Calendar className="h-3 w-3" />
+              <span>Created: {formattedCreatedAt}</span>
             </div>
           </div>
         </div>
-        
+
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
           <Link href={`/dashboard/events/${event.id}`} className="flex-1">
-            <Button variant="outline" className="w-full text-xs h-8 border-gray-300 hover:bg-gray-50" size="sm">
+            <Button
+              variant="outline"
+              className="w-full text-xs h-8 border-gray-300 hover:bg-gray-50"
+              size="sm"
+            >
               <Eye className="h-3.5 w-3.5 mr-1.5" />
               View
             </Button>
           </Link>
           <Link href={`/dashboard/events/${event.id}/edit`} className="flex-1">
-            <Button variant="outline" className="w-full text-xs h-8 border-gray-300 hover:bg-gray-50" size="sm">
+            <Button
+              variant="outline"
+              className="w-full text-xs h-8 border-gray-300 hover:bg-gray-50"
+              size="sm"
+            >
               <Edit className="h-3.5 w-3.5 mr-1.5" />
               Edit
             </Button>
           </Link>
           <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="text-xs h-8 border-gray-300 hover:bg-gray-50 px-2" size="sm">
+              <Button
+                variant="outline"
+                className="text-xs h-8 border-gray-300 hover:bg-gray-50 px-2"
+                size="sm"
+              >
                 <MoreVertical className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-lg border-gray-200 dark:border-gray-800 p-2">
+            <DropdownMenuContent
+              align="end"
+              className="w-56 rounded-xl shadow-lg border-gray-200 dark:border-gray-800 p-2"
+            >
               {/* Quick Actions */}
               <DropdownMenuItem
                 onClick={onShare}
@@ -172,7 +198,7 @@ export const EventCard = React.memo(function EventCard({
                 <QrCode className="h-4 w-4 mr-2" />
                 <span>View QR Code</span>
               </DropdownMenuItem>
-              {event.status === 'published' && (
+              {event.status === "published" && (
                 <DropdownMenuItem
                   onClick={onViewPublic}
                   className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5"
@@ -181,9 +207,9 @@ export const EventCard = React.memo(function EventCard({
                   <span>View Public Page</span>
                 </DropdownMenuItem>
               )}
-              
+
               <DropdownMenuSeparator className="my-2" />
-              
+
               {/* Event Management */}
               <DropdownMenuItem
                 onClick={onManage}
@@ -206,21 +232,21 @@ export const EventCard = React.memo(function EventCard({
               >
                 <FileText className="h-4 w-4 mr-2" />
                 <span>
-                  {isUpdating 
-                    ? 'Updating...' 
-                    : event.status === 'published' 
-                    ? 'Move to Draft' 
-                    : 'Publish Event'}
+                  {isUpdating
+                    ? "Updating..."
+                    : event.status === "published"
+                      ? "Move to Draft"
+                      : "Publish Event"}
                 </span>
               </DropdownMenuItem>
-              
+
               <DropdownMenuSeparator className="my-2" />
-              
+
               {/* Danger Zone */}
               <DropdownMenuItem
                 onClick={() => {
-                  onDelete()
-                  setIsMenuOpen(false)
+                  onDelete();
+                  setIsMenuOpen(false);
                 }}
                 className="cursor-pointer rounded-lg px-3 py-2.5 my-0.5 text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/20"
                 disabled={isDeleting}
@@ -233,6 +259,5 @@ export const EventCard = React.memo(function EventCard({
         </div>
       </div>
     </Card>
-  )
-})
-
+  );
+});
