@@ -130,14 +130,32 @@ export function useCheckTemplateOwnership(templateId: string) {
   return useQuery<boolean, Error>({
     queryKey: templatePurchaseKeys.check(templateId),
     queryFn: async (): Promise<boolean> => {
-      const response = await api.get<{ ownsTemplate: boolean }>(`/template-purchases/check/${templateId}`);
-      if (!response.success) {
-        throw new Error(response.error || 'Failed to check template ownership');
+      try {
+        const response = await api.get<{ ownsTemplate: boolean }>(`/template-purchases/check/${templateId}`);
+        if (!response.success) {
+          throw new Error(response.error || 'Failed to check template ownership');
+        }
+        return response.data?.ownsTemplate || false;
+      } catch (error) {
+        // Handle connection errors gracefully
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (errorMessage.includes('Network error') || errorMessage.includes('Unable to connect')) {
+          // Return false if backend is not available (assume user doesn't own it yet)
+          return false;
+        }
+        throw error;
       }
-      return response.data?.ownsTemplate || false;
     },
     enabled: !!templateId,
-    retry: false,
+    retry: (failureCount, error) => {
+      // Retry on network errors, but not on 404/400 errors
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('Network error') || errorMessage.includes('Unable to connect')) {
+        return failureCount < 2; // Retry up to 2 times
+      }
+      return false;
+    },
+    retryDelay: 2000, // Wait 2 seconds between retries
     staleTime: 1000 * 60, // 1 minute
   });
 }

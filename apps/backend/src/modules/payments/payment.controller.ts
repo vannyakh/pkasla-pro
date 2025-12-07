@@ -6,7 +6,6 @@ import { buildSuccessResponse } from '@/helpers/http-response';
 import { subscriptionPlanService } from '@/modules/subscriptions/subscription-plan.service';
 import { templateService } from '@/modules/t/template.service';
 import { logger } from '@/utils/logger';
-import { logPaymentEvent } from './payment-log.helper';
 
 /**
  * Create payment intent for subscription
@@ -240,25 +239,10 @@ export const getBakongTransactionStatusHandler = async (req: Request, res: Respo
   const { transactionId } = req.params;
   const { md5 } = req.query;
 
-  logger.info({
-    userId: req.user.id,
-    transactionId,
-    hasMd5: !!md5,
-    ip: req.ip,
-  }, 'Getting Bakong transaction status request received');
-
   try {
     // If MD5 is provided in query, use it directly; otherwise lookup by transactionId
     const md5Hash = typeof md5 === 'string' ? md5 : undefined;
     const status = await bakongService.getTransactionStatus(transactionId, md5Hash);
-
-    logger.info({
-      userId: req.user.id,
-      transactionId: status.transactionId,
-      status: status.status,
-      amount: status.amount,
-      currency: status.currency,
-    }, 'Bakong transaction status retrieved successfully');
 
     return res.status(httpStatus.OK).json(buildSuccessResponse(status));
   } catch (error: any) {

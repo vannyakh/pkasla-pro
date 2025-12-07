@@ -367,50 +367,80 @@ export const bakongWebhookHandler = async (req: Request, res: Response) => {
   // Handle different event types
   try {
     const event = req.body;
-    const eventType = event.type || event.eventType;
+    const eventType = event.type || event.eventType || event.event?.type;
+    
+    // Extract transaction ID from various possible locations in webhook payload
+    const transactionId = 
+      event.data?.transactionId || 
+      event.data?.id || 
+      event.data?.externalRef ||
+      event.data?.billNumber ||
+      event.transactionId || 
+      event.id ||
+      event.externalRef ||
+      event.billNumber;
 
     logger.info({
       eventType,
-      transactionId: event.data?.transactionId || event.transactionId,
+      transactionId,
+      eventKeys: Object.keys(event || {}),
+      hasData: !!event.data,
     }, 'Processing Bakong webhook event');
+
+    // Use event.data if available, otherwise use event itself
+    const paymentData = event.data || event;
 
     switch (eventType) {
       case 'payment.completed':
       case 'transaction.completed':
+      case 'payment_succeeded':
+      case 'transaction_succeeded':
         logger.info({
           eventType,
-          transactionId: event.data?.transactionId || event.transactionId,
+          transactionId,
         }, 'Processing Bakong payment completed event');
-        await handleBakongPaymentCompleted(event.data || event);
+        await handleBakongPaymentCompleted(paymentData);
         break;
 
       case 'payment.failed':
       case 'transaction.failed':
+      case 'payment_failed':
+      case 'transaction_failed':
         logger.info({
           eventType,
-          transactionId: event.data?.transactionId || event.transactionId,
+          transactionId,
         }, 'Processing Bakong payment failed event');
-        await handleBakongPaymentFailed(event.data || event);
+        await handleBakongPaymentFailed(paymentData);
         break;
 
       case 'payment.expired':
       case 'transaction.expired':
+      case 'payment_expired':
+      case 'transaction_expired':
         logger.info({
           eventType,
-          transactionId: event.data?.transactionId || event.transactionId,
+          transactionId,
         }, 'Processing Bakong payment expired event');
-        await handleBakongPaymentExpired(event.data || event);
+        await handleBakongPaymentExpired(paymentData);
         break;
 
       default:
         logger.debug({
           eventType,
+          transactionId,
         }, 'Unhandled Bakong webhook event type');
     }
 
+    const finalTransactionId = 
+      event.data?.transactionId || 
+      event.data?.id || 
+      event.data?.externalRef ||
+      event.transactionId || 
+      event.id;
+
     logger.info({
       eventType,
-      transactionId: event.data?.transactionId || event.transactionId,
+      transactionId: finalTransactionId,
     }, 'Bakong webhook processed successfully');
 
     // Log webhook processed event
@@ -418,9 +448,10 @@ export const bakongWebhookHandler = async (req: Request, res: Response) => {
       paymentMethod: 'bakong',
       eventType: 'webhook_processed',
       status: 'completed',
-      transactionId: event.data?.transactionId || event.transactionId,
+      transactionId: finalTransactionId,
       metadata: {
         eventType,
+        webhookPayload: event,
       },
     });
 
@@ -454,38 +485,131 @@ export const bakongWebhookHandler = async (req: Request, res: Response) => {
  * Handle successful Bakong payment
  */
 async function handleBakongPaymentCompleted(paymentData: any) {
-  const metadata = paymentData.metadata || {};
-  const userId = metadata.userId;
-  const transactionId = paymentData.transactionId || paymentData.id;
+  // Extract transaction ID from various possible fields in webhook payload
+  const transactionId = 
+    paymentData.transactionId || 
+    paymentData.id || 
+    paymentData.externalRef || 
+    paymentData.billNumber ||
+    paymentData.md5; // Sometimes webhook might send MD5 hash
+
+  if (!transactionId) {
+    logger.error({
+      paymentDataKeys: Object.keys(paymentData || {}),
+    }, 'Bakong webhook missing transaction ID');
+    throw new Error('Transaction ID not found in webhook payload');
+  }
 
   logger.info({
     transactionId,
-    userId,
-    paymentType: metadata.type,
+    paymentDataKeys: Object.keys(paymentData || {}),
     amount: paymentData.amount,
     currency: paymentData.currency,
-  }, 'Processing completed Bakong payment');
+  }, 'Processing completed Bakong payment webhook');
 
   try {
-    if (metadata.type === 'subscription') {
-      logger.info({
-        userId,
-        planId: metadata.planId,
+    // Look up payment log to get metadata (userId, templateId, planId, etc.)
+    const { PaymentLogModel } = await import('./payment-log.model');
+    const paymentLog = await PaymentLogModel.findOne({
+      transactionId,
+      paymentMethod: 'bakong',
+      eventType: 'payment_created',
+    }).sort({ createdAt: -1 });
+
+    if (!paymentLog) {
+      logger.warn({
         transactionId,
-      }, 'Creating subscription from completed Bakong payment');
-      // Create subscription
-      await userSubscriptionService.create({
-        userId,
-        planId: metadata.planId,
+      }, 'Payment log not found for completed Bakong payment');
+      // Still log the webhook event even if payment log not found
+      await logPaymentEvent({
+        transactionId,
         paymentMethod: 'bakong',
-        transactionId,
-        autoRenew: true,
+        eventType: 'payment_succeeded',
+        status: 'completed',
+        amount: paymentData.amount,
+        currency: paymentData.currency,
+        metadata: {
+          webhookData: paymentData,
+          paymentLogNotFound: true,
+        },
       });
+      return; // Exit early if payment log not found
+    }
+
+    // Update payment log status if it's still pending
+    if (paymentLog.status === 'pending') {
+      paymentLog.status = 'completed';
+      await paymentLog.save();
+      logger.info(
+        { transactionId },
+        'Updated payment log status to completed from webhook'
+      );
+    }
+
+    // Get metadata from payment log
+    const metadata = paymentLog.metadata || {};
+    const userId = paymentLog.userId?.toString() || metadata.userId;
+    const paymentType = paymentLog.paymentType || metadata.type;
+
+    if (!userId) {
+      logger.error({
+        transactionId,
+      }, 'User ID not found in payment log for completed Bakong payment');
+      throw new Error('User ID not found in payment log');
+    }
+
+    logger.info({
+      transactionId,
+      userId,
+      paymentType,
+      amount: paymentData.amount || paymentLog.amount,
+      currency: paymentData.currency || paymentLog.currency,
+    }, 'Processing completed Bakong payment with metadata from payment log');
+
+    if (paymentType === 'subscription') {
+      const planId = paymentLog.planId?.toString() || metadata.planId;
+      
+      if (!planId) {
+        logger.error({
+          transactionId,
+          userId,
+        }, 'Plan ID not found in payment log for subscription payment');
+        throw new Error('Plan ID not found in payment log');
+      }
+
       logger.info({
         userId,
-        planId: metadata.planId,
+        planId,
         transactionId,
-      }, 'Subscription created successfully from Bakong payment');
+      }, 'Creating subscription from completed Bakong payment webhook');
+
+      // Check if subscription already exists
+      const { UserSubscriptionModel } = await import('@/modules/subscriptions/user-subscription.model');
+      const existingSubscription = await UserSubscriptionModel.findOne({
+        transactionId,
+      });
+
+      if (!existingSubscription) {
+        // Create subscription
+        await userSubscriptionService.create({
+          userId,
+          planId,
+          paymentMethod: 'bakong',
+          transactionId,
+          autoRenew: true,
+        });
+        logger.info({
+          userId,
+          planId,
+          transactionId,
+        }, 'Subscription created successfully from Bakong payment webhook');
+      } else {
+        logger.debug({
+          userId,
+          planId,
+          transactionId,
+        }, 'Subscription already exists, skipping creation');
+      }
 
       // Log successful payment
       await logPaymentEvent({
@@ -495,32 +619,58 @@ async function handleBakongPaymentCompleted(paymentData: any) {
         paymentType: 'subscription',
         eventType: 'payment_succeeded',
         status: 'completed',
-        amount: paymentData.amount,
-        currency: paymentData.currency,
-        planId: metadata.planId,
+        amount: paymentData.amount || paymentLog.amount,
+        currency: paymentData.currency || paymentLog.currency,
+        planId,
         metadata: {
           planName: metadata.planName,
           billingCycle: metadata.billingCycle,
+          triggeredBy: 'webhook',
         },
       });
-    } else if (metadata.type === 'template') {
+    } else if (paymentType === 'template') {
+      const templateId = paymentLog.templateId?.toString() || metadata.templateId;
+      
+      if (!templateId) {
+        logger.error({
+          transactionId,
+          userId,
+        }, 'Template ID not found in payment log for template payment');
+        throw new Error('Template ID not found in payment log');
+      }
+
       logger.info({
         userId,
-        templateId: metadata.templateId,
+        templateId,
         transactionId,
-      }, 'Creating template purchase from completed Bakong payment');
-      // Create template purchase
-      await templatePurchaseService.create({
-        userId,
-        templateId: metadata.templateId,
-        paymentMethod: 'bakong',
+      }, 'Creating template purchase from completed Bakong payment webhook');
+
+      // Check if purchase already exists
+      const { TemplatePurchaseModel } = await import('@/modules/t/template-purchase.model');
+      const existingPurchase = await TemplatePurchaseModel.findOne({
         transactionId,
       });
-      logger.info({
-        userId,
-        templateId: metadata.templateId,
-        transactionId,
-      }, 'Template purchase created successfully from Bakong payment');
+
+      if (!existingPurchase) {
+        // Create template purchase
+        await templatePurchaseService.create({
+          userId,
+          templateId,
+          paymentMethod: 'bakong',
+          transactionId,
+        });
+        logger.info({
+          userId,
+          templateId,
+          transactionId,
+        }, 'Template purchase created successfully from Bakong payment webhook');
+      } else {
+        logger.debug({
+          userId,
+          templateId,
+          transactionId,
+        }, 'Template purchase already exists, skipping creation');
+      }
 
       // Log successful payment
       await logPaymentEvent({
@@ -530,27 +680,27 @@ async function handleBakongPaymentCompleted(paymentData: any) {
         paymentType: 'template',
         eventType: 'payment_succeeded',
         status: 'completed',
-        amount: paymentData.amount,
-        currency: paymentData.currency,
-        templateId: metadata.templateId,
+        amount: paymentData.amount || paymentLog.amount,
+        currency: paymentData.currency || paymentLog.currency,
+        templateId,
         metadata: {
           templateName: metadata.templateName,
+          triggeredBy: 'webhook',
         },
       });
     } else {
       logger.warn({
         userId,
         transactionId,
-        paymentType: metadata.type,
-      }, 'Unknown payment type in completed Bakong payment');
+        paymentType,
+      }, 'Unknown payment type in completed Bakong payment webhook');
     }
   } catch (error: any) {
     logger.error({
       error: error.message,
-      userId,
       transactionId,
-      paymentType: metadata.type,
-    }, 'Failed to process completed Bakong payment');
+      stack: error.stack,
+    }, 'Failed to process completed Bakong payment webhook');
     throw error;
   }
 }
@@ -559,37 +709,65 @@ async function handleBakongPaymentCompleted(paymentData: any) {
  * Handle failed Bakong payment
  */
 async function handleBakongPaymentFailed(paymentData: any) {
-  const metadata = paymentData.metadata || {};
-  const userId = metadata.userId;
-  const transactionId = paymentData.transactionId || paymentData.id;
+  // Extract transaction ID from various possible fields
+  const transactionId = 
+    paymentData.transactionId || 
+    paymentData.id || 
+    paymentData.externalRef || 
+    paymentData.billNumber;
 
   logger.error({
     transactionId,
-    userId,
-    paymentType: metadata.type,
     amount: paymentData.amount,
     currency: paymentData.currency,
     error: paymentData.error || paymentData.message,
     failureReason: paymentData.failureReason,
-  }, 'Bakong payment failed');
+  }, 'Bakong payment failed webhook received');
 
-  // Log failed payment
-  await logPaymentEvent({
-    userId,
-    transactionId,
-    paymentMethod: 'bakong',
-    paymentType: metadata.type as 'subscription' | 'template' | undefined,
-    eventType: 'payment_failed',
-    status: 'failed',
-    amount: paymentData.amount,
-    currency: paymentData.currency,
-    planId: metadata.planId,
-    templateId: metadata.templateId,
-    error: paymentData.error || paymentData.message || 'Payment failed',
-    metadata: {
-      failureReason: paymentData.failureReason,
-    },
-  });
+  try {
+    // Look up payment log to get metadata
+    const { PaymentLogModel } = await import('./payment-log.model');
+    const paymentLog = transactionId ? await PaymentLogModel.findOne({
+      transactionId,
+      paymentMethod: 'bakong',
+      eventType: 'payment_created',
+    }).sort({ createdAt: -1 }) : null;
+
+    const metadata = paymentLog?.metadata || {};
+    const userId = paymentLog?.userId?.toString() || metadata.userId;
+    const paymentType = paymentLog?.paymentType || metadata.type;
+
+    // Update payment log status if it exists
+    if (paymentLog && paymentLog.status === 'pending') {
+      paymentLog.status = 'failed';
+      await paymentLog.save();
+    }
+
+    // Log failed payment
+    await logPaymentEvent({
+      userId,
+      transactionId,
+      paymentMethod: 'bakong',
+      paymentType: paymentType as 'subscription' | 'template' | undefined,
+      eventType: 'payment_failed',
+      status: 'failed',
+      amount: paymentData.amount || paymentLog?.amount,
+      currency: paymentData.currency || paymentLog?.currency,
+      planId: paymentLog?.planId?.toString() || metadata.planId,
+      templateId: paymentLog?.templateId?.toString() || metadata.templateId,
+      error: paymentData.error || paymentData.message || 'Payment failed',
+      metadata: {
+        failureReason: paymentData.failureReason,
+        triggeredBy: 'webhook',
+      },
+    });
+  } catch (error: any) {
+    logger.error({
+      error: error.message,
+      transactionId,
+    }, 'Failed to process Bakong payment failed webhook');
+    // Don't throw - we still want to acknowledge the webhook
+  }
   // You might want to notify the user or log this for retry
 }
 
@@ -597,35 +775,63 @@ async function handleBakongPaymentFailed(paymentData: any) {
  * Handle expired Bakong payment
  */
 async function handleBakongPaymentExpired(paymentData: any) {
-  const metadata = paymentData.metadata || {};
-  const userId = metadata.userId;
-  const transactionId = paymentData.transactionId || paymentData.id;
+  // Extract transaction ID from various possible fields
+  const transactionId = 
+    paymentData.transactionId || 
+    paymentData.id || 
+    paymentData.externalRef || 
+    paymentData.billNumber;
 
   logger.info({
     transactionId,
-    userId,
-    paymentType: metadata.type,
     amount: paymentData.amount,
     currency: paymentData.currency,
     expiredAt: paymentData.expiredAt,
-  }, 'Bakong payment expired');
+  }, 'Bakong payment expired webhook received');
 
-  // Log expired payment
-  await logPaymentEvent({
-    userId,
-    transactionId,
-    paymentMethod: 'bakong',
-    paymentType: metadata.type as 'subscription' | 'template' | undefined,
-    eventType: 'payment_expired',
-    status: 'expired',
-    amount: paymentData.amount,
-    currency: paymentData.currency,
-    planId: metadata.planId,
-    templateId: metadata.templateId,
-    metadata: {
-      expiredAt: paymentData.expiredAt,
-    },
-  });
+  try {
+    // Look up payment log to get metadata
+    const { PaymentLogModel } = await import('./payment-log.model');
+    const paymentLog = transactionId ? await PaymentLogModel.findOne({
+      transactionId,
+      paymentMethod: 'bakong',
+      eventType: 'payment_created',
+    }).sort({ createdAt: -1 }) : null;
+
+    const metadata = paymentLog?.metadata || {};
+    const userId = paymentLog?.userId?.toString() || metadata.userId;
+    const paymentType = paymentLog?.paymentType || metadata.type;
+
+    // Update payment log status if it exists
+    if (paymentLog && paymentLog.status === 'pending') {
+      paymentLog.status = 'expired';
+      await paymentLog.save();
+    }
+
+    // Log expired payment
+    await logPaymentEvent({
+      userId,
+      transactionId,
+      paymentMethod: 'bakong',
+      paymentType: paymentType as 'subscription' | 'template' | undefined,
+      eventType: 'payment_expired',
+      status: 'expired',
+      amount: paymentData.amount || paymentLog?.amount,
+      currency: paymentData.currency || paymentLog?.currency,
+      planId: paymentLog?.planId?.toString() || metadata.planId,
+      templateId: paymentLog?.templateId?.toString() || metadata.templateId,
+      metadata: {
+        expiredAt: paymentData.expiredAt,
+        triggeredBy: 'webhook',
+      },
+    });
+  } catch (error: any) {
+    logger.error({
+      error: error.message,
+      transactionId,
+    }, 'Failed to process Bakong payment expired webhook');
+    // Don't throw - we still want to acknowledge the webhook
+  }
   // You might want to notify the user that the payment expired
 }
 

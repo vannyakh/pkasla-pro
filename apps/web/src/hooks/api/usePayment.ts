@@ -17,6 +17,37 @@ export interface StripePaymentIntentResponse {
   currency: string;
 }
 
+export interface BakongTransactionStatus {
+  transactionId: string;
+  status: 'pending' | 'completed' | 'failed' | 'cancelled' | 'expired';
+  amount: number;
+  currency: string;
+  timestamp?: string;
+  payerAccountId?: string;
+  payerName?: string;
+}
+
+/**
+ * Check Bakong transaction status
+ */
+export function useCheckBakongTransactionStatus() {
+  return useMutation<BakongTransactionStatus, Error, { transactionId: string; md5?: string }>({
+    mutationFn: async ({ transactionId, md5 }) => {
+      const params = md5 ? `?md5=${encodeURIComponent(md5)}` : '';
+      const response = await api.get<BakongTransactionStatus>(
+        `/payments/bakong/transaction/${transactionId}/status${params}`
+      );
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to check transaction status');
+      }
+      if (!response.data) {
+        throw new Error('Transaction status data not found');
+      }
+      return response.data;
+    },
+  });
+}
+
 /**
  * Create Bakong payment for subscription
  */

@@ -1,13 +1,14 @@
 'use client'
 
-import { memo, useMemo, useState } from 'react'
+import { memo, useMemo } from 'react'
+import * as React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { 
   LayoutDashboard, 
   Users, 
   Settings, 
-  Heart,
   UserCheck,
   Component,
   ChevronRight,
@@ -16,7 +17,11 @@ import {
   FileText,
   CreditCard
 } from 'lucide-react'
-import * as Collapsible from '@radix-ui/react-collapsible'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import {
   Sidebar,
   SidebarContent,
@@ -29,7 +34,9 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  useSidebar,
 } from '@/components/ui/sidebar'
+import * as Collapsible from '@radix-ui/react-collapsible'
 
 interface MenuItem {
   href: string
@@ -60,7 +67,9 @@ const MENU_ITEMS: readonly MenuItem[] = [
 
 function AdminSidebar() {
   const pathname = usePathname()
-  const [openItems, setOpenItems] = useState<Record<string, boolean>>(() => {
+  const { state } = useSidebar()
+  const isCollapsed = state === 'collapsed'
+  const [openItems, setOpenItems] = React.useState<Record<string, boolean>>(() => {
     // Auto-open if any child is active
     const initial: Record<string, boolean> = {}
     MENU_ITEMS.forEach((item) => {
@@ -96,12 +105,19 @@ function AdminSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center space-x-2 px-2 group-data-[collapsible=icon]:justify-center">
-          <Heart className="h-4 w-4 text-black shrink-0" aria-hidden="true" />
-          <span className="text-sm font-semibold text-black group-data-[collapsible=icon]:hidden">
+        <Link href="/admin" className="flex items-center space-x-2 px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full">
+          <Image
+            src="/logo.png"
+            alt="Pkasla Admin Logo"
+            width={32}
+            height={32}
+            className="h-8 w-8 shrink-0 object-contain"
+            priority
+          />
+          <span className="text-sm font-semibold text-foreground group-data-[collapsible=icon]:hidden">
             Pkasla Admin
           </span>
-        </div>
+        </Link>
       </SidebarHeader>
 
       <SidebarContent>
@@ -112,10 +128,62 @@ function AdminSidebar() {
                 const Icon = item.icon
                 const isActive = isActivePath(item.href)
                 const hasChildren = item.children && item.children.length > 0
-                const isOpen = openItems[item.href] ?? false
                 const hasActiveChild = hasChildren && item.children!.some((child) => isActivePath(child.href))
                 
                 if (hasChildren) {
+                  const isOpen = openItems[item.href] ?? false
+                  
+                  // Show Popover only when collapsed
+                  if (isCollapsed) {
+                    return (
+                      <Popover key={item.href}>
+                        <SidebarMenuItem>
+                          <PopoverTrigger asChild>
+                            <SidebarMenuButton
+                              isActive={isActive || hasActiveChild}
+                              tooltip={item.label}
+                              size="xl"
+                              variant="rounded"
+                              className="px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2"
+                            >
+                              <Icon className="h-5 w-5 shrink-0 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6" aria-hidden="true" />
+                              <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                            </SidebarMenuButton>
+                          </PopoverTrigger>
+                          <PopoverContent 
+                            side="right" 
+                            align="start"
+                            className="w-56 p-2"
+                            sideOffset={8}
+                          >
+                            <div className="flex flex-col gap-1">
+                              {item.children!.map((child) => {
+                                const isChildActive = isActivePath(child.href)
+                                return (
+                                  <Link
+                                    key={child.href}
+                                    href={child.href}
+                                    className={`
+                                      flex items-center rounded-md px-3 py-2 text-sm transition-colors
+                                      ${isChildActive 
+                                        ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' 
+                                        : 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground'
+                                      }
+                                    `}
+                                    aria-current={isChildActive ? 'page' : undefined}
+                                  >
+                                    {child.label}
+                                  </Link>
+                                )
+                              })}
+                            </div>
+                          </PopoverContent>
+                        </SidebarMenuItem>
+                      </Popover>
+                    )
+                  }
+                  
+                  // Show inline collapsible when expanded
                   return (
                     <Collapsible.Root
                       key={item.href}
@@ -128,11 +196,14 @@ function AdminSidebar() {
                             isActive={isActive || hasActiveChild}
                             tooltip={item.label}
                             aria-expanded={isOpen}
+                            size="xl"
+                            variant="rounded"
+                            className="px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2"
                           >
-                            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                            <span>{item.label}</span>
+                            <Icon className="h-5 w-5 shrink-0 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6" aria-hidden="true" />
+                            <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                             <ChevronRight
-                              className={`ml-auto h-4 w-4 shrink-0 transition-transform duration-200 ${
+                              className={`ml-auto h-4 w-4 shrink-0 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
                                 isOpen ? 'rotate-90' : ''
                               }`}
                               aria-hidden="true"
@@ -162,10 +233,17 @@ function AdminSidebar() {
                 
                 return (
                   <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={isActive} 
+                      tooltip={item.label}
+                      size="xl"
+                      variant="rounded"
+                      className="px-4 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2"
+                    >
                       <Link href={item.href} aria-current={isActive ? 'page' : undefined}>
-                        <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                        <span>{item.label}</span>
+                        <Icon className="h-5 w-5 shrink-0 group-data-[collapsible=icon]:h-6 group-data-[collapsible=icon]:w-6" aria-hidden="true" />
+                        <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

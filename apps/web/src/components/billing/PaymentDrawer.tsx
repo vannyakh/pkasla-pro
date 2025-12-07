@@ -12,6 +12,7 @@ import Image from "next/image";
 import {
   useCreateBakongSubscriptionPayment,
   useCreateStripeSubscriptionPayment,
+  useCheckBakongTransactionStatus,
 } from "@/hooks/api/usePayment";
 import { StripeProvider } from "@/providers/StripeProvider";
 import { StripePaymentForm } from "@/components/payments/StripePaymentForm";
@@ -167,6 +168,8 @@ export function PaymentDrawer({
 
   const createBakongSubscriptionPaymentMutation = useCreateBakongSubscriptionPayment();
   const createStripeSubscriptionPaymentMutation = useCreateStripeSubscriptionPayment();
+  const checkBakongStatusMutation = useCheckBakongTransactionStatus();
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false);
 
   const handleCreatePayment = async () => {
     if (!planId) return;
@@ -182,6 +185,9 @@ export function PaymentDrawer({
           expiresAt: payment.expiresAt,
         });
         toast.success("Bakong QR code generated. Please scan to complete payment.");
+        // Start checking payment status
+        setIsCheckingPayment(true);
+        checkBakongPaymentStatus(payment.transactionId);
       } else if (paymentMethod === "stripe") {
         const paymentIntent = await createStripeSubscriptionPaymentMutation.mutateAsync({
           planId,
@@ -199,9 +205,46 @@ export function PaymentDrawer({
     }
   };
 
+  const checkBakongPaymentStatus = (transactionId: string) => {
+    const maxAttempts = 30; // Check for 5 minutes (30 * 10 seconds)
+    let attempts = 0;
+
+    const checkInterval = setInterval(async () => {
+      attempts++;
+      
+      try {
+        const status = await checkBakongStatusMutation.mutateAsync({
+          transactionId,
+        });
+        
+        if (status.status === 'completed') {
+          clearInterval(checkInterval);
+          setIsCheckingPayment(false);
+          toast.success('Payment successful! Subscription activated.');
+          onPaymentComplete?.();
+          handleClose(false);
+        } else if (status.status === 'failed' || status.status === 'cancelled' || status.status === 'expired') {
+          clearInterval(checkInterval);
+          setIsCheckingPayment(false);
+          toast.error(`Payment ${status.status}. Please try again.`);
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkInterval);
+          setIsCheckingPayment(false);
+          toast.error('Payment timeout. Please try again.');
+        }
+      } catch {
+        // Continue checking on error
+      }
+    }, 10000); // Check every 10 seconds
+
+    // Cleanup on unmount or dialog close
+    return () => clearInterval(checkInterval);
+  };
+
   const handleBack = () => {
     setPaymentData(null);
     setPaymentMethod(null);
+    setIsCheckingPayment(false);
   };
 
   const handleClose = (open: boolean) => {
@@ -278,18 +321,28 @@ export function PaymentDrawer({
               </Button>
             </>
           ) : paymentData.qrCode ? (
-            <BakongQRDisplay
-              qrCode={paymentData.qrCode}
-              expiresAt={paymentData.expiresAt}
-              amount={paymentData.amount}
-              currency={paymentData.currency}
-              merchantName={paymentData.merchantName}
-              onBack={handleBack}
-              onExpired={() => {
-                toast.error("QR code has expired. Please generate a new one.");
-                handleBack();
-              }}
-            />
+            <div className="space-y-4">
+              <BakongQRDisplay
+                qrCode={paymentData.qrCode}
+                expiresAt={paymentData.expiresAt}
+                amount={paymentData.amount}
+                currency={paymentData.currency}
+                merchantName={paymentData.merchantName}
+                onBack={handleBack}
+                onExpired={() => {
+                  toast.error("QR code has expired. Please generate a new one.");
+                  handleBack();
+                }}
+              />
+              {isCheckingPayment && (
+                <div className="flex items-center justify-center gap-2 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  <p className="text-sm text-blue-700">
+                    Checking payment status...
+                  </p>
+                </div>
+              )}
+            </div>
           ) : paymentData.clientSecret ? (
             <div className="space-y-4">
               <StripeProvider

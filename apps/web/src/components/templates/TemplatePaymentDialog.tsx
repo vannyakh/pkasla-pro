@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import Image from 'next/image'
 import { Loader2, CheckCircle2, QrCode, Download, CreditCard, Clock, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,12 +11,15 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
+import { useQueryClient } from '@tanstack/react-query'
 import { 
   useCreateBakongTemplatePayment, 
   useCreateStripeTemplatePayment,
   usePurchaseTemplate, 
-  useCheckTemplateOwnership 
+  useCheckTemplateOwnership,
+  templatePurchaseKeys
 } from '@/hooks/api/useTemplatePurchase'
+import { useCheckBakongTransactionStatus } from '@/hooks/api/usePayment'
 import { StripeProvider } from '@/providers/StripeProvider'
 import { StripePaymentForm } from '@/components/payments/StripePaymentForm'
 import { useCountdown } from '@/hooks/useCountdown'
@@ -173,9 +176,13 @@ export default function TemplatePaymentDialog({
   const [stripePaymentIntent, setStripePaymentIntent] = useState<{ clientSecret: string; paymentIntentId: string } | null>(null)
   const [isCheckingPayment, setIsCheckingPayment] = useState(false)
   
+  const queryClient = useQueryClient()
+  const checkIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  
   const createBakongPaymentMutation = useCreateBakongTemplatePayment()
   const createStripePaymentMutation = useCreateStripeTemplatePayment()
   const purchaseTemplateMutation = usePurchaseTemplate()
+  const checkBakongStatusMutation = useCheckBakongTransactionStatus()
   const { data: ownsTemplate, refetch: refetchOwnership } = useCheckTemplateOwnership(
     template?.id || ''
   )
@@ -185,10 +192,23 @@ export default function TemplatePaymentDialog({
   // Reset payment data when dialog closes
   useEffect(() => {
     if (!open) {
+      // Clear any running payment checks
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current)
+        checkIntervalRef.current = null
+      }
       setPaymentData(null)
       setStripePaymentIntent(null)
       setIsCheckingPayment(false)
       setPaymentMethod('bakong')
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current)
+        checkIntervalRef.current = null
+      }
     }
   }, [open])
 
@@ -198,6 +218,123 @@ export default function TemplatePaymentDialog({
       refetchOwnership()
     }
   }, [open, template?.id, refetchOwnership])
+
+  // Automatically start payment status checking when payment data is available
+  useEffect(() => {
+    const transactionId = paymentData?.transactionId
+    const templateId = template?.id
+    
+    if (!transactionId || !templateId || paymentMethod !== 'bakong') {
+      // Clear interval if conditions are not met
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current)
+        checkIntervalRef.current = null
+      }
+      setIsCheckingPayment(false)
+      return
+    }
+
+    // Clear any existing interval before starting a new one
+    if (checkIntervalRef.current) {
+      clearInterval(checkIntervalRef.current)
+      checkIntervalRef.current = null
+    }
+
+    // Start checking payment status
+    setIsCheckingPayment(true)
+    
+    const maxAttempts = 30 // Check for 5 minutes (30 * 10 seconds)
+    let attempts = 0
+
+    checkIntervalRef.current = setInterval(async () => {
+      attempts++
+      
+      try {
+        // Check Bakong transaction status
+        const status = await checkBakongStatusMutation.mutateAsync({
+          transactionId,
+        })
+        
+        if (status.status === 'completed') {
+          // Clear interval
+          if (checkIntervalRef.current) {
+            clearInterval(checkIntervalRef.current)
+            checkIntervalRef.current = null
+          }
+          setIsCheckingPayment(false)
+          
+          // Invalidate ownership cache to force fresh check
+          queryClient.invalidateQueries({ 
+            queryKey: templatePurchaseKeys.check(templateId) 
+          })
+          queryClient.invalidateQueries({ 
+            queryKey: templatePurchaseKeys.myPurchases() 
+          })
+          
+          // Wait a moment for backend to process the purchase
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          
+          // Refetch ownership to confirm purchase
+          const { data: owns } = await refetchOwnership()
+          
+          if (owns) {
+            toast.success('Payment successful! Template purchased.')
+            onSuccess?.()
+            onOpenChange(false)
+          } else {
+            // If ownership still not confirmed, wait a bit more and check again
+            await new Promise(resolve => setTimeout(resolve, 2000))
+            const { data: ownsRetry } = await refetchOwnership()
+            if (ownsRetry) {
+              toast.success('Payment successful! Template purchased.')
+              onSuccess?.()
+              onOpenChange(false)
+            } else {
+              toast.error('Payment completed but ownership not confirmed. Please refresh the page.')
+            }
+          }
+        } else if (status.status === 'failed' || status.status === 'cancelled' || status.status === 'expired') {
+          if (checkIntervalRef.current) {
+            clearInterval(checkIntervalRef.current)
+            checkIntervalRef.current = null
+          }
+          setIsCheckingPayment(false)
+          toast.error(`Payment ${status.status}. Please try again.`)
+        } else if (attempts >= maxAttempts) {
+          if (checkIntervalRef.current) {
+            clearInterval(checkIntervalRef.current)
+            checkIntervalRef.current = null
+          }
+          setIsCheckingPayment(false)
+          toast.error('Payment timeout. Please try again.')
+        }
+      } catch (error) {
+        // Handle connection errors - continue checking but log the error
+        const errorMessage = error instanceof Error ? error.message : String(error)
+        if (errorMessage.includes('Network error') || errorMessage.includes('Unable to connect')) {
+          // Backend might be down, continue checking
+          if (attempts >= maxAttempts) {
+            if (checkIntervalRef.current) {
+              clearInterval(checkIntervalRef.current)
+              checkIntervalRef.current = null
+            }
+            setIsCheckingPayment(false)
+            toast.error('Unable to connect to server. Please check your connection and try again.')
+          }
+        }
+        // For other errors, continue checking
+      }
+    }, 10000) // Check every 10 seconds
+
+    // Cleanup function
+    return () => {
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current)
+        checkIntervalRef.current = null
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentData?.transactionId, template?.id, paymentMethod])
 
   // Handle free template purchase
   const handleFreePurchase = async () => {
@@ -231,9 +368,7 @@ export default function TemplatePaymentDialog({
           amount: payment.amount,
           currency: payment.currency,
         })
-        // Start checking payment status
-        setIsCheckingPayment(true)
-        checkPaymentStatus()
+        // Payment status checking will start automatically via useEffect
       } else if (paymentMethod === 'stripe') {
         const paymentIntent = await createStripePaymentMutation.mutateAsync({
           templateId: template.id,
@@ -250,37 +385,6 @@ export default function TemplatePaymentDialog({
     }
   }
 
-  // Check payment status periodically
-  const checkPaymentStatus = () => {
-    const maxAttempts = 30 // Check for 5 minutes (30 * 10 seconds)
-    let attempts = 0
-
-    const checkInterval = setInterval(async () => {
-      attempts++
-      
-      try {
-        // Refetch ownership to check if payment was successful
-        const { data: owns } = await refetchOwnership()
-        
-        if (owns) {
-          clearInterval(checkInterval)
-          setIsCheckingPayment(false)
-          toast.success('Payment successful! Template purchased.')
-          onSuccess?.()
-          onOpenChange(false)
-        } else if (attempts >= maxAttempts) {
-          clearInterval(checkInterval)
-          setIsCheckingPayment(false)
-          toast.error('Payment timeout. Please try again.')
-        }
-      } catch {
-        // Continue checking
-      }
-    }, 10000) // Check every 10 seconds
-
-    // Cleanup on unmount or dialog close
-    return () => clearInterval(checkInterval)
-  }
 
   if (!template) return null
 
@@ -449,20 +553,38 @@ export default function TemplatePaymentDialog({
                       paymentIntentId={stripePaymentIntent.paymentIntentId}
                       amount={template.price || 0}
                       currency="usd"
-                      onSuccess={() => {
+                      onSuccess={async () => {
+                        // Invalidate ownership cache
+                        if (template?.id) {
+                          queryClient.invalidateQueries({ 
+                            queryKey: templatePurchaseKeys.check(template.id) 
+                          })
+                          queryClient.invalidateQueries({ 
+                            queryKey: templatePurchaseKeys.myPurchases() 
+                          })
+                        }
+                        
+                        // Wait a moment for backend to process
+                        await new Promise(resolve => setTimeout(resolve, 1000))
+                        
                         // Check ownership after successful payment
-                        setTimeout(async () => {
-                          const { data: owns } = await refetchOwnership()
-                          if (owns) {
+                        const { data: owns } = await refetchOwnership()
+                        if (owns) {
+                          toast.success('Payment successful! Template purchased.')
+                          onSuccess?.()
+                          onOpenChange(false)
+                        } else {
+                          // Wait a bit more and check again
+                          await new Promise(resolve => setTimeout(resolve, 2000))
+                          const { data: ownsRetry } = await refetchOwnership()
+                          if (ownsRetry) {
                             toast.success('Payment successful! Template purchased.')
                             onSuccess?.()
                             onOpenChange(false)
                           } else {
-                            // Start checking payment status
-                            setIsCheckingPayment(true)
-                            checkPaymentStatus()
+                            toast.error('Payment completed but ownership not confirmed. Please refresh the page.')
                           }
-                        }, 2000)
+                        }
                       }}
                       onCancel={() => {
                         setStripePaymentIntent(null)

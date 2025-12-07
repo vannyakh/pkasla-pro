@@ -16,7 +16,6 @@ import type {
   BakongCurrency,
 } from "@/types/bakong.types";
 import { CURRENCY_CODES } from "@/types/bakong.types";
-import type { PaymentStatus } from "./payment-log.model";
 
 if (!env.bakong?.accessToken) {
   console.warn(
@@ -73,14 +72,7 @@ class BakongService {
         "Creating Bakong payment"
       );
 
-      const bakongInstance = this.ensureBakong();
       const currency: BakongCurrency = (input.currency || "USD") as BakongCurrency;
-
-      // Convert amount to smallest currency unit (KHR uses riels, no decimals)
-      const amountInSmallestUnit =
-        currency === "USD"
-          ? Math.round(input.amount)
-          : Math.round(input.amount * 100);
 
       // Generate transaction ID
       const transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -107,7 +99,7 @@ class BakongService {
         {
           transactionId,
           merchantAccountId,
-          amountInSmallestUnit,
+          amount: input.amount,
           currency,
         },
         "Calling Bakong API to generate QR code"
@@ -116,9 +108,9 @@ class BakongService {
       // Generate KHQR using bakong-khqr library
       const khqr = new BakongKHQR();
 
-      // Set expiration time (15 minutes from now) for dynamic QR codes with amount
+      // Set expiration time (2 minutes from now) for dynamic QR codes with amount
       // expirationTimestamp is required if amount is not null or zero
-      const expirationTimestamp = Date.now() + 15 * 60 * 1000;
+      const expirationTimestamp = Date.now() + 2 * 60 * 1000;
 
       // Currency codes according to ISO 4217
       const currencyCode = CURRENCY_CODES[currency];
@@ -138,7 +130,7 @@ class BakongService {
         merchantCity: merchantCity,
         acquiringBank: acquiringBankName,
         currency: currencyCode,
-        amount: amountInSmallestUnit,
+        amount: input.amount,
         billNumber: transactionId,
         expirationTimestamp: expirationTimestamp, // Required for dynamic KHQR with amount
         storeLabel: paymentData.description
@@ -204,48 +196,15 @@ class BakongService {
         );
       }
 
-      // Optionally call Bakong API for deeplink generation if needed
-      // This is kept for backward compatibility but KHQR is now generated locally
-      let apiResponse: any = null;
-      try {
-        apiResponse = await bakongInstance.post("/v1/generate_deeplink_by_qr", {
-          ...paymentData,
-          qrCode: khqrString,
-        });
-      } catch (apiError: any) {
-        // Log but don't fail if API call fails - we have the KHQR string
-        logger.warn(
-          {
-            transactionId,
-            error: apiError.message,
-          },
-          "Bakong API deeplink generation failed, using local KHQR"
-        );
-      }
-
       const paymentResponse = {
-        qrCode: apiResponse?.data?.qrCode || qrCodeImage,
+        qrCode: qrCodeImage,
         qrCodeData: khqrString,
         transactionId: transactionId,
         merchantAccountId: merchantAccountId,
         amount: input.amount,
         currency: currency,
-        expiresAt:
-          apiResponse?.data?.expiresAt ||
-          new Date(expirationTimestamp).toISOString(),
+        expiresAt: new Date(expirationTimestamp).toISOString(),
       };
-
-      logger.info(
-        {
-          transactionId,
-          userId: input.userId,
-          amount: input.amount,
-          currency,
-          paymentType: input.metadata?.type,
-          expiresAt: paymentResponse.expiresAt,
-        },
-        "Bakong payment created successfully"
-      );
 
       // Log payment event to database
       await logPaymentEvent({
@@ -343,51 +302,71 @@ class BakongService {
       logger.debug(
         {
           transactionId,
-          responseData: response.data,
+          responseCode: response.data?.responseCode,
+          responseMessage: response.data?.responseMessage,
         },
         "Bakong API response received"
       );
 
-      // Handle different response structures
-      const responseData = response.data?.data || response.data;
-      
-      if (!responseData) {
-        logger.error(
+      // Check response code
+      const responseCode = response.data?.responseCode;
+      const responseMessage = response.data?.responseMessage || "Unknown error";
+      const responseData = response.data?.data;
+
+      // Handle failed or pending payment (responseCode !== 0)
+      if (responseCode !== 0 || !responseData) {
+        logger.info(
           {
             transactionId,
-            fullResponse: response.data,
+            responseCode,
+            responseMessage,
           },
-          "Invalid response structure from Bakong API"
+          "Transaction not found or pending"
         );
-        throw new AppError(
-          "Invalid response from Bakong API",
-          httpStatus.INTERNAL_SERVER_ERROR
-        );
+
+        // Return pending status for transactions that haven't been processed yet
+        const transactionStatus: BakongTransactionStatus = {
+          transactionId,
+          status: "pending",
+          amount: 0,
+          currency: "USD" as BakongCurrency,
+          timestamp: undefined,
+          payerAccountId: undefined,
+          payerName: undefined,
+        };
+
+        // Log status check event
+        await logPaymentEvent({
+          transactionId,
+          paymentMethod: "bakong",
+          eventType: "transaction_status_checked",
+          status: "pending",
+          amount: 0,
+          currency: "USD",
+          metadata: {
+            responseCode,
+            responseMessage,
+            md5Hash: finalMd5Hash?.substring(0, 8) + "...",
+          },
+        });
+
+        return transactionStatus;
       }
 
-      // Map status from response (handle different possible field names)
-      const statusValue = responseData.status || responseData.transactionStatus || responseData.state;
-      if (!statusValue) {
-        logger.warn(
-          {
-            transactionId,
-            responseData,
-          },
-          "Status field not found in Bakong API response"
-        );
-      }
-
-      const status = this.mapBakongStatus(statusValue || "PENDING");
-      
-      // Extract transaction details with fallbacks
+      // Handle success response (responseCode === 0)
+      // Map transaction details from Bakong API response
       const transactionStatus: BakongTransactionStatus = {
-        transactionId: responseData.transactionId || responseData.id || transactionId,
-        status,
-        amount: responseData.amount || responseData.transactionAmount || 0,
+        transactionId: responseData.externalRef || transactionId,
+        status: "completed", // If we get data, transaction is completed
+        amount: responseData.amount || 0,
         currency: (responseData.currency || "USD") as BakongCurrency,
-        timestamp: responseData.timestamp || responseData.createdAt || responseData.updatedAt,
-        payerAccountId: responseData.payerAccountId || responseData.payerId || responseData.accountId,
-        payerName: responseData.payerName || responseData.payer || responseData.accountName,
+        timestamp: responseData.acknowledgedDateMs 
+          ? new Date(responseData.acknowledgedDateMs).toISOString()
+          : responseData.createdDateMs
+          ? new Date(responseData.createdDateMs).toISOString()
+          : undefined,
+        payerAccountId: responseData.fromAccountId,
+        payerName: undefined, // Not provided in API response
       };
 
       logger.info(
@@ -401,12 +380,136 @@ class BakongService {
         "Bakong transaction status retrieved successfully"
       );
 
+      // If payment is completed, update payment log and trigger purchase/subscription creation
+      if (transactionStatus.status === "completed") {
+        try {
+          const { PaymentLogModel } = await import("./payment-log.model");
+          const paymentLog = await PaymentLogModel.findOne({
+            transactionId: transactionStatus.transactionId,
+            paymentMethod: "bakong",
+            eventType: "payment_created",
+          }).sort({ createdAt: -1 });
+
+          if (paymentLog) {
+            // Update payment log status if it's still pending
+            if (paymentLog.status === "pending") {
+              paymentLog.status = "completed";
+              await paymentLog.save();
+              logger.info(
+                { transactionId: transactionStatus.transactionId },
+                "Updated payment log status to completed"
+              );
+            }
+
+            // Trigger purchase/subscription creation if metadata exists
+            const metadata = paymentLog.metadata || {};
+            const userId = paymentLog.userId?.toString();
+            const paymentType = paymentLog.paymentType;
+
+            if (userId && paymentType) {
+              if (paymentType === "subscription" && metadata.planId) {
+                const { UserSubscriptionModel } = await import("@/modules/subscriptions/user-subscription.model");
+                const { userSubscriptionService } = await import("@/modules/subscriptions/user-subscription.service");
+                // Check if subscription already exists by transactionId
+                const existingSubscription = await UserSubscriptionModel.findOne({
+                  transactionId: transactionStatus.transactionId,
+                });
+                if (!existingSubscription) {
+                  await userSubscriptionService.create({
+                    userId,
+                    planId: metadata.planId,
+                    paymentMethod: "bakong",
+                    transactionId: transactionStatus.transactionId,
+                    autoRenew: true,
+                  });
+                  logger.info(
+                    { userId, planId: metadata.planId, transactionId: transactionStatus.transactionId },
+                    "Subscription created from status check"
+                  );
+                  // Log payment succeeded event
+                  await logPaymentEvent({
+                    userId,
+                    transactionId: transactionStatus.transactionId,
+                    paymentMethod: "bakong",
+                    paymentType: "subscription",
+                    eventType: "payment_succeeded",
+                    status: "completed",
+                    amount: transactionStatus.amount,
+                    currency: transactionStatus.currency,
+                    planId: metadata.planId,
+                    metadata: {
+                      planName: metadata.planName,
+                      billingCycle: metadata.billingCycle,
+                      triggeredBy: "status_check",
+                    },
+                  });
+                } else {
+                  logger.debug(
+                    { userId, planId: metadata.planId, transactionId: transactionStatus.transactionId },
+                    "Subscription already exists, skipping creation"
+                  );
+                }
+              } else if (paymentType === "template" && metadata.templateId) {
+                const { TemplatePurchaseModel } = await import("@/modules/t/template-purchase.model");
+                const { templatePurchaseService } = await import("@/modules/t/template-purchase.service");
+                // Check if purchase already exists by transactionId
+                const existingPurchase = await TemplatePurchaseModel.findOne({
+                  transactionId: transactionStatus.transactionId,
+                });
+                if (!existingPurchase) {
+                  await templatePurchaseService.create({
+                    userId,
+                    templateId: metadata.templateId,
+                    paymentMethod: "bakong",
+                    transactionId: transactionStatus.transactionId,
+                  });
+                  logger.info(
+                    { userId, templateId: metadata.templateId, transactionId: transactionStatus.transactionId },
+                    "Template purchase created from status check"
+                  );
+                  // Log payment succeeded event
+                  await logPaymentEvent({
+                    userId,
+                    transactionId: transactionStatus.transactionId,
+                    paymentMethod: "bakong",
+                    paymentType: "template",
+                    eventType: "payment_succeeded",
+                    status: "completed",
+                    amount: transactionStatus.amount,
+                    currency: transactionStatus.currency,
+                    templateId: metadata.templateId,
+                    metadata: {
+                      templateName: metadata.templateName,
+                      triggeredBy: "status_check",
+                    },
+                  });
+                } else {
+                  logger.debug(
+                    { userId, templateId: metadata.templateId, transactionId: transactionStatus.transactionId },
+                    "Template purchase already exists, skipping creation"
+                  );
+                }
+              }
+            }
+          }
+        } catch (error: any) {
+          // Log error but don't fail the status check
+          logger.error(
+            {
+              error: error.message,
+              transactionId: transactionStatus.transactionId,
+            },
+            "Failed to process completed payment"
+          );
+        }
+      }
+
       // Log status check event to database
       await logPaymentEvent({
         transactionId: transactionStatus.transactionId,
         paymentMethod: "bakong",
         eventType: "transaction_status_checked",
-        status: status,
+        status: transactionStatus.status,
         amount: transactionStatus.amount,
         currency: transactionStatus.currency,
         metadata: {
@@ -414,6 +517,7 @@ class BakongService {
           payerName: transactionStatus.payerName,
           timestamp: transactionStatus.timestamp,
           md5Hash: finalMd5Hash?.substring(0, 8) + "...",
+          hash: responseData?.hash,
         },
       });
 
@@ -431,6 +535,46 @@ class BakongService {
       );
 
       // Handle specific error cases
+      if (error.response?.status === 401) {
+        // 401 Unauthorized - token expired or invalid
+        // Return pending status instead of throwing error so payment checking can continue
+        logger.warn(
+          {
+            transactionId,
+            errorMessage: error.response.data?.responseMessage || "Unauthorized",
+          },
+          "Bakong API authentication failed - returning pending status"
+        );
+
+        // Return pending status so frontend can continue checking
+        const transactionStatus: BakongTransactionStatus = {
+          transactionId,
+          status: "pending",
+          amount: 0,
+          currency: "USD" as BakongCurrency,
+          timestamp: undefined,
+          payerAccountId: undefined,
+          payerName: undefined,
+        };
+
+        // Log status check event with auth error
+        await logPaymentEvent({
+          transactionId,
+          paymentMethod: "bakong",
+          eventType: "transaction_status_checked",
+          status: "pending",
+          amount: 0,
+          currency: "USD",
+          metadata: {
+            authError: true,
+            errorMessage: error.response.data?.responseMessage || "Unauthorized",
+            responseCode: error.response.data?.responseCode,
+          },
+        });
+
+        return transactionStatus;
+      }
+
       if (error.response?.status === 404) {
         throw new AppError(
           "Transaction not found or not yet processed",
@@ -533,23 +677,6 @@ class BakongService {
     }
   }
 
-  /**
-   * Map Bakong status to our status enum
-   */
-  private mapBakongStatus(status: string): PaymentStatus {
-    const statusMap: Record<string, PaymentStatus> = {
-      PENDING: "pending",
-      PROCESSING: "pending",
-      SUCCESS: "completed",
-      COMPLETED: "completed",
-      FAILED: "failed",
-      CANCELLED: "cancelled",
-      EXPIRED: "expired",
-      REJECTED: "failed",
-    };
-
-    return statusMap[status.toUpperCase()] || "pending";
-  }
 
   /**
    * Create subscription payment
@@ -557,15 +684,6 @@ class BakongService {
   async createSubscriptionPayment(
     input: CreateBakongPaymentInput
   ): Promise<BakongPaymentResponse> {
-    logger.info(
-      {
-        userId: input.userId,
-        planId: input.metadata?.planId,
-        planName: input.metadata?.planName,
-        amount: input.amount,
-      },
-      "Creating Bakong subscription payment"
-    );
 
     return this.createPayment({
       ...input,
