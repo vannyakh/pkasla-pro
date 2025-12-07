@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, type ReactNode } from 'react';
 import type { User, UserRole } from '@/types';
 import { ROUTES } from '@/constants';
+import { Spinner } from '../ui/shadcn-io/spinner';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -58,7 +59,7 @@ export function ProtectedRoute({
 
   // Show loading state
   if (status === 'loading') {
-    return fallback || <div>Loading...</div>;
+    return fallback || <Spinner variant="default" />;
   }
 
   // Show fallback if not authenticated
