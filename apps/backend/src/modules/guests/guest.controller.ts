@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { guestService } from './guest.service';
+import { eventService } from '@/modules/events/event.service';
 import { buildSuccessResponse } from '@/helpers/http-response';
 
 /**
@@ -157,5 +158,38 @@ export const regenerateTokenHandler = async (req: Request, res: Response) => {
   const { id } = req.params;
   const newToken = await guestService.regenerateToken(id, req.user.id);
   return res.status(httpStatus.OK).json(buildSuccessResponse({ token: newToken }, 'Token regenerated successfully'));
+};
+
+/**
+ * Join event by scanning QR code (public endpoint)
+ */
+export const joinEventByQRHandler = async (req: Request, res: Response) => {
+  const { token } = req.params;
+  const { name, email, phone } = req.body;
+
+  // Find event by QR token
+  const event = await eventService.findByQRCodeToken(token);
+  if (!event) {
+    return res.status(httpStatus.NOT_FOUND).json({ error: 'Event not found or invalid QR code' });
+  }
+
+  // Validate required fields
+  if (!name || name.trim().length === 0) {
+    return res.status(httpStatus.BAD_REQUEST).json({ error: 'Name is required' });
+  }
+
+  // Create guest for this event (public, no hostId required)
+  const guest = await guestService.create(
+    {
+      name: name.trim(),
+      email: email?.trim() || undefined,
+      phone: phone?.trim() || undefined,
+      eventId: event.id,
+      status: 'confirmed', // Auto-confirm when joining via QR
+    },
+    undefined // No hostId for public QR join
+  );
+
+  return res.status(httpStatus.CREATED).json(buildSuccessResponse(guest, 'Successfully joined the event!'));
 };
 

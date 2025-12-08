@@ -410,6 +410,7 @@ export default function EventDetailPage({
             updateGuestMutation={updateGuestMutation}
             deleteGuestMutation={deleteGuestMutation}
             getTagColor={getGuestTagColor}
+            rawGuests={guests}
           />
         </TabsContent>
         {/* Payments Tab */}
@@ -438,7 +439,7 @@ export default function EventDetailPage({
 
         {/* QR Code Tab */}
         <TabsContent value="qr" className="mt-4 md:mt-4 mb-16 md:mb-4">
-          <QRGenerate />
+          <QRGenerate eventId={id} />
         </TabsContent>
       </Tabs>
     </div>

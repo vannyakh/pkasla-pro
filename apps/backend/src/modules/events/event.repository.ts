@@ -83,6 +83,12 @@ export class EventRepository {
       { new: true }
     ).lean();
   }
+
+  findByQRCodeToken(token: string) {
+    return EventModel.findOne({ qrCodeToken: token })
+      .populate('hostId', 'name email avatar')
+      .lean();
+  }
 }
 
 export const eventRepository = new EventRepository();

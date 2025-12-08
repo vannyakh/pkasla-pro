@@ -167,3 +167,17 @@ export type UpdateGuestInput = z.infer<typeof updateGuestSchema>['body'];
  */
 export type ListGuestsQuery = z.infer<typeof listGuestsQuerySchema>['query'];
 
+/**
+ * Join event by QR code validation schema
+ */
+export const joinEventByQRSchema = z.object({
+  params: z.object({
+    token: z.string().min(1, { message: 'QR token is required' }),
+  }),
+  body: z.object({
+    name: z.string().min(1, { message: 'Name is required' }).max(200).trim(),
+    email: z.string().email({ message: 'Email must be a valid email address' }).optional().or(z.literal('')),
+    phone: z.string().max(20).trim().optional().or(z.literal('')),
+  }),
+});
+

@@ -351,3 +351,30 @@ export const getEventsByTypeHandler = async (req: Request, res: Response) => {
   return res.status(httpStatus.OK).json(buildSuccessResponse(result));
 };
 
+/**
+ * Generate or regenerate QR code token for event
+ */
+export const generateQRCodeTokenHandler = async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Authentication required' });
+  }
+
+  const { id } = req.params;
+  const token = await eventService.generateQRCodeToken(id, req.user.id);
+  return res.status(httpStatus.OK).json(buildSuccessResponse({ token }, 'QR code token generated successfully'));
+};
+
+/**
+ * Get event by QR code token (public endpoint for scanning)
+ */
+export const getEventByQRTokenHandler = async (req: Request, res: Response) => {
+  const { token } = req.params;
+  const event = await eventService.findByQRCodeToken(token);
+  
+  if (!event) {
+    return res.status(httpStatus.NOT_FOUND).json({ error: 'Event not found or invalid QR code' });
+  }
+
+  return res.status(httpStatus.OK).json(buildSuccessResponse(event));
+};
+

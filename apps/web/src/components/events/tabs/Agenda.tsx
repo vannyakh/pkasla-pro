@@ -140,7 +140,7 @@ export default function Agenda({ eventId }: AgendaProps) {
     return (
       <Card className="border border-gray-200 shadow-none">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-black">កាលវិភាគ (Schedule)</CardTitle>
+          <CardTitle className="text-lg font-semibold text-black">កាលវិភាគ (Agenda)</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
@@ -153,7 +153,7 @@ export default function Agenda({ eventId }: AgendaProps) {
     return (
       <Card className="border border-gray-200 shadow-none">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-black">កាលវិភាគ (Schedule)</CardTitle>
+          <CardTitle className="text-lg font-semibold text-black">កាលវិភាគ (Agenda)</CardTitle>
         </CardHeader>
         <CardContent className="py-8">
           <div className="text-center text-sm text-red-600">
@@ -167,7 +167,7 @@ export default function Agenda({ eventId }: AgendaProps) {
   return (
     <Card className="border border-gray-200 shadow-none">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold text-black">កាលវិភាគ (Schedule)</CardTitle>
+        <CardTitle className="text-lg font-semibold text-black">កាលវិភាគ (Agenda)</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {/* Existing schedules, grouped by date */}

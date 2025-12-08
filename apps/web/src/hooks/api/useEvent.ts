@@ -394,3 +394,31 @@ export function useDeleteEvent() {
   });
 }
 
+/**
+ * Generate or regenerate QR code token for event
+ */
+export function useGenerateEventQRToken() {
+  const queryClient = useQueryClient();
+
+  return useMutation<{ token: string }, Error, string>({
+    mutationFn: async (eventId: string): Promise<{ token: string }> => {
+      const response = await api.post<{ token: string }>(`/events/${eventId}/qr-code/generate`);
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to generate QR code token');
+      }
+      if (!response.data) {
+        throw new Error('Token data not found');
+      }
+      return response.data;
+    },
+    onSuccess: (_, eventId) => {
+      // Invalidate event detail to refresh with new token
+      queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
+      toast.success('QR code token generated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to generate QR code token');
+    },
+  });
+}
+

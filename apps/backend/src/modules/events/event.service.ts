@@ -1,5 +1,6 @@
 import httpStatus from 'http-status';
 import { Types } from 'mongoose';
+import crypto from 'crypto';
 import { AppError } from '@/common/errors/app-error';
 import { eventRepository } from './event.repository';
 import type { EventDocument, EventStatus, EventType } from './event.model';
@@ -64,6 +65,7 @@ export interface EventResponse {
     spacing?: Record<string, number>;
     customVariables?: Record<string, string>;
   };
+  qrCodeToken?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -338,6 +340,49 @@ class EventService {
    */
   async incrementGuestCount(eventId: string, increment: number = 1): Promise<void> {
     await eventRepository.incrementGuestCount(eventId, increment);
+  }
+
+  /**
+   * Generate or regenerate QR code token for event
+   */
+  async generateQRCodeToken(eventId: string, hostId?: string): Promise<string> {
+    const event = await eventRepository.findById(eventId);
+    if (!event) {
+      throw new AppError('Event not found', httpStatus.NOT_FOUND);
+    }
+
+    // Verify host if provided
+    if (hostId) {
+      const existingEvent = sanitizeEvent(event as unknown as EventDocument);
+      if (!existingEvent) {
+        throw new AppError('Event not found', httpStatus.NOT_FOUND);
+      }
+      const eventHostId = typeof existingEvent.hostId === 'string' 
+        ? existingEvent.hostId 
+        : existingEvent.hostId.id;
+      if (eventHostId !== hostId) {
+        throw new AppError('You can only generate QR codes for your own events', httpStatus.FORBIDDEN);
+      }
+    }
+
+    // Generate new token (32 bytes base64url encoded)
+    const token = crypto.randomBytes(32).toString('base64url');
+
+    // Update event with new token
+    await eventRepository.updateById(eventId, { qrCodeToken: token });
+
+    return token;
+  }
+
+  /**
+   * Find event by QR code token
+   */
+  async findByQRCodeToken(token: string): Promise<EventResponse | null> {
+    const event = await eventRepository.findByQRCodeToken(token);
+    if (!event) {
+      return null;
+    }
+    return sanitizeEvent(event);
   }
 }
 
