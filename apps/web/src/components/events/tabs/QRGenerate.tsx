@@ -44,7 +44,7 @@ export default function QRGenerate({ eventId }: QRGenerateProps) {
 
   // Local State
   const [exportDrawerOpen, setExportDrawerOpen] = useState(false);
-  const [selectedTool, setSelectedTool] = useState<ToolType>("design");
+  const [selectedTool, setSelectedTool] = useState<ToolType>("select");
 
   // Store State
   const customization = useQRCustomizationStore((state) => state.customization);

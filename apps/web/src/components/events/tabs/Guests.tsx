@@ -24,6 +24,7 @@ import { useGiftsByGuest } from '@/hooks/api/useGift'
 import { useEvent } from '@/hooks/api/useEvent'
 import toast from 'react-hot-toast'
 import { api } from '@/lib/axios-client'
+import InviteCardDrawer from '@/components/guests/InviteCardDrawer'
 
 export type { DisplayGuest } from '@/components/guests/GuestDetailsDrawer'
 
@@ -84,6 +85,7 @@ export default function Guests({
   const [selectedGuestForFullScreen, setSelectedGuestForFullScreen] = useState<DisplayGuest | null>(null)
   const [sharingGuestId, setSharingGuestId] = useState<string | null>(null)
   const [isInviteCardDialogOpen, setIsInviteCardDialogOpen] = useState(false)
+  const [selectedGuestForInviteCard, setSelectedGuestForInviteCard] = useState<DisplayGuest | null>(null)
   
   // Fetch event data for invitation cards
   const { data: event } = useEvent(eventId)
@@ -212,6 +214,7 @@ export default function Guests({
                   variant="outline"
                   size="sm"
                   className="text-[10px] sm:text-xs h-7 bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <CheckCircle2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-0.5 sm:mr-1" />
                   <span className="hidden sm:inline">រួចរាល់</span>
@@ -232,7 +235,12 @@ export default function Guests({
                     onGiftPayment(guest.id)
                   }}
                   trigger={
-                    <Button variant="outline" size="sm" className="text-[10px] sm:text-xs h-7">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-[10px] sm:text-xs h-7"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <span className="hidden sm:inline">ចង់ដៃ</span>
                       <span className="sm:hidden">ចង់</span>
                     </Button>
@@ -278,7 +286,16 @@ export default function Guests({
               >
                 <Share2 className="h-3.5 w-3.5" />
               </Button>
-              <Button variant="ghost" size="sm" className="text-xs h-7 w-7 p-0 hidden sm:flex">
+              <Button 
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setSelectedGuestForInviteCard(guest)
+                  setIsInviteCardDrawerOpen(true)
+                }} 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs h-7 w-7 p-0 hidden sm:flex"
+              >
                 <QrCode className="h-3.5 w-3.5" />
               </Button>
               <DropdownMenu>
@@ -347,6 +364,8 @@ export default function Guests({
   const handleRowClick = (guest: DisplayGuest) => {
     setSelectedGuestForFullScreen(guest)
   }
+
+  const [isInviteCardDrawerOpen, setIsInviteCardDrawerOpen] = useState(false)
 
   return (
     <div className="space-y-4">
@@ -483,6 +502,24 @@ export default function Guests({
         open={isInviteCardDialogOpen}
         onOpenChange={setIsInviteCardDialogOpen}
         guests={guestsForInvite}
+        event={event}
+      />
+
+      {/* Invitation Card Drawer */}
+      <InviteCardDrawer
+        open={isInviteCardDrawerOpen}
+        onOpenChange={(open) => {
+          setIsInviteCardDrawerOpen(open)
+          if (!open) {
+            setSelectedGuestForInviteCard(null)
+          }
+        }}
+        guest={selectedGuestForInviteCard ? {
+          ...selectedGuestForInviteCard,
+          tag: typeof selectedGuestForInviteCard.tag === 'object' 
+            ? selectedGuestForInviteCard.tag.label 
+            : selectedGuestForInviteCard.tag,
+        } as Guest : undefined}
         event={event}
       />
     </div>

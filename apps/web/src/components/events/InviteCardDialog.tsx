@@ -33,6 +33,7 @@ import type { Guest } from '@/types/guest'
 import type { Event } from '@/types/event'
 import { env } from '@/config/env'
 import toast from 'react-hot-toast'
+import { CARD_TEMPLATES, type TemplateKey } from '@/constants/inviteCardTemplates'
 
 interface InviteCardDialogProps {
   open: boolean
@@ -40,47 +41,6 @@ interface InviteCardDialogProps {
   guests: Guest[]
   event: Event | undefined
 }
-
-// Luxury card templates
-const CARD_TEMPLATES = {
-  elegant: {
-    name: 'Elegant Gold',
-    background: 'linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%)',
-    accentColor: '#d4af37',
-    textColor: '#333333',
-    fontFamily: 'serif',
-  },
-  modern: {
-    name: 'Modern Minimal',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    accentColor: '#ffffff',
-    textColor: '#ffffff',
-    fontFamily: 'sans-serif',
-  },
-  romantic: {
-    name: 'Romantic Rose',
-    background: 'linear-gradient(135deg, #ffeef8 0%, #ffe0f0 100%)',
-    accentColor: '#e91e63',
-    textColor: '#4a4a4a',
-    fontFamily: 'cursive',
-  },
-  luxury: {
-    name: 'Luxury Black',
-    background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-    accentColor: '#ffd700',
-    textColor: '#ffffff',
-    fontFamily: 'serif',
-  },
-  botanical: {
-    name: 'Botanical Green',
-    background: 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)',
-    accentColor: '#2e7d32',
-    textColor: '#1b5e20',
-    fontFamily: 'sans-serif',
-  },
-}
-
-type TemplateKey = keyof typeof CARD_TEMPLATES
 
 interface CardCustomization {
   template: TemplateKey

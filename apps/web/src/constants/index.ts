@@ -14,3 +14,6 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
 } as const;
 
+// Export invite card templates
+export { CARD_TEMPLATES, type TemplateKey, type CardTemplate } from './inviteCardTemplates';
+
