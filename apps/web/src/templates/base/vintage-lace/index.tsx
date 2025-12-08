@@ -881,10 +881,10 @@ export default function VintageLaceTemplate() {
         {showInvitation && (
           <div
             ref={programScheduleRef}
-            className="mx-auto max-w-5xl mb-20 relative w-full"
+            className="mx-auto max-w-5xl mb-20 relative w-full backdrop-blur-md"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
+              className="relative p-8 md:p-12 rounded-3xl"
               style={{
                 background: `linear-gradient(135deg, rgba(139, 115, 85, 0.15) 0%, rgba(212, 175, 55, 0.1) 50%, rgba(139, 115, 85, 0.15) 100%)`,
                 border: `2px solid rgba(212, 175, 55, 0.3)`,
@@ -962,10 +962,10 @@ export default function VintageLaceTemplate() {
         {showInvitation && googleMapLink && (
           <div
             ref={locationRef}
-            className="mx-auto max-w-5xl mb-20 relative w-full"
+            className="mx-auto max-w-5xl mb-20 relative w-full backdrop-blur-md"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
+              className="relative p-8 md:p-12 rounded-3xl"
               style={{
                 background: `linear-gradient(135deg, rgba(139, 115, 85, 0.15) 0%, rgba(212, 175, 55, 0.1) 50%, rgba(139, 115, 85, 0.15) 100%)`,
                 border: `2px solid rgba(212, 175, 55, 0.3)`,
@@ -1054,10 +1054,10 @@ export default function VintageLaceTemplate() {
         {showInvitation && (
           <div
             ref={galleryRef}
-            className="mx-auto max-w-6xl mb-20 relative w-full"
+            className="mx-auto max-w-6xl mb-20 relative w-full backdrop-blur-md"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
+              className="relative p-8 md:p-12 rounded-3xl"
               style={{
                 background: `linear-gradient(135deg, rgba(139, 115, 85, 0.15) 0%, rgba(212, 175, 55, 0.1) 50%, rgba(139, 115, 85, 0.15) 100%)`,
                 border: `2px solid rgba(212, 175, 55, 0.3)`,
@@ -1135,10 +1135,10 @@ export default function VintageLaceTemplate() {
         {showInvitation && (
           <div
             ref={thankYouRef}
-            className="mx-auto max-w-5xl mb-20 relative w-full"
+            className="mx-auto max-w-5xl mb-20 relative w-full backdrop-blur-md"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
+              className="relative p-8 md:p-12 rounded-3xl"
               style={{
                 background: `linear-gradient(135deg, rgba(139, 115, 85, 0.15) 0%, rgba(212, 175, 55, 0.1) 50%, rgba(139, 115, 85, 0.15) 100%)`,
                 border: `2px solid rgba(212, 175, 55, 0.3)`,
@@ -1184,10 +1184,10 @@ export default function VintageLaceTemplate() {
         {showInvitation && (
           <div
             ref={coupleQRRef}
-            className="mx-auto max-w-5xl mb-20 relative w-full"
+            className="mx-auto max-w-5xl mb-20 relative w-full backdrop-blur-md"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
+              className="relative p-8 md:p-12 rounded-3xl"
               style={{
                 background: `linear-gradient(135deg, rgba(139, 115, 85, 0.15) 0%, rgba(212, 175, 55, 0.1) 50%, rgba(139, 115, 85, 0.15) 100%)`,
                 border: `2px solid rgba(212, 175, 55, 0.3)`,
