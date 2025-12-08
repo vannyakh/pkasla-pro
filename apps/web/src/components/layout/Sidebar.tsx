@@ -13,7 +13,10 @@ import {
   Settings,
   Store,
   FileCheck,
-  UserPlus
+  UserPlus,
+  Gift,
+  BadgeDollarSign,
+  BookHeart
 } from 'lucide-react'
 import {
   Sidebar,
@@ -30,6 +33,8 @@ const menuItems = [
   { href: '/dashboard', label: 'ផ្ទាំងគ្រប់គ្រង', icon: LayoutDashboard },
   { href: '/dashboard/events', label: 'កម្មវិធី', icon: Calendar },
   { href: '/dashboard/guests', label: 'ភ្ញៀវកិត្តយស', icon: Users },
+  { href: '/dashboard/gifts', label: 'គ្រប់គ្រងចំណងដៃ', icon: BookHeart },
+  { href: '/dashboard/financial', label: 'គ្រប់គ្រងចំណាយ', icon: BadgeDollarSign },
   { href: '/dashboard/invitations', label: 'ការអញ្ជើញ', icon: UserPlus },
   { href: '/dashboard/templates', label: 'គំរូធៀបខ្ញុំ', icon: FileCheck },
   { href: '/dashboard/stores', label: 'ហាងគំរូធៀប', icon: Store },

@@ -2,7 +2,7 @@
 
 import { useSidebar } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
-import { PanelLeftIcon } from 'lucide-react'
+import { PanelLeftClose } from 'lucide-react'
 import ProfileMenu from './ProfileMenu'
 import InvitationNotification from './InvitationNotification'
 
@@ -13,11 +13,11 @@ function CustomSidebarTrigger() {
     <Button
       variant="ghost"
       size="icon"
-      className="h-8 w-8 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+      className="p-4 hover:bg-sidebar-accent rounded-full cursor-pointer hover:text-sidebar-accent-foreground"
       onClick={toggleSidebar}
       aria-label="Toggle Sidebar"
     >
-      <PanelLeftIcon className="h-4 w-4" />
+      <PanelLeftClose size={20} />
     </Button>
   )
 }
