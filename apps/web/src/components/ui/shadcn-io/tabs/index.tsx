@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import {
   MotionHighlight,
   MotionHighlightItem,
-} from '@repo/motion-highlight';
+} from '@/components/ui/shadcn-io/motion-highlight/index';
 
 // Tabs Component
 type TabsContextType<T extends string> = {
@@ -105,7 +105,7 @@ function Tabs<T extends string = string>({
       <div
         data-slot="tabs"
         className={cn('flex flex-col gap-2', className)}
-        {...props}
+        {...(props as any)}
       >
         {children}
       </div>
@@ -146,7 +146,7 @@ function TabsList({
           'bg-muted text-muted-foreground inline-flex h-10 w-fit items-center justify-center rounded-lg p-[4px]',
           className,
         )}
-        {...props}
+        {...(props as any)}
       >
         {children}
       </div>
@@ -169,7 +169,7 @@ function TabsTrigger({
   const { activeValue, handleValueChange, registerTrigger } = useTabs();
 
   const localRef = React.useRef<HTMLButtonElement | null>(null);
-  React.useImperativeHandle(ref, () => localRef.current as HTMLButtonElement);
+  React.useImperativeHandle(ref as any, () => localRef.current as HTMLButtonElement);
 
   React.useEffect(() => {
     registerTrigger(value, localRef.current);
@@ -189,7 +189,7 @@ function TabsTrigger({
           'inline-flex cursor-pointer items-center size-full justify-center whitespace-nowrap rounded-sm px-2 py-1 text-sm font-medium ring-offset-background transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-foreground z-[1]',
           className,
         )}
-        {...props}
+        {...(props as any)}
       >
         {children}
       </motion.button>
@@ -229,7 +229,7 @@ function TabsContents({
     <div
       data-slot="tabs-contents"
       className={cn('overflow-hidden', className)}
-      {...props}
+      {...(props as any)}
     >
       <motion.div
         className="flex -mx-2"
@@ -268,7 +268,7 @@ function TabsContent({
       animate={{ filter: isActive ? 'blur(0px)' : 'blur(4px)' }}
       exit={{ filter: 'blur(0px)' }}
       transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-      {...props}
+      {...(props as any)}
     >
       {children}
     </motion.div>

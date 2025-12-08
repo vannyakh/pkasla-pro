@@ -126,7 +126,7 @@ function MotionHighlight<T extends string>({
   } = props;
 
   const localRef = React.useRef<HTMLDivElement>(null);
-  React.useImperativeHandle(ref, () => localRef.current as HTMLDivElement);
+  React.useImperativeHandle(ref as any, () => localRef.current as HTMLDivElement);
 
   const [activeValue, setActiveValue] = React.useState<T | null>(
     value ?? defaultValue ?? null,
@@ -388,7 +388,7 @@ function MotionHighlightItem({
   const itemTransition = transition ?? contextTransition;
 
   const localRef = React.useRef<HTMLDivElement>(null);
-  React.useImperativeHandle(ref, () => localRef.current as HTMLDivElement);
+  React.useImperativeHandle(ref as any, () => localRef.current as HTMLDivElement);
 
   React.useEffect(() => {
     if (mode !== 'parent') return;
@@ -538,7 +538,7 @@ function MotionHighlightItem({
       data-slot="motion-highlight-item-container"
       className={cn(mode === 'children' && 'relative', className)}
       {...dataAttributes}
-      {...props}
+      {...(props as any)}
       {...commonHandlers}
     >
       {mode === 'children' && (
