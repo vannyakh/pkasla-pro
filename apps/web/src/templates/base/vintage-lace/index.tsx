@@ -365,6 +365,20 @@ export default function VintageLaceTemplate() {
         backgroundAttachment: "fixed",
       }}
     >
+      {/* Subtle Dark Overlay for Better Text Readability on Dynamic Backgrounds */}
+      <div
+        className="fixed inset-0 z-15 pointer-events-none"
+        style={{
+          background: `linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.12) 0%,
+            rgba(0, 0, 0, 0.08) 30%,
+            rgba(0, 0, 0, 0.08) 70%,
+            rgba(0, 0, 0, 0.15) 100%
+          )`,
+        }}
+      />
+
       {/* Lace Pattern Overlay */}
       {lacePattern && (
         <motion.div
@@ -627,7 +641,7 @@ export default function VintageLaceTemplate() {
             className={`relative mb-8 text-4xl ${moulpaliFont} md:text-5xl lg:text-6xl xl:text-7xl font-bold`}
             style={{ 
               color: textColor,
-              textShadow: `0 4px 20px rgba(139, 115, 85, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3)`,
+              textShadow: `0 4px 20px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 175, 55, 0.15)`,
               letterSpacing: "0.05em"
             }}
             initial={{ scale: 0.9, opacity: 0 }}
@@ -655,7 +669,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 2px 12px rgba(139, 115, 85, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4)`
+                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.2)`
                   }}
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 300 }}
@@ -685,7 +699,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 2px 12px rgba(139, 115, 85, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4)`
+                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.2)`
                   }}
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 300 }}
@@ -704,7 +718,7 @@ export default function VintageLaceTemplate() {
                   className={`text-xl md:text-2xl lg:text-3xl font-semibold ${khmerFont}`}
                   style={{ 
                     color: highlightColor,
-                    textShadow: `0 2px 8px rgba(0, 0, 0, 0.3)`
+                    textShadow: `0 2px 8px rgba(0, 0, 0, 0.6), 0 0 12px rgba(212, 175, 55, 0.25)`
                   }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -792,7 +806,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 2px 12px rgba(139, 115, 85, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4)`
+                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.2)`
                   }}
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 300 }}
@@ -822,7 +836,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 2px 12px rgba(139, 115, 85, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4)`
+                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.2)`
                   }}
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 300 }}
@@ -831,14 +845,25 @@ export default function VintageLaceTemplate() {
                 </motion.h3>
               </motion.div>
 
-              {/* Invitation Text Card with Modern Glassmorphism */}
+              {/* Invitation Text Card with Enhanced Glassmorphism */}
               <motion.div
                 ref={invitationTextRef}
                 className="relative p-8 md:p-12 mx-auto max-w-5xl rounded-3xl backdrop-blur-md"
                 style={{
-                  background: `linear-gradient(135deg, rgba(139, 115, 85, 0.15) 0%, rgba(212, 175, 55, 0.1) 50%, rgba(139, 115, 85, 0.15) 100%)`,
-                  border: `2px solid rgba(212, 175, 55, 0.3)`,
-                  boxShadow: `0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
+                  background: `linear-gradient(135deg, 
+                    rgba(0, 0, 0, 0.35) 0%, 
+                    rgba(0, 0, 0, 0.3) 50%, 
+                    rgba(0, 0, 0, 0.35) 100%
+                  ),
+                  linear-gradient(135deg, 
+                    rgba(139, 115, 85, 0.2) 0%, 
+                    rgba(212, 175, 55, 0.15) 50%, 
+                    rgba(139, 115, 85, 0.2) 100%
+                  )`,
+                  border: `2px solid rgba(212, 175, 55, 0.45)`,
+                  boxShadow: `0 8px 32px rgba(0, 0, 0, 0.35), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                    0 0 0 1px rgba(0, 0, 0, 0.1)`,
                 }}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -848,7 +873,7 @@ export default function VintageLaceTemplate() {
                   className={`mb-6 text-2xl md:text-3xl lg:text-4xl font-bold ${khmerFont} text-center`}
                   style={{ 
                     color: highlightColor,
-                    textShadow: `0 2px 8px rgba(0, 0, 0, 0.3)`
+                    textShadow: `0 2px 8px rgba(0, 0, 0, 0.6), 0 0 12px rgba(212, 175, 55, 0.25)`
                   }}
                 >
                   យើងខ្ញុំមានកត្តិយសសូមគោរពអញ្ជើញ
@@ -857,7 +882,7 @@ export default function VintageLaceTemplate() {
                   className={`text-lg md:text-xl lg:text-2xl leading-relaxed ${khmerFont} relative z-10 text-center`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 1px 4px rgba(0, 0, 0, 0.3)`
+                    textShadow: `0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4)`
                   }}
                 >
                   {invitationText}{" "}
@@ -884,11 +909,22 @@ export default function VintageLaceTemplate() {
             className="mx-auto max-w-5xl mb-20 relative w-full backdrop-blur-md"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl"
+              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
               style={{
-                background: `linear-gradient(135deg, rgba(139, 115, 85, 0.15) 0%, rgba(212, 175, 55, 0.1) 50%, rgba(139, 115, 85, 0.15) 100%)`,
-                border: `2px solid rgba(212, 175, 55, 0.3)`,
-                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
+                background: `linear-gradient(135deg, 
+                  rgba(0, 0, 0, 0.35) 0%, 
+                  rgba(0, 0, 0, 0.3) 50%, 
+                  rgba(0, 0, 0, 0.35) 100%
+                ),
+                linear-gradient(135deg, 
+                  rgba(139, 115, 85, 0.2) 0%, 
+                  rgba(212, 175, 55, 0.15) 50%, 
+                  rgba(139, 115, 85, 0.2) 100%
+                )`,
+                border: `2px solid rgba(212, 175, 55, 0.45)`,
+                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.35), 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                  0 0 0 1px rgba(0, 0, 0, 0.1)`,
               }}
             >
               <div className="relative z-10">
@@ -896,7 +932,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-10 font-bold`}
                   style={{ 
                     color: highlightColor,
-                    textShadow: `0 2px 12px rgba(139, 115, 85, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4)`
+                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.25)`
                   }}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -910,9 +946,16 @@ export default function VintageLaceTemplate() {
                       key={index}
                       className="schedule-item flex items-start gap-6 p-6 rounded-2xl backdrop-blur-sm transition-all duration-300"
                       style={{
-                        background: `linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(139, 115, 85, 0.05) 100%)`,
-                        border: `1px solid rgba(212, 175, 55, 0.2)`,
-                        boxShadow: `0 4px 16px rgba(0, 0, 0, 0.1)`,
+                        background: `linear-gradient(135deg, 
+                          rgba(0, 0, 0, 0.25) 0%, 
+                          rgba(0, 0, 0, 0.2) 100%
+                        ),
+                        linear-gradient(135deg, 
+                          rgba(212, 175, 55, 0.12) 0%, 
+                          rgba(139, 115, 85, 0.08) 100%
+                        )`,
+                        border: `1px solid rgba(212, 175, 55, 0.35)`,
+                        boxShadow: `0 4px 16px rgba(0, 0, 0, 0.25)`,
                       }}
                       whileHover={{
                         scale: 1.02,
@@ -935,7 +978,7 @@ export default function VintageLaceTemplate() {
                           className={`text-lg md:text-xl lg:text-2xl font-bold ${khmerFont} mb-2`}
                           style={{ 
                             color: highlightColor,
-                            textShadow: `0 1px 4px rgba(0, 0, 0, 0.2)`
+                            textShadow: `0 2px 8px rgba(0, 0, 0, 0.6), 0 0 12px rgba(212, 175, 55, 0.25)`
                           }}
                         >
                           {item.time}
@@ -944,7 +987,7 @@ export default function VintageLaceTemplate() {
                           className={`text-base md:text-lg lg:text-xl ${khmerFont}`}
                           style={{ 
                             color: textColor,
-                            textShadow: `0 1px 3px rgba(0, 0, 0, 0.2)`
+                            textShadow: `0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4)`
                           }}
                         >
                           {item.event}
@@ -965,11 +1008,22 @@ export default function VintageLaceTemplate() {
             className="mx-auto max-w-5xl mb-20 relative w-full backdrop-blur-md"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl"
+              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
               style={{
-                background: `linear-gradient(135deg, rgba(139, 115, 85, 0.15) 0%, rgba(212, 175, 55, 0.1) 50%, rgba(139, 115, 85, 0.15) 100%)`,
-                border: `2px solid rgba(212, 175, 55, 0.3)`,
-                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
+                background: `linear-gradient(135deg, 
+                  rgba(0, 0, 0, 0.35) 0%, 
+                  rgba(0, 0, 0, 0.3) 50%, 
+                  rgba(0, 0, 0, 0.35) 100%
+                ),
+                linear-gradient(135deg, 
+                  rgba(139, 115, 85, 0.2) 0%, 
+                  rgba(212, 175, 55, 0.15) 50%, 
+                  rgba(139, 115, 85, 0.2) 100%
+                )`,
+                border: `2px solid rgba(212, 175, 55, 0.45)`,
+                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.35), 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                  0 0 0 1px rgba(0, 0, 0, 0.1)`,
               }}
             >
               <div className="relative z-10">
@@ -977,7 +1031,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-10 font-bold`}
                   style={{ 
                     color: highlightColor,
-                    textShadow: `0 2px 12px rgba(139, 115, 85, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4)`
+                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.25)`
                   }}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1015,7 +1069,7 @@ export default function VintageLaceTemplate() {
                       className={`text-lg md:text-xl font-semibold ${khmerFont}`}
                       style={{ 
                         color: textColor,
-                        textShadow: `0 2px 8px rgba(0, 0, 0, 0.3)`
+                        textShadow: `0 2px 8px rgba(0, 0, 0, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4)`
                       }}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -1057,11 +1111,22 @@ export default function VintageLaceTemplate() {
             className="mx-auto max-w-6xl mb-20 relative w-full backdrop-blur-md"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl"
+              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
               style={{
-                background: `linear-gradient(135deg, rgba(139, 115, 85, 0.15) 0%, rgba(212, 175, 55, 0.1) 50%, rgba(139, 115, 85, 0.15) 100%)`,
-                border: `2px solid rgba(212, 175, 55, 0.3)`,
-                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
+                background: `linear-gradient(135deg, 
+                  rgba(0, 0, 0, 0.35) 0%, 
+                  rgba(0, 0, 0, 0.3) 50%, 
+                  rgba(0, 0, 0, 0.35) 100%
+                ),
+                linear-gradient(135deg, 
+                  rgba(139, 115, 85, 0.2) 0%, 
+                  rgba(212, 175, 55, 0.15) 50%, 
+                  rgba(139, 115, 85, 0.2) 100%
+                )`,
+                border: `2px solid rgba(212, 175, 55, 0.45)`,
+                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.35), 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                  0 0 0 1px rgba(0, 0, 0, 0.1)`,
               }}
             >
               <div className="relative z-10">
@@ -1069,7 +1134,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-6 font-bold`}
                   style={{ 
                     color: highlightColor,
-                    textShadow: `0 2px 12px rgba(139, 115, 85, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4)`
+                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.25)`
                   }}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1081,7 +1146,7 @@ export default function VintageLaceTemplate() {
                   className={`text-center mb-10 text-lg md:text-xl lg:text-2xl ${khmerFont} leading-relaxed`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 1px 4px rgba(0, 0, 0, 0.3)`
+                    textShadow: `0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4)`
                   }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -1138,11 +1203,22 @@ export default function VintageLaceTemplate() {
             className="mx-auto max-w-5xl mb-20 relative w-full backdrop-blur-md"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl"
+              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
               style={{
-                background: `linear-gradient(135deg, rgba(139, 115, 85, 0.15) 0%, rgba(212, 175, 55, 0.1) 50%, rgba(139, 115, 85, 0.15) 100%)`,
-                border: `2px solid rgba(212, 175, 55, 0.3)`,
-                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
+                background: `linear-gradient(135deg, 
+                  rgba(0, 0, 0, 0.35) 0%, 
+                  rgba(0, 0, 0, 0.3) 50%, 
+                  rgba(0, 0, 0, 0.35) 100%
+                ),
+                linear-gradient(135deg, 
+                  rgba(139, 115, 85, 0.2) 0%, 
+                  rgba(212, 175, 55, 0.15) 50%, 
+                  rgba(139, 115, 85, 0.2) 100%
+                )`,
+                border: `2px solid rgba(212, 175, 55, 0.45)`,
+                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.35), 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                  0 0 0 1px rgba(0, 0, 0, 0.1)`,
               }}
             >
               <div className="relative z-10">
@@ -1150,7 +1226,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-10 font-bold`}
                   style={{ 
                     color: highlightColor,
-                    textShadow: `0 2px 12px rgba(139, 115, 85, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4)`
+                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.25)`
                   }}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1162,7 +1238,7 @@ export default function VintageLaceTemplate() {
                   className={`text-lg md:text-xl lg:text-2xl leading-relaxed ${khmerFont} text-center`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 1px 4px rgba(0, 0, 0, 0.3)`
+                    textShadow: `0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4)`
                   }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1187,11 +1263,22 @@ export default function VintageLaceTemplate() {
             className="mx-auto max-w-5xl mb-20 relative w-full backdrop-blur-md"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl"
+              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
               style={{
-                background: `linear-gradient(135deg, rgba(139, 115, 85, 0.15) 0%, rgba(212, 175, 55, 0.1) 50%, rgba(139, 115, 85, 0.15) 100%)`,
-                border: `2px solid rgba(212, 175, 55, 0.3)`,
-                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1)`,
+                background: `linear-gradient(135deg, 
+                  rgba(0, 0, 0, 0.35) 0%, 
+                  rgba(0, 0, 0, 0.3) 50%, 
+                  rgba(0, 0, 0, 0.35) 100%
+                ),
+                linear-gradient(135deg, 
+                  rgba(139, 115, 85, 0.2) 0%, 
+                  rgba(212, 175, 55, 0.15) 50%, 
+                  rgba(139, 115, 85, 0.2) 100%
+                )`,
+                border: `2px solid rgba(212, 175, 55, 0.45)`,
+                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.35), 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                  0 0 0 1px rgba(0, 0, 0, 0.1)`,
               }}
             >
               <div className="relative z-10">
