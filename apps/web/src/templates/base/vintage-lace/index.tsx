@@ -641,9 +641,10 @@ export default function VintageLaceTemplate() {
             className={`relative mb-8 text-4xl ${moulpaliFont} md:text-5xl lg:text-6xl xl:text-7xl font-bold`}
             style={{ 
               color: textColor,
-              textShadow: `0 4px 20px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 175, 55, 0.15)`,
+              WebkitTextStroke: `2px rgba(0, 0, 0, 0.8)`,
+              paintOrder: "stroke fill",
               letterSpacing: "0.05em"
-            }}
+            } as React.CSSProperties}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
@@ -669,8 +670,9 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.2)`
-                  }}
+                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -699,8 +701,9 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.2)`
-                  }}
+                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -718,8 +721,9 @@ export default function VintageLaceTemplate() {
                   className={`text-xl md:text-2xl lg:text-3xl font-semibold ${khmerFont}`}
                   style={{ 
                     color: highlightColor,
-                    textShadow: `0 2px 8px rgba(0, 0, 0, 0.6), 0 0 12px rgba(212, 175, 55, 0.25)`
-                  }}
+                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.7)`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.6 }}
@@ -806,8 +810,9 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.2)`
-                  }}
+                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -836,8 +841,9 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.2)`
-                  }}
+                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                   whileHover={{ scale: 1.05 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
@@ -848,7 +854,7 @@ export default function VintageLaceTemplate() {
               {/* Invitation Text Card with Enhanced Glassmorphism */}
               <motion.div
                 ref={invitationTextRef}
-                className="relative p-8 md:p-12 mx-auto max-w-5xl rounded-3xl backdrop-blur-md"
+                className="relative p-8 md:p-12 mx-auto max-w-5xl rounded-3xl"
                 style={{
                   background: `linear-gradient(135deg, 
                     rgba(0, 0, 0, 0.35) 0%, 
@@ -873,8 +879,9 @@ export default function VintageLaceTemplate() {
                   className={`mb-6 text-2xl md:text-3xl lg:text-4xl font-bold ${khmerFont} text-center`}
                   style={{ 
                     color: highlightColor,
-                    textShadow: `0 2px 8px rgba(0, 0, 0, 0.6), 0 0 12px rgba(212, 175, 55, 0.25)`
-                  }}
+                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.7)`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                 >
                   យើងខ្ញុំមានកត្តិយសសូមគោរពអញ្ជើញ
                 </motion.p>
@@ -882,8 +889,9 @@ export default function VintageLaceTemplate() {
                   className={`text-lg md:text-xl lg:text-2xl leading-relaxed ${khmerFont} relative z-10 text-center`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4)`
-                  }}
+                    WebkitTextStroke: `1px rgba(0, 0, 0, 0.7)`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                 >
                   {invitationText}{" "}
                   <strong style={{ 
@@ -906,10 +914,10 @@ export default function VintageLaceTemplate() {
         {showInvitation && (
           <div
             ref={programScheduleRef}
-            className="mx-auto max-w-5xl mb-20 relative w-full backdrop-blur-md"
+            className="mx-auto max-w-5xl mb-20 relative w-full"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
+              className="relative p-8 md:p-12 rounded-3xl"
               style={{
                 background: `linear-gradient(135deg, 
                   rgba(0, 0, 0, 0.35) 0%, 
@@ -932,8 +940,9 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-10 font-bold`}
                   style={{ 
                     color: highlightColor,
-                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.25)`
-                  }}
+                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
@@ -944,7 +953,7 @@ export default function VintageLaceTemplate() {
                   {programSchedule.map((item, index) => (
                     <motion.div
                       key={index}
-                      className="schedule-item flex items-start gap-6 p-6 rounded-2xl backdrop-blur-sm transition-all duration-300"
+                      className="schedule-item flex items-start gap-6 p-6 rounded-2xl transition-all duration-300"
                       style={{
                         background: `linear-gradient(135deg, 
                           rgba(0, 0, 0, 0.25) 0%, 
@@ -978,8 +987,9 @@ export default function VintageLaceTemplate() {
                           className={`text-lg md:text-xl lg:text-2xl font-bold ${khmerFont} mb-2`}
                           style={{ 
                             color: highlightColor,
-                            textShadow: `0 2px 8px rgba(0, 0, 0, 0.6), 0 0 12px rgba(212, 175, 55, 0.25)`
-                          }}
+                            WebkitTextStroke: `1px rgba(0, 0, 0, 0.7)`,
+                            paintOrder: "stroke fill"
+                          } as React.CSSProperties}
                         >
                           {item.time}
                         </p>
@@ -987,8 +997,9 @@ export default function VintageLaceTemplate() {
                           className={`text-base md:text-lg lg:text-xl ${khmerFont}`}
                           style={{ 
                             color: textColor,
-                            textShadow: `0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4)`
-                          }}
+                            WebkitTextStroke: `1px rgba(0, 0, 0, 0.7)`,
+                            paintOrder: "stroke fill"
+                          } as React.CSSProperties}
                         >
                           {item.event}
                         </p>
@@ -1005,10 +1016,10 @@ export default function VintageLaceTemplate() {
         {showInvitation && googleMapLink && (
           <div
             ref={locationRef}
-            className="mx-auto max-w-5xl mb-20 relative w-full backdrop-blur-md"
+            className="mx-auto max-w-5xl mb-20 relative w-full"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
+              className="relative p-8 md:p-12 rounded-3xl"
               style={{
                 background: `linear-gradient(135deg, 
                   rgba(0, 0, 0, 0.35) 0%, 
@@ -1031,8 +1042,9 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-10 font-bold`}
                   style={{ 
                     color: highlightColor,
-                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.25)`
-                  }}
+                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
@@ -1069,8 +1081,9 @@ export default function VintageLaceTemplate() {
                       className={`text-lg md:text-xl font-semibold ${khmerFont}`}
                       style={{ 
                         color: textColor,
-                        textShadow: `0 2px 8px rgba(0, 0, 0, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4)`
-                      }}
+                        WebkitTextStroke: `1px rgba(0, 0, 0, 0.7)`,
+                        paintOrder: "stroke fill"
+                      } as React.CSSProperties}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 0.4 }}
@@ -1108,10 +1121,10 @@ export default function VintageLaceTemplate() {
         {showInvitation && (
           <div
             ref={galleryRef}
-            className="mx-auto max-w-6xl mb-20 relative w-full backdrop-blur-md"
+            className="mx-auto max-w-6xl mb-20 relative w-full"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
+              className="relative p-8 md:p-12 rounded-3xl"
               style={{
                 background: `linear-gradient(135deg, 
                   rgba(0, 0, 0, 0.35) 0%, 
@@ -1134,8 +1147,9 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-6 font-bold`}
                   style={{ 
                     color: highlightColor,
-                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.25)`
-                  }}
+                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
@@ -1146,8 +1160,9 @@ export default function VintageLaceTemplate() {
                   className={`text-center mb-10 text-lg md:text-xl lg:text-2xl ${khmerFont} leading-relaxed`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4)`
-                  }}
+                    WebkitTextStroke: `1px rgba(0, 0, 0, 0.7)`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.2 }}
@@ -1200,10 +1215,10 @@ export default function VintageLaceTemplate() {
         {showInvitation && (
           <div
             ref={thankYouRef}
-            className="mx-auto max-w-5xl mb-20 relative w-full backdrop-blur-md"
+            className="mx-auto max-w-5xl mb-20 relative w-full"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
+              className="relative p-8 md:p-12 rounded-3xl"
               style={{
                 background: `linear-gradient(135deg, 
                   rgba(0, 0, 0, 0.35) 0%, 
@@ -1226,8 +1241,9 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-10 font-bold`}
                   style={{ 
                     color: highlightColor,
-                    textShadow: `0 2px 12px rgba(0, 0, 0, 0.75), 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 20px rgba(212, 175, 55, 0.25)`
-                  }}
+                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6 }}
@@ -1238,8 +1254,9 @@ export default function VintageLaceTemplate() {
                   className={`text-lg md:text-xl lg:text-2xl leading-relaxed ${khmerFont} text-center`}
                   style={{ 
                     color: textColor,
-                    textShadow: `0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4)`
-                  }}
+                    WebkitTextStroke: `1px rgba(0, 0, 0, 0.7)`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.8, delay: 0.2 }}
@@ -1260,10 +1277,10 @@ export default function VintageLaceTemplate() {
         {showInvitation && (
           <div
             ref={coupleQRRef}
-            className="mx-auto max-w-5xl mb-20 relative w-full backdrop-blur-md"
+            className="mx-auto max-w-5xl mb-20 relative w-full"
           >
             <motion.div 
-              className="relative p-8 md:p-12 rounded-3xl backdrop-blur-md"
+              className="relative p-8 md:p-12 rounded-3xl"
               style={{
                 background: `linear-gradient(135deg, 
                   rgba(0, 0, 0, 0.35) 0%, 
