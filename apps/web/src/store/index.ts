@@ -6,4 +6,5 @@ export {
   initializeUserFromAuth 
 } from './user';
 export { useTemplateStore } from './templates';
+export { useQRCustomizationStore } from './qrCustomization';
 
