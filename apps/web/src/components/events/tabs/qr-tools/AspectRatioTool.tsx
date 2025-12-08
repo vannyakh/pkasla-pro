@@ -1,19 +1,33 @@
 "use client";
 
-import React from "react";
+import React, { useCallback } from "react";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
+import { 
+  Square, 
+  RectangleHorizontal, 
+  RectangleVertical,
+  Maximize,
+  Ratio 
+} from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useQRCustomizationStore, type AspectRatio } from "@/store/qrCustomization";
-import { Check } from "lucide-react";
 
-const ASPECT_RATIOS: { value: AspectRatio; label: string; description: string }[] = [
-  { value: "1:1", label: "Square (1:1)", description: "Perfect for social media" },
-  { value: "16:9", label: "Landscape (16:9)", description: "Wide format" },
-  { value: "9:16", label: "Portrait (9:16)", description: "Mobile stories" },
-  { value: "4:3", label: "Standard (4:3)", description: "Classic format" },
-  { value: "3:4", label: "Portrait (3:4)", description: "Vertical content" },
-  { value: "custom", label: "Custom", description: "Set your own size" },
+const ASPECT_RATIOS: { 
+  value: AspectRatio; 
+  label: string; 
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
+  { value: "1:1", label: "1:1", icon: Square },
+  { value: "16:9", label: "16:9", icon: RectangleHorizontal },
+  { value: "9:16", label: "9:16", icon: RectangleVertical },
+  { value: "4:3", label: "4:3", icon: RectangleHorizontal },
+  { value: "3:4", label: "3:4", icon: RectangleVertical },
+  { value: "custom", label: "Custom", icon: Maximize },
 ];
 
 export function AspectRatioTool() {
@@ -21,57 +35,54 @@ export function AspectRatioTool() {
   const setAspectRatio = useQRCustomizationStore((state) => state.setAspectRatio);
   const setExportSettings = useQRCustomizationStore((state) => state.setExportSettings);
 
-  if (!exportSettings) return null;
-
-  const handleAspectRatioChange = (value: AspectRatio) => {
-    setAspectRatio(value);
-  };
-
-  const handleCustomSizeChange = (dimension: "width" | "height", value: number) => {
+  const handleCustomSizeChange = useCallback((dimension: "width" | "height", value: number) => {
     setExportSettings({
       [dimension]: value,
       aspectRatio: "custom",
     });
-  };
+  }, [setExportSettings]);
+
+  if (!exportSettings) return null;
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-3">
-        <Label className="text-sm font-semibold">Canvas Aspect Ratio</Label>
-        <RadioGroup value={exportSettings.aspectRatio} onValueChange={handleAspectRatioChange}>
-          <div className="grid grid-cols-2 gap-3">
-            {ASPECT_RATIOS.map((ratio) => (
-              <div key={ratio.value} className="relative">
-                <RadioGroupItem
-                  value={ratio.value}
-                  id={ratio.value}
-                  className="peer sr-only"
-                />
-                <Label
-                  htmlFor={ratio.value}
-                  className="flex flex-col items-start gap-1 rounded-lg border-2 border-gray-200 p-3 cursor-pointer hover:bg-gray-50 peer-data-[state=checked]:border-blue-500 peer-data-[state=checked]:bg-blue-50 transition-all"
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <Ratio className="h-4 w-4 text-primary" />
+        <Label className="text-sm font-medium">Ratio</Label>
+      </div>
+      <div className="grid grid-cols-6 gap-2">
+        {ASPECT_RATIOS.map((ratio) => {
+          const Icon = ratio.icon;
+          return (
+            <Tooltip key={ratio.value}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setAspectRatio(ratio.value)}
+                  className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                    exportSettings.aspectRatio === ratio.value
+                      ? "border-primary bg-primary/10"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <span className="font-medium text-sm">{ratio.label}</span>
-                    {exportSettings.aspectRatio === ratio.value && (
-                      <Check className="h-4 w-4 text-blue-600" />
-                    )}
-                  </div>
-                  <span className="text-xs text-gray-500">{ratio.description}</span>
-                </Label>
-              </div>
-            ))}
-          </div>
-        </RadioGroup>
+                  <Icon className={`h-4 w-4 ${
+                    exportSettings.aspectRatio === ratio.value ? "text-primary" : "text-gray-600"
+                  }`} />
+                  <span className="text-[10px] font-medium">{ratio.label}</span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs">Aspect ratio {ratio.label}</p>
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
       </div>
 
       {/* Custom Dimensions */}
       {exportSettings.aspectRatio === "custom" && (
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Custom Dimensions (px)</Label>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="canvas-width" className="text-xs">Width</Label>
+        <div className="grid grid-cols-2 gap-2 pt-2">
+          <div className="space-y-1">
+            <Label htmlFor="canvas-width" className="text-xs">W</Label>
               <Input
                 id="canvas-width"
                 type="number"
@@ -79,10 +90,11 @@ export function AspectRatioTool() {
                 onChange={(e) => handleCustomSizeChange("width", parseInt(e.target.value) || 1000)}
                 min={100}
                 max={5000}
+              className="h-8 text-xs"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="canvas-height" className="text-xs">Height</Label>
+          <div className="space-y-1">
+            <Label htmlFor="canvas-height" className="text-xs">H</Label>
               <Input
                 id="canvas-height"
                 type="number"
@@ -90,8 +102,8 @@ export function AspectRatioTool() {
                 onChange={(e) => handleCustomSizeChange("height", parseInt(e.target.value) || 1000)}
                 min={100}
                 max={5000}
+              className="h-8 text-xs"
               />
-            </div>
           </div>
         </div>
       )}

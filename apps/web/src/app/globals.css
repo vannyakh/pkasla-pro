@@ -139,6 +139,24 @@
     }
   }
 
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+
   .animate-shimmer {
     background: linear-gradient(
       90deg,
@@ -148,5 +166,13 @@
     );
     background-size: 2000px 100%;
     animation: shimmer 2s infinite;
+  }
+
+  .animate-accordion-down {
+    animation: accordion-down 0.2s ease-out;
+  }
+
+  .animate-accordion-up {
+    animation: accordion-up 0.2s ease-out;
   }
 }

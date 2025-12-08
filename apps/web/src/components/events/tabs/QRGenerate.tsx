@@ -3,12 +3,6 @@
 import React, { useMemo, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-} from "@/components/ui/resizable";
 import { useEvent, useGenerateEventQRToken } from "@/hooks/api/useEvent";
 import {
   Download,
@@ -16,7 +10,6 @@ import {
   QrCode as QrCodeIcon,
   AlertCircle,
   RefreshCw,
-  Palette,
   CircleQuestionMark,
 } from "lucide-react";
 import { env } from "@/config/env";
@@ -28,44 +21,38 @@ import {
 } from "@/components/ui/tooltip";
 import { useQRCustomizationStore } from "@/store/qrCustomization";
 import {
-  FrameStyleTool,
-  ColorTool,
-  SizeTool,
-  LogoUploadTool,
-  TextTool,
-  BorderTool,
-  AspectRatioTool,
+  ToolbarPanel,
+  ToolContentPanel,
   DraggableCanvas,
   ExportDrawer,
+  type ToolType,
 } from "./qr-tools";
 
 interface QRGenerateProps {
   eventId: string;
 }
 
+/**
+ * QRGenerate Component
+ * Main QR code generator with Figma-style interface
+ * Layout: Vertical Toolbar | Tool Panel | Canvas Preview
+ */
 export default function QRGenerate({ eventId }: QRGenerateProps) {
+  // API Hooks
   const { data: event, isLoading, error, refetch } = useEvent(eventId);
   const generateQRTokenMutation = useGenerateEventQRToken();
-  const [isMobile, setIsMobile] = React.useState(false);
-  const [exportDrawerOpen, setExportDrawerOpen] = useState(false);
 
-  // Get store data
+  // Local State
+  const [exportDrawerOpen, setExportDrawerOpen] = useState(false);
+  const [selectedTool, setSelectedTool] = useState<ToolType>("design");
+
+  // Store State
   const customization = useQRCustomizationStore((state) => state.customization);
   const setCustomization = useQRCustomizationStore(
     (state) => state.setCustomization
   );
 
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  // Sync customization with local state on mount
+  // Initialize default text on mount
   useEffect(() => {
     if (event && !customization.titleText) {
       setCustomization({
@@ -76,7 +63,7 @@ export default function QRGenerate({ eventId }: QRGenerateProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id]);
 
-  // Get site URL for building QR code URL
+  // Get site URL for QR code links
   const siteUrl = useMemo(() => {
     if (typeof window !== "undefined") {
       return (
@@ -92,12 +79,12 @@ export default function QRGenerate({ eventId }: QRGenerateProps) {
     );
   }, []);
 
-  // Generate QR code URL for event
+  // Build full QR code URL
   const getQRCodeUrl = (token: string) => {
     return `${siteUrl}/join/${token}`;
   };
 
-  // Generate QR code token if not exists
+  // Handlers
   const handleGenerateToken = async () => {
     try {
       await generateQRTokenMutation.mutateAsync(eventId);
@@ -108,7 +95,6 @@ export default function QRGenerate({ eventId }: QRGenerateProps) {
     }
   };
 
-  // Open export drawer
   const openExportDrawer = () => {
     if (!event?.qrCodeToken) {
       toast.error("QR code not found");
@@ -211,142 +197,94 @@ export default function QRGenerate({ eventId }: QRGenerateProps) {
   const qrCodeUrl = getQRCodeUrl(event.qrCodeToken);
 
   return (
-    <Card className="border border-gray-200 shadow-none">
-      <CardHeader>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
-          <CardTitle className="text-base sm:text-lg font-semibold text-black">
-            បង្កើតQR (Generate QR)
+    <Card className="border-0 shadow-none">
+      <CardHeader className="px-4 py-3 border-b bg-white">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <QrCodeIcon className="h-5 w-5" />
+            QR Generator
           </CardTitle>
-          <div className="flex gap-2 w-full sm:w-auto">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={openExportDrawer}
-              className="gap-2 flex-1 sm:flex-initial"
-            >
-              <Download className="h-4 w-4" />
-              <span className="hidden sm:inline">Export</span>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={openExportDrawer}>
+              <Download className="h-4 w-4 mr-2" />
+              Export
             </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={handleGenerateToken}
               disabled={generateQRTokenMutation.isPending}
-              className="gap-2 flex-1 sm:flex-initial"
             >
               <RefreshCw
-                className={`h-4 w-4 ${generateQRTokenMutation.isPending ? "animate-spin" : ""}`}
+                className={`h-4 w-4 mr-2 ${generateQRTokenMutation.isPending ? "animate-spin" : ""}`}
               />
-              <span className="hidden sm:inline">Regenerate</span>
+              Regenerate
             </Button>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-3 sm:p-6">
-        <ResizablePanelGroup
-          direction={isMobile ? "vertical" : "horizontal"}
-          className="min-h-[400px] sm:min-h-[600px] rounded-lg border"
-        >
-          {/* Tool Panel */}
-          <ResizablePanel
-            defaultSize={isMobile ? 50 : 40}
-            minSize={isMobile ? 40 : 30}
-          >
-            <div className="h-full overflow-y-auto p-3 sm:p-6 space-y-4 sm:space-y-6">
-              <div className="space-y-4">
-                <h3 className="text-base font-semibold flex items-center gap-2">
-                  <Palette className="h-4 w-4" />
-                  Customize QR Code
-                </h3>
 
-                {/* Frame Style */}
-                <FrameStyleTool />
+      <CardContent className="p-0">
+        <div className="flex h-[calc(100vh-200px)] min-h-[600px]">
+          {/* Vertical Icon Toolbar */}
+          <ToolbarPanel
+            selectedTool={selectedTool}
+            onToolChange={setSelectedTool}
+          />
 
-                {/* QR Colors */}
-                <ColorTool />
+          {/* Tool Content Panel */}
+          <ToolContentPanel selectedTool={selectedTool} qrCodeUrl={qrCodeUrl} />
 
-                {/* QR Size */}
-                <SizeTool />
-
-                {/* Canvas Aspect Ratio */}
-                <AspectRatioTool />
-
-                {/* Logo Upload */}
-                <LogoUploadTool />
-
-                {/* Text Customization */}
-                <TextTool />
-
-                {/* Custom Border Color */}
-                <BorderTool />
-
-                {/* URL Info */}
-                <div className="pt-4 border-t">
-                  <Label className="text-xs text-gray-500 mb-2 block">
-                    Join URL:
-                  </Label>
-                  <div className="text-xs text-gray-700 break-all bg-gray-50 p-2 rounded border mb-2">
-                    {qrCodeUrl}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => {
-                      navigator.clipboard.writeText(qrCodeUrl);
-                      toast.success("Join URL copied to clipboard!");
-                    }}
-                  >
-                    Copy URL
-                  </Button>
+          {/* Canvas Preview Panel */}
+          <div className="flex-1 bg-linear-to-br from-gray-50 to-gray-100 overflow-hidden">
+            <div className="h-full flex flex-col">
+              <div className="flex items-center justify-between px-6 py-3 border-b bg-white/80 backdrop-blur-sm">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                  <h3 className="text-sm font-semibold">Live Preview</h3>
                 </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1 transition-colors">
+                      <CircleQuestionMark className="h-4 w-4" />
+                      Help
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-sm">
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold">
+                        ReactFlow Canvas Controls:
+                      </p>
+                      <ul className="text-xs space-y-1 list-disc list-inside">
+                        <li>
+                          <strong>Drag:</strong> Move elements around
+                        </li>
+                        <li>
+                          <strong>Scroll:</strong> Zoom in/out
+                        </li>
+                        <li>
+                          <strong>Pan:</strong> Click empty space and drag
+                        </li>
+                        <li>
+                          <strong>Select:</strong> Click element to edit or
+                          delete
+                        </li>
+                        <li>
+                          <strong>Controls:</strong> Use bottom-right buttons
+                        </li>
+                      </ul>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <div className="flex-1 flex items-center justify-center p-6">
+                <DraggableCanvas qrCodeUrl={qrCodeUrl} />
               </div>
             </div>
-          </ResizablePanel>
-
-          <ResizableHandle withHandle />
-
-          {/* Preview Panel with Draggable Canvas */}
-          <ResizablePanel defaultSize={isMobile ? 50 : 60}>
-            <div className="h-full overflow-y-auto p-3 sm:p-6 bg-gray-50">
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                  <h3 className="text-base font-semibold">Live Preview</h3>
-                  <div className="flex gap-2 items-center">
-                    <p className="text-xs text-gray-500 hidden sm:block">
-                      Drag elements to reposition
-                    </p>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <CircleQuestionMark className="h-4 w-4 cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-lg">
-                        <p className="text-xs">
-                          <strong>How it works:</strong> When guests scan this
-                          QR code, they will be taken to a page where they can
-                          enter their name and contact information to join your
-                          event. They will automatically be added as a confirmed
-                          guest.
-                          <br />
-                          <br />
-                          <strong>Drag & Drop:</strong> Click and drag elements
-                          on the canvas to reposition them. Select an element to
-                          delete it.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                </div>
-                <div className="flex items-center justify-center min-h-[300px] sm:min-h-[500px]">
-                  <DraggableCanvas qrCodeUrl={qrCodeUrl} event={event} />
-                </div>
-              </div>
-            </div>
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          </div>
+        </div>
       </CardContent>
 
-      {/* Export Drawer */}
       <ExportDrawer
         open={exportDrawerOpen}
         onOpenChange={setExportDrawerOpen}

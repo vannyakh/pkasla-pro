@@ -1,76 +1,71 @@
 "use client";
 
+import { useMemo } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Palette } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useQRCustomizationStore } from "@/store/qrCustomization";
 
 export function ColorTool() {
-  const qrFgColor = useQRCustomizationStore(
-    (state) => state.customization.qrFgColor
-  );
-  const qrBgColor = useQRCustomizationStore(
-    (state) => state.customization.qrBgColor
-  );
-  const setCustomization = useQRCustomizationStore(
-    (state) => state.setCustomization
-  );
+  const qrFgColor = useQRCustomizationStore((state) => state.customization.qrFgColor);
+  const qrBgColor = useQRCustomizationStore((state) => state.customization.qrBgColor);
+  const setCustomization = useQRCustomizationStore((state) => state.setCustomization);
 
   return (
-    <div className="space-y-3">
-      <Label className="text-sm font-medium flex items-center gap-2">
-        <Palette className="h-3.5 w-3.5" />
-        QR Code Colors
-      </Label>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <Label htmlFor="qrFg" className="text-xs">
-            Foreground
-          </Label>
-          <div className="flex gap-2 mt-1">
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-2 cursor-help">
+              <Palette className="h-4 w-4 text-primary" />
+              <Label className="text-sm font-medium cursor-help">Colors</Label>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs">Customize QR code foreground and background colors</p>
+          </TooltipContent>
+        </Tooltip>
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-2">
             <Input
-              id="qrFg"
               type="color"
               value={qrFgColor}
-              onChange={(e) =>
-                setCustomization({ qrFgColor: e.target.value })
-              }
-              className="w-14 sm:w-16 h-9 shrink-0"
+                onChange={(e) => setCustomization({ qrFgColor: e.target.value })}
+                className="w-10 h-10 p-1 cursor-pointer"
+                title="Foreground"
             />
-            <Input
-              type="text"
-              value={qrFgColor}
-              onChange={(e) =>
-                setCustomization({ qrFgColor: e.target.value })
-              }
-              className="flex-1 h-9 text-xs"
-            />
+              <span className="text-xs text-muted-foreground">FG</span>
           </div>
-        </div>
-        <div>
-          <Label htmlFor="qrBg" className="text-xs">
-            Background
-          </Label>
-          <div className="flex gap-2 mt-1">
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs">Foreground: {qrFgColor}</p>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-2">
             <Input
-              id="qrBg"
               type="color"
               value={qrBgColor}
-              onChange={(e) =>
-                setCustomization({ qrBgColor: e.target.value })
-              }
-              className="w-14 sm:w-16 h-9 shrink-0"
+                onChange={(e) => setCustomization({ qrBgColor: e.target.value })}
+                className="w-10 h-10 p-1 cursor-pointer"
+                title="Background"
             />
-            <Input
-              type="text"
-              value={qrBgColor}
-              onChange={(e) =>
-                setCustomization({ qrBgColor: e.target.value })
-              }
-              className="flex-1 h-9 text-xs"
-            />
+              <span className="text-xs text-muted-foreground">BG</span>
           </div>
-        </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-xs">Background: {qrBgColor}</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );

@@ -3,8 +3,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export type FrameStyleKey = "none" | "simple" | "elegant" | "modern" | "minimal";
-
 export interface QRElement {
   id: string;
   type: "logo" | "title" | "subtitle" | "qr" | "eventDetails" | "date" | "venue";
@@ -34,7 +32,6 @@ export interface ExportSettings {
 }
 
 export interface QRCustomization {
-  frameStyle: FrameStyleKey;
   qrFgColor: string;
   qrBgColor: string;
   qrSize: number;
@@ -68,7 +65,6 @@ interface QRCustomizationStore {
 }
 
 const defaultCustomization: QRCustomization = {
-  frameStyle: "simple",
   qrFgColor: "#000000",
   qrBgColor: "#ffffff",
   qrSize: 280,
