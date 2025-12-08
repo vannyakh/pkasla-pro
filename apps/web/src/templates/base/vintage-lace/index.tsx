@@ -35,6 +35,8 @@ export default function VintageLaceTemplate() {
   const goldColor = "#D4AF37"; // Vintage gold
   const darkTextColor = "#2C2416"; // Dark brown for contrast
   const lightGold = "#F5E6D3"; // Light cream gold
+  const strokeColor = "#E8B4B8"; // Soft vintage pink for text stroke
+  const strokeColorDark = "#D4A5A5"; // Darker pink for stronger strokes
 
   // Fonts
   const khmerFont = "font-preahvihear";
@@ -641,7 +643,7 @@ export default function VintageLaceTemplate() {
             className={`relative mb-8 text-4xl ${moulpaliFont} md:text-5xl lg:text-6xl xl:text-7xl font-bold`}
             style={{ 
               color: textColor,
-              WebkitTextStroke: `2px rgba(0, 0, 0, 0.8)`,
+              WebkitTextStroke: `2px ${strokeColorDark}`,
               paintOrder: "stroke fill",
               letterSpacing: "0.05em"
             } as React.CSSProperties}
@@ -670,7 +672,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
                   style={{ 
                     color: textColor,
-                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    WebkitTextStroke: `1.5px ${strokeColorDark}`,
                     paintOrder: "stroke fill"
                   } as React.CSSProperties}
                   whileHover={{ scale: 1.05 }}
@@ -701,7 +703,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
                   style={{ 
                     color: textColor,
-                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    WebkitTextStroke: `1.5px ${strokeColorDark}`,
                     paintOrder: "stroke fill"
                   } as React.CSSProperties}
                   whileHover={{ scale: 1.05 }}
@@ -721,7 +723,7 @@ export default function VintageLaceTemplate() {
                   className={`text-xl md:text-2xl lg:text-3xl font-semibold ${khmerFont}`}
                   style={{ 
                     color: highlightColor,
-                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.7)`,
+                    WebkitTextStroke: `1.5px ${strokeColor}`,
                     paintOrder: "stroke fill"
                   } as React.CSSProperties}
                   initial={{ opacity: 0 }}
@@ -810,7 +812,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
                   style={{ 
                     color: textColor,
-                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    WebkitTextStroke: `1.5px ${strokeColorDark}`,
                     paintOrder: "stroke fill"
                   } as React.CSSProperties}
                   whileHover={{ scale: 1.05 }}
@@ -841,7 +843,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
                   style={{ 
                     color: textColor,
-                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    WebkitTextStroke: `1.5px ${strokeColorDark}`,
                     paintOrder: "stroke fill"
                   } as React.CSSProperties}
                   whileHover={{ scale: 1.05 }}
@@ -879,7 +881,7 @@ export default function VintageLaceTemplate() {
                   className={`mb-6 text-2xl md:text-3xl lg:text-4xl font-bold ${khmerFont} text-center`}
                   style={{ 
                     color: highlightColor,
-                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.7)`,
+                    WebkitTextStroke: `1.5px ${strokeColor}`,
                     paintOrder: "stroke fill"
                   } as React.CSSProperties}
                 >
@@ -889,7 +891,7 @@ export default function VintageLaceTemplate() {
                   className={`text-lg md:text-xl lg:text-2xl leading-relaxed ${khmerFont} relative z-10 text-center`}
                   style={{ 
                     color: textColor,
-                    WebkitTextStroke: `1px rgba(0, 0, 0, 0.7)`,
+                    WebkitTextStroke: `1px ${strokeColor}`,
                     paintOrder: "stroke fill"
                   } as React.CSSProperties}
                 >
@@ -940,7 +942,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-10 font-bold`}
                   style={{ 
                     color: highlightColor,
-                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    WebkitTextStroke: `1.5px ${strokeColorDark}`,
                     paintOrder: "stroke fill"
                   } as React.CSSProperties}
                   initial={{ opacity: 0, y: -20 }}
@@ -987,7 +989,7 @@ export default function VintageLaceTemplate() {
                           className={`text-lg md:text-xl lg:text-2xl font-bold ${khmerFont} mb-2`}
                           style={{ 
                             color: highlightColor,
-                            WebkitTextStroke: `1px rgba(0, 0, 0, 0.7)`,
+                            WebkitTextStroke: `1px ${strokeColor}`,
                             paintOrder: "stroke fill"
                           } as React.CSSProperties}
                         >
@@ -997,7 +999,7 @@ export default function VintageLaceTemplate() {
                           className={`text-base md:text-lg lg:text-xl ${khmerFont}`}
                           style={{ 
                             color: textColor,
-                            WebkitTextStroke: `1px rgba(0, 0, 0, 0.7)`,
+                            WebkitTextStroke: `1px ${strokeColor}`,
                             paintOrder: "stroke fill"
                           } as React.CSSProperties}
                         >
@@ -1042,7 +1044,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-10 font-bold`}
                   style={{ 
                     color: highlightColor,
-                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    WebkitTextStroke: `1.5px ${strokeColorDark}`,
                     paintOrder: "stroke fill"
                   } as React.CSSProperties}
                   initial={{ opacity: 0, y: -20 }}
@@ -1081,7 +1083,7 @@ export default function VintageLaceTemplate() {
                       className={`text-lg md:text-xl font-semibold ${khmerFont}`}
                       style={{ 
                         color: textColor,
-                        WebkitTextStroke: `1px rgba(0, 0, 0, 0.7)`,
+                        WebkitTextStroke: `1px ${strokeColor}`,
                         paintOrder: "stroke fill"
                       } as React.CSSProperties}
                       initial={{ opacity: 0 }}
@@ -1147,7 +1149,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-6 font-bold`}
                   style={{ 
                     color: highlightColor,
-                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    WebkitTextStroke: `1.5px ${strokeColorDark}`,
                     paintOrder: "stroke fill"
                   } as React.CSSProperties}
                   initial={{ opacity: 0, y: -20 }}
@@ -1160,7 +1162,7 @@ export default function VintageLaceTemplate() {
                   className={`text-center mb-10 text-lg md:text-xl lg:text-2xl ${khmerFont} leading-relaxed`}
                   style={{ 
                     color: textColor,
-                    WebkitTextStroke: `1px rgba(0, 0, 0, 0.7)`,
+                    WebkitTextStroke: `1px ${strokeColor}`,
                     paintOrder: "stroke fill"
                   } as React.CSSProperties}
                   initial={{ opacity: 0 }}
@@ -1241,7 +1243,7 @@ export default function VintageLaceTemplate() {
                   className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-10 font-bold`}
                   style={{ 
                     color: highlightColor,
-                    WebkitTextStroke: `1.5px rgba(0, 0, 0, 0.8)`,
+                    WebkitTextStroke: `1.5px ${strokeColorDark}`,
                     paintOrder: "stroke fill"
                   } as React.CSSProperties}
                   initial={{ opacity: 0, y: -20 }}
@@ -1254,7 +1256,7 @@ export default function VintageLaceTemplate() {
                   className={`text-lg md:text-xl lg:text-2xl leading-relaxed ${khmerFont} text-center`}
                   style={{ 
                     color: textColor,
-                    WebkitTextStroke: `1px rgba(0, 0, 0, 0.7)`,
+                    WebkitTextStroke: `1px ${strokeColor}`,
                     paintOrder: "stroke fill"
                   } as React.CSSProperties}
                   initial={{ opacity: 0, y: 20 }}
