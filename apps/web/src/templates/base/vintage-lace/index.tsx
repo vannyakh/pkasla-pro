@@ -25,13 +25,18 @@ export default function VintageLaceTemplate() {
   const invitationTextRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Colors - Vintage Lace theme
+  // Colors - Modern Vintage Lace theme with enhanced contrast
   const primaryColor = "#8B7355"; // Brown
   const secondaryColor = "#6B5B4A"; // Darker brown
   const creamColor = "#F5F5DC"; // Cream
   const accentColor = "#D4C5B9"; // Light beige
   const textColor = "#ffffff"; // White for main text
-  const highlightColor = "#A0826D"; // Medium brown highlight
+  const highlightColor = "#FFFFFF"; // Warm gold highlight
+  const goldColor = "#D4AF37"; // Vintage gold
+  const darkTextColor = "#2C2416"; // Dark brown for contrast
+  const lightGold = "#F5E6D3"; // Light cream gold
+  const strokeColor = "#E8B4B8"; // Soft vintage pink for text stroke
+  const strokeColorDark = "#D4A5A5"; // Darker pink for stronger strokes
 
   // Fonts
   const khmerFont = "font-preahvihear";
@@ -362,6 +367,20 @@ export default function VintageLaceTemplate() {
         backgroundAttachment: "fixed",
       }}
     >
+      {/* Subtle Dark Overlay for Better Text Readability on Dynamic Backgrounds */}
+      <div
+        className="fixed inset-0 z-15 pointer-events-none"
+        style={{
+          background: `linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.12) 0%,
+            rgba(0, 0, 0, 0.08) 30%,
+            rgba(0, 0, 0, 0.08) 70%,
+            rgba(0, 0, 0, 0.15) 100%
+          )`,
+        }}
+      />
+
       {/* Lace Pattern Overlay */}
       {lacePattern && (
         <motion.div
@@ -615,17 +634,25 @@ export default function VintageLaceTemplate() {
       >
         {/* Hero Section */}
         <motion.div
-          className="mb-16 text-center relative w-full"
+          className="mb-20 text-center relative w-full"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, ease: "easeOut" }}
         >
-          <h2
-            className={`relative mb-6 text-4xl ${moulpaliFont} md:text-5xl lg:text-6xl`}
-            style={{ color: primaryColor }}
+          <motion.h2
+            className={`relative mb-8 text-4xl ${moulpaliFont} md:text-5xl lg:text-6xl xl:text-7xl font-bold`}
+            style={{ 
+              color: textColor,
+              WebkitTextStroke: `10px ${strokeColorDark}`,
+              paintOrder: "stroke fill",
+              letterSpacing: "0.05em"
+            } as React.CSSProperties}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
           >
             សិរីមង្គលអាពាហ៍ពិពាហ៍
-          </h2>
+          </motion.h2>
 
           {/* Guest Name - Shown Initially */}
           {!showInvitation && (
@@ -635,74 +662,135 @@ export default function VintageLaceTemplate() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <div className="flex justify-center items-center flex-col gap-3">
-                <h3
-                  className={`text-3xl md:text-4xl lg:text-5xl ${khangkomuttFont}`}
-                  style={{ color: textColor }}
+              <motion.div 
+                className="flex justify-center items-center flex-col gap-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
+                <motion.h3
+                  className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
+                  style={{ 
+                    color: textColor,
+                    WebkitTextStroke: `8px ${strokeColorDark}`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 300 }}
                 >
                   {brideName}
-                </h3>
-                <Image
-                  src="/images/assets/2hearts.gif"
-                  alt="Heart"
-                  width={48}
-                  height={48}
-                  className="md:w-16 md:h-16"
-                />
-                <h3
-                  className={`text-3xl md:text-4xl lg:text-5xl ${khangkomuttFont}`}
-                  style={{ color: textColor }}
+                </motion.h3>
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 200, 
+                    damping: 10,
+                    delay: 0.4 
+                  }}
+                  whileHover={{ scale: 1.2, rotate: 10 }}
+                >
+                  <Image
+                    src="/images/assets/2hearts.gif"
+                    alt="Heart"
+                    width={64}
+                    height={64}
+                    className="md:w-20 md:h-20 drop-shadow-lg"
+                  />
+                </motion.div>
+                <motion.h3
+                  className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
+                  style={{ 
+                    color: textColor,
+                    WebkitTextStroke: `8px ${strokeColorDark}`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 300 }}
                 >
                   {groomName}
-                </h3>
-              </div>
+                </motion.h3>
+              </motion.div>
 
-              <div className="flex flex-col items-center gap-4">
-                <p
-                  className={`text-xl md:text-2xl font-medium ${khmerFont}`}
-                  style={{ color: textColor }}
+              <motion.div 
+                className="flex flex-col items-center gap-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              >
+                <motion.p
+                  className={`text-xl md:text-2xl lg:text-3xl font-semibold ${khmerFont}`}
+                  style={{ 
+                    color: highlightColor,
+                    WebkitTextStroke: `8px ${strokeColor}`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
                 >
                   សូមគោរពអញ្ជើញ
-                </p>
-                <div
-                  className="relative flex items-center justify-center px-8 py-6"
+                </motion.p>
+                <motion.div
+                  className="relative flex items-center justify-center px-10 py-8"
                   style={{
                     backgroundImage: `url(${frameGuestName})`,
                     backgroundSize: "contain",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
-                    minWidth: "300px",
-                    minHeight: "120px",
+                    minWidth: "320px",
+                    minHeight: "140px",
+                    filter: "drop-shadow(0 8px 24px rgba(139, 115, 85, 0.4))",
                   }}
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 200, 
+                    damping: 15,
+                    delay: 0.6 
+                  }}
+                  whileHover={{ scale: 1.05 }}
                 >
                   <h3
-                    className={`text-3xl md:text-4xl lg:text-5xl ${khangkomuttFont} relative z-10`}
-                    style={{ color: textColor }}
+                    className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} relative z-10 font-bold`}
+                    style={{ 
+                      color: textColor,
+                      textShadow: `0 2px 12px rgba(139, 115, 85, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4)`
+                    }}
                   >
                     {guestName}
                   </h3>
-          </div>
-        </div>
+                </motion.div>
+              </motion.div>
 
               <motion.button
                 onClick={() => setShowInvitation(true)}
-                className={`px-8 py-4 font-medium ${khmerFont} flex items-center justify-center gap-3 mt-4 relative`}
+                className={`px-10 py-5 font-semibold text-lg md:text-xl ${khmerFont} flex items-center justify-center gap-3 mt-6 relative`}
                 style={{
-                  color: primaryColor,
+                  color: textColor,
                   backgroundImage: `url(${frameBtn})`,
                   backgroundSize: "contain",
                   backgroundPosition: "center",
                   backgroundRepeat: "no-repeat",
                   backgroundColor: "transparent",
-                  minWidth: "200px",
-                  minHeight: "60px",
+                  minWidth: "240px",
+                  minHeight: "70px",
+                  filter: "drop-shadow(0 6px 20px rgba(139, 115, 85, 0.5))",
                 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 }}
                 whileHover={{
-                  scale: 1.05,
+                  scale: 1.08,
+                  filter: "drop-shadow(0 8px 24px rgba(139, 115, 85, 0.7))",
                 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <span className="relative z-10">បើកធៀប</span>
+                <span className="relative z-10" style={{ textShadow: `0 2px 8px rgba(0, 0, 0, 0.3)` }}>
+                  បើកធៀប
+                </span>
               </motion.button>
             </motion.div>
           )}
@@ -714,45 +802,104 @@ export default function VintageLaceTemplate() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: "easeOut" }}
             >
-              <div className="flex justify-center items-center flex-col gap-3 mb-8">
-                <h3
-                  className={`text-3xl md:text-4xl lg:text-5xl ${khangkomuttFont}`}
-                  style={{ color: textColor }}
+              <motion.div 
+                className="flex justify-center items-center flex-col gap-4 mb-10"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              >
+                <motion.h3
+                  className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
+                  style={{ 
+                    color: textColor,
+                    WebkitTextStroke: `8px ${strokeColorDark}`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 300 }}
                 >
                   {brideName}
-                </h3>
-                <Image
-                  src="/images/assets/2hearts.gif"
-                  alt="Heart"
-                  width={48}
-                  height={48}
-                  className="md:w-16 md:h-16"
-                />
-                <h3
-                  className={`text-3xl md:text-4xl lg:text-5xl ${khangkomuttFont}`}
-                  style={{ color: textColor }}
+                </motion.h3>
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ 
+                    type: "spring", 
+                    stiffness: 200, 
+                    damping: 10,
+                    delay: 0.2 
+                  }}
+                  whileHover={{ scale: 1.2, rotate: 10 }}
+                >
+                  <Image
+                    src="/images/assets/2hearts.gif"
+                    alt="Heart"
+                    width={64}
+                    height={64}
+                    className="md:w-20 md:h-20 drop-shadow-lg"
+                  />
+                </motion.div>
+                <motion.h3
+                  className={`text-3xl md:text-4xl lg:text-5xl xl:text-6xl ${khangkomuttFont} font-bold`}
+                  style={{ 
+                    color: textColor,
+                    WebkitTextStroke: `8px ${strokeColorDark}`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 300 }}
                 >
                   {groomName}
-                </h3>
-          </div>
+                </motion.h3>
+              </motion.div>
 
-              {/* Invitation Text Card with Frame */}
-              <div
+              {/* Invitation Text Card with Enhanced Glassmorphism */}
+              <motion.div
                 ref={invitationTextRef}
-                className="relative p-6 mx-auto max-w-4xl"
+                className="relative p-8 md:p-12 mx-auto max-w-5xl rounded-3xl"
+                style={{
+                  background: `linear-gradient(135deg, 
+                    rgba(0, 0, 0, 0.35) 0%, 
+                    rgba(0, 0, 0, 0.3) 50%, 
+                    rgba(0, 0, 0, 0.35) 100%
+                  ),
+                  linear-gradient(135deg, 
+                    rgba(139, 115, 85, 0.2) 0%, 
+                    rgba(212, 175, 55, 0.15) 50%, 
+                    rgba(139, 115, 85, 0.2) 100%
+                  )`,
+                  border: `2px solid rgba(212, 175, 55, 0.45)`,
+                  boxShadow: `0 8px 32px rgba(0, 0, 0, 0.35), 
+                    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                    0 0 0 1px rgba(0, 0, 0, 0.1)`,
+                }}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
               >
-                <p
-                  className={`mb-4 text-xl md:text-2xl font-medium ${khmerFont}`}
-                  style={{ color: textColor }}
+                <motion.p
+                  className={`mb-6 text-2xl md:text-3xl lg:text-4xl font-bold ${khmerFont} text-center`}
+                  style={{ 
+                    color: highlightColor,
+                    WebkitTextStroke: `8px ${strokeColor}`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                 >
                   យើងខ្ញុំមានកត្តិយសសូមគោរពអញ្ជើញ
-                </p>
+                </motion.p>
                 <p
-                  className={`text-base md:text-lg lg:text-xl leading-relaxed ${khmerFont} relative z-10`}
-                  style={{ color: textColor }}
+                  className={`text-lg md:text-xl lg:text-2xl leading-relaxed ${khmerFont} relative z-10 text-center`}
+                  style={{ 
+                    color: textColor,
+                    WebkitTextStroke: `6px ${strokeColor}`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
                 >
                   {invitationText}{" "}
-                  <strong style={{ color: highlightColor }}>
+                  <strong style={{ 
+                    color: highlightColor,
+                    textShadow: `0 2px 8px rgba(212, 175, 55, 0.5)`
+                  }}>
                     ក្នុងពិធីរៀបអាពាហ៍ពិពាហ៍
                   </strong>{" "}
                   <span style={{ color: accentColor }}>
@@ -760,54 +907,110 @@ export default function VintageLaceTemplate() {
                   </span>{" "}
                   យើងខ្ញុំទាំងពីរ។
                 </p>
-              </div>
+              </motion.div>
             </motion.div>
           )}
         </motion.div>
 
-        {/* Program Schedule with Frame */}
+        {/* Program Schedule with Modern Card Design */}
         {showInvitation && (
           <div
             ref={programScheduleRef}
-            className="mx-auto max-w-4xl mb-16 relative w-full"
+            className="mx-auto max-w-5xl mb-20 relative w-full"
           >
-            <div className="relative p-8 rounded-2xl">
+            <motion.div 
+              className="relative p-8 md:p-12 rounded-3xl"
+              style={{
+                background: `linear-gradient(135deg, 
+                  rgba(0, 0, 0, 0.35) 0%, 
+                  rgba(0, 0, 0, 0.3) 50%, 
+                  rgba(0, 0, 0, 0.35) 100%
+                ),
+                linear-gradient(135deg, 
+                  rgba(139, 115, 85, 0.2) 0%, 
+                  rgba(212, 175, 55, 0.15) 50%, 
+                  rgba(139, 115, 85, 0.2) 100%
+                )`,
+                border: `2px solid rgba(212, 175, 55, 0.45)`,
+                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.35), 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                  0 0 0 1px rgba(0, 0, 0, 0.1)`,
+              }}
+            >
               <div className="relative z-10">
-                <h3
-                  className={`text-3xl md:text-4xl ${moulpaliFont} text-center mb-6`}
-                  style={{ color: primaryColor }}
+                <motion.h3
+                  className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-10 font-bold`}
+                  style={{ 
+                    color: highlightColor,
+                    WebkitTextStroke: `8px ${strokeColorDark}`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
                 >
                   កម្មវិធីសិរីមង្គល អាពាហ៍ពិពាហ៍
-                </h3>
-                <div className="space-y-4">
+                </motion.h3>
+                <div className="space-y-6">
                   {programSchedule.map((item, index) => (
-                    <div
+                    <motion.div
                       key={index}
-                      className="schedule-item flex items-start gap-4"
+                      className="schedule-item flex items-start gap-6 p-6 rounded-2xl transition-all duration-300"
+                      style={{
+                        background: `linear-gradient(135deg, 
+                          rgba(0, 0, 0, 0.25) 0%, 
+                          rgba(0, 0, 0, 0.2) 100%
+                        ),
+                        linear-gradient(135deg, 
+                          rgba(212, 175, 55, 0.12) 0%, 
+                          rgba(139, 115, 85, 0.08) 100%
+                        )`,
+                        border: `1px solid rgba(212, 175, 55, 0.35)`,
+                        boxShadow: `0 4px 16px rgba(0, 0, 0, 0.25)`,
+                      }}
+                      whileHover={{
+                        scale: 1.02,
+                        boxShadow: `0 6px 24px rgba(139, 115, 85, 0.3)`,
+                        borderColor: `rgba(212, 175, 55, 0.4)`,
+                      }}
                     >
-                      <div
-                        className="w-3 h-3 rounded-full mt-2 shrink-0"
-                        style={{ backgroundColor: primaryColor }}
-                      ></div>
-                      <div>
+                      <motion.div
+                        className="w-4 h-4 rounded-full mt-2 shrink-0"
+                        style={{ 
+                          backgroundColor: highlightColor,
+                          boxShadow: `0 0 12px ${highlightColor}`
+                        }}
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: index * 0.1 + 0.3, type: "spring" }}
+                      ></motion.div>
+                      <div className="flex-1">
                         <p
-                          className={`text-lg md:text-xl font-semibold ${khmerFont} mb-1`}
-                          style={{ color: primaryColor }}
+                          className={`text-lg md:text-xl lg:text-2xl font-bold ${khmerFont} mb-2`}
+                          style={{ 
+                            color: highlightColor,
+                            WebkitTextStroke: `6px ${strokeColor}`,
+                            paintOrder: "stroke fill"
+                          } as React.CSSProperties}
                         >
                           {item.time}
                         </p>
                         <p
-                          className={`text-base md:text-lg ${khmerFont}`}
-                          style={{ color: textColor }}
+                          className={`text-base md:text-lg lg:text-xl ${khmerFont}`}
+                          style={{ 
+                            color: textColor,
+                            WebkitTextStroke: `6px ${strokeColor}`,
+                            paintOrder: "stroke fill"
+                          } as React.CSSProperties}
                         >
                           {item.event}
                         </p>
                       </div>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         )}
 
@@ -815,112 +1018,250 @@ export default function VintageLaceTemplate() {
         {showInvitation && googleMapLink && (
           <div
             ref={locationRef}
-            className="mx-auto max-w-4xl mb-16 relative w-full"
+            className="mx-auto max-w-5xl mb-20 relative w-full"
           >
-            <div className="relative p-8 rounded-2xl">
+            <motion.div 
+              className="relative p-8 md:p-12 rounded-3xl"
+              style={{
+                background: `linear-gradient(135deg, 
+                  rgba(0, 0, 0, 0.35) 0%, 
+                  rgba(0, 0, 0, 0.3) 50%, 
+                  rgba(0, 0, 0, 0.35) 100%
+                ),
+                linear-gradient(135deg, 
+                  rgba(139, 115, 85, 0.2) 0%, 
+                  rgba(212, 175, 55, 0.15) 50%, 
+                  rgba(139, 115, 85, 0.2) 100%
+                )`,
+                border: `2px solid rgba(212, 175, 55, 0.45)`,
+                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.35), 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                  0 0 0 1px rgba(0, 0, 0, 0.1)`,
+              }}
+            >
               <div className="relative z-10">
-                <h3
-                  className={`text-3xl md:text-4xl ${moulpaliFont} text-center mb-6`}
-                  style={{ color: primaryColor }}
+                <motion.h3
+                  className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-10 font-bold`}
+                  style={{ 
+                    color: highlightColor,
+                    WebkitTextStroke: `8px ${strokeColorDark}`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
                 >
                   ទីតាំងកម្មវិធី
-                </h3>
+                </motion.h3>
 
                 {/* QR Code for Location */}
                 {qrCodeImage && (
-                  <div className="qr-code flex flex-col items-center gap-4 mb-6">
-                    <div className="relative w-48 h-48 md:w-64 md:h-64 p-4 bg-white rounded-lg">
+                  <motion.div 
+                    className="qr-code flex flex-col items-center gap-6 mb-8"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                  >
+                    <motion.div 
+                      className="relative w-56 h-56 md:w-72 md:h-72 p-6 bg-white rounded-2xl shadow-2xl"
+                      style={{
+                        boxShadow: `0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 4px rgba(212, 175, 55, 0.2)`,
+                      }}
+                      whileHover={{ 
+                        scale: 1.05,
+                        boxShadow: `0 16px 48px rgba(139, 115, 85, 0.4), 0 0 0 6px rgba(212, 175, 55, 0.3)`,
+                      }}
+                    >
                       <Image
                         src={qrCodeImage}
                         alt="QR Code"
                         fill
-                        className="object-contain rounded-lg"
+                        className="object-contain rounded-xl"
                       />
-                    </div>
-                    <p
-                      className={`text-base md:text-lg ${khmerFont}`}
-                      style={{ color: textColor }}
+                    </motion.div>
+                    <motion.p
+                      className={`text-lg md:text-xl font-semibold ${khmerFont}`}
+                      style={{ 
+                        color: textColor,
+                        WebkitTextStroke: `6px ${strokeColor}`,
+                        paintOrder: "stroke fill"
+                      } as React.CSSProperties}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.4 }}
                     >
                       ស្កេនដើម្បីបើកផែនទី
-                    </p>
-                  </div>
+                    </motion.p>
+                  </motion.div>
                 )}
 
                 <motion.a
                   href={googleMapLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`text-lg md:text-xl flex items-center justify-center underline font-medium ${khmerFont}`}
-                  style={{ color: primaryColor }}
-                  whileHover={{ scale: 1.05 }}
+                  className={`text-lg md:text-xl lg:text-2xl flex items-center justify-center font-bold ${khmerFont} px-8 py-4 rounded-xl transition-all duration-300`}
+                  style={{ 
+                    color: textColor,
+                    background: `linear-gradient(135deg, ${highlightColor} 0%, ${goldColor} 100%)`,
+                    textShadow: `0 2px 8px rgba(0, 0, 0, 0.3)`,
+                    boxShadow: `0 6px 20px rgba(139, 115, 85, 0.4)`,
+                  }}
+                  whileHover={{ 
+                    scale: 1.05,
+                    boxShadow: `0 8px 28px rgba(139, 115, 85, 0.6)`,
+                  }}
                   whileTap={{ scale: 0.95 }}
                 >
                   មើលទីតាំង
                 </motion.a>
               </div>
-            </div>
+            </motion.div>
           </div>
         )}
 
-        {/* Photo Gallery with Frame */}
+        {/* Photo Gallery with Modern Grid */}
         {showInvitation && (
           <div
             ref={galleryRef}
-            className="mx-auto max-w-4xl mb-16 relative w-full"
+            className="mx-auto max-w-6xl mb-20 relative w-full"
           >
-            <div className="relative p-8 rounded-2xl">
+            <motion.div 
+              className="relative p-8 md:p-12 rounded-3xl"
+              style={{
+                background: `linear-gradient(135deg, 
+                  rgba(0, 0, 0, 0.35) 0%, 
+                  rgba(0, 0, 0, 0.3) 50%, 
+                  rgba(0, 0, 0, 0.35) 100%
+                ),
+                linear-gradient(135deg, 
+                  rgba(139, 115, 85, 0.2) 0%, 
+                  rgba(212, 175, 55, 0.15) 50%, 
+                  rgba(139, 115, 85, 0.2) 100%
+                )`,
+                border: `2px solid rgba(212, 175, 55, 0.45)`,
+                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.35), 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                  0 0 0 1px rgba(0, 0, 0, 0.1)`,
+              }}
+            >
               <div className="relative z-10">
-                <h3
-                  className={`text-3xl md:text-4xl ${moulpaliFont} text-center mb-6`}
-                  style={{ color: primaryColor }}
+                <motion.h3
+                  className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-6 font-bold`}
+                  style={{ 
+                    color: highlightColor,
+                    WebkitTextStroke: `8px ${strokeColorDark}`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
                 >
                   កម្រងរូបភាពអនុស្សាវរីយ៍
-                </h3>
-                <p
-                  className={`text-center mb-6 text-base md:text-lg ${khmerFont}`}
-                  style={{ color: textColor }}
+                </motion.h3>
+                <motion.p
+                  className={`text-center mb-10 text-lg md:text-xl lg:text-2xl ${khmerFont} leading-relaxed`}
+                  style={{ 
+                    color: textColor,
+                    WebkitTextStroke: `6px ${strokeColor}`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.2 }}
                 >
                   រូបភាពសម្រាប់រំលឹក និងជាចំណងអាពាហ៍ពិពាហ៍ដ៏រឹងមាំ
                   ហើយមានសុភមង្គល សម្រាប់យើងទាំងពីរនាក់។
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                </motion.p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
                   {galleryImages.map((img, index) => (
                     <motion.div
                       key={index}
-                      className="gallery-image relative aspect-square overflow-hidden rounded-lg"
-                      whileHover={{ scale: 1.05 }}
+                      className="gallery-image relative aspect-square overflow-hidden rounded-2xl group cursor-pointer"
+                      style={{
+                        boxShadow: `0 8px 24px rgba(0, 0, 0, 0.3)`,
+                        border: `2px solid rgba(212, 175, 55, 0.2)`,
+                      }}
+                      initial={{ opacity: 0, scale: 0.8, y: 30 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ 
+                        duration: 0.6, 
+                        delay: index * 0.15,
+                        type: "spring",
+                        stiffness: 100
+                      }}
+                      whileHover={{ 
+                        scale: 1.08,
+                        boxShadow: `0 12px 40px rgba(139, 115, 85, 0.5)`,
+                        borderColor: `rgba(212, 175, 55, 0.5)`,
+                        zIndex: 10
+                      }}
                     >
                       <Image
                         src={img}
                         alt={`Gallery ${index + 1}`}
                         fill
-                        className="object-cover"
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div 
+                        className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                       />
                     </motion.div>
                   ))}
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         )}
 
-        {/* Thank You Letter with Frame */}
+        {/* Thank You Letter with Modern Design */}
         {showInvitation && (
           <div
             ref={thankYouRef}
-            className="mx-auto max-w-4xl mb-16 relative w-full"
+            className="mx-auto max-w-5xl mb-20 relative w-full"
           >
-            <div className="relative p-8 rounded-2xl">
+            <motion.div 
+              className="relative p-8 md:p-12 rounded-3xl"
+              style={{
+                background: `linear-gradient(135deg, 
+                  rgba(0, 0, 0, 0.35) 0%, 
+                  rgba(0, 0, 0, 0.3) 50%, 
+                  rgba(0, 0, 0, 0.35) 100%
+                ),
+                linear-gradient(135deg, 
+                  rgba(139, 115, 85, 0.2) 0%, 
+                  rgba(212, 175, 55, 0.15) 50%, 
+                  rgba(139, 115, 85, 0.2) 100%
+                )`,
+                border: `2px solid rgba(212, 175, 55, 0.45)`,
+                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.35), 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                  0 0 0 1px rgba(0, 0, 0, 0.1)`,
+              }}
+            >
               <div className="relative z-10">
-                <h3
-                  className={`text-3xl md:text-4xl ${moulpaliFont} text-center mb-6`}
-                  style={{ color: primaryColor }}
+                <motion.h3
+                  className={`text-3xl md:text-4xl lg:text-5xl ${moulpaliFont} text-center mb-10 font-bold`}
+                  style={{ 
+                    color: highlightColor,
+                    WebkitTextStroke: `8px ${strokeColorDark}`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
                 >
                   លិខិតសូមថ្លែងអំណរគុណ
-                </h3>
-                <p
-                  className={`text-base md:text-lg lg:text-xl leading-relaxed ${khmerFont}`}
-                  style={{ color: textColor }}
+                </motion.h3>
+                <motion.p
+                  className={`text-lg md:text-xl lg:text-2xl leading-relaxed ${khmerFont} text-center`}
+                  style={{ 
+                    color: textColor,
+                    WebkitTextStroke: `6px ${strokeColor}`,
+                    paintOrder: "stroke fill"
+                  } as React.CSSProperties}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
                 >
                   ខ្ញុំបាទ នាងខ្ញុំ ជាមាតាបិតា កូនប្រុស-កូនស្រី សូមថ្លែង
                   អំណរគុណយ៉ាងជ្រាលជ្រៅចំពោះវត្តមាន ដ៏ឧត្តុង្គឧត្តម របស់សម្តេច
@@ -928,9 +1269,9 @@ export default function VintageLaceTemplate() {
                   អញ្ជើញចូលរួមជា ភ្ញៀវកិត្តិយស ក្នុងពិធីសិរីមង្គលអាពាហ៍ពិពាហ៍
                   កូន ប្រុស-ស្រី របស់យើងខ្ញុំ។ សូមមេត្តាទទួលនូវ សេចក្តី គោរព
                   ដ៏ខ្ពង់ខ្ពស់ពីយើងខ្ញុំ។
-                </p>
-          </div>
-        </div>
+                </motion.p>
+              </div>
+            </motion.div>
           </div>
         )}
 
@@ -938,32 +1279,55 @@ export default function VintageLaceTemplate() {
         {showInvitation && (
           <div
             ref={coupleQRRef}
-            className="mx-auto max-w-4xl mb-16 relative w-full"
+            className="mx-auto max-w-5xl mb-20 relative w-full"
           >
-            <div className="relative p-8 rounded-2xl">
+            <motion.div 
+              className="relative p-8 md:p-12 rounded-3xl"
+              style={{
+                background: `linear-gradient(135deg, 
+                  rgba(0, 0, 0, 0.35) 0%, 
+                  rgba(0, 0, 0, 0.3) 50%, 
+                  rgba(0, 0, 0, 0.35) 100%
+                ),
+                linear-gradient(135deg, 
+                  rgba(139, 115, 85, 0.2) 0%, 
+                  rgba(212, 175, 55, 0.15) 50%, 
+                  rgba(139, 115, 85, 0.2) 100%
+                )`,
+                border: `2px solid rgba(212, 175, 55, 0.45)`,
+                boxShadow: `0 8px 32px rgba(0, 0, 0, 0.35), 
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                  0 0 0 1px rgba(0, 0, 0, 0.1)`,
+              }}
+            >
               <div className="relative z-10">
-                <div className="flex flex-col items-center gap-6">
+                <div className="flex flex-col items-center gap-8">
                   {/* Clickable button */}
                   <motion.button
                     onClick={() => setShowCoupleQR(!showCoupleQR)}
-                    className={`px-8 py-4 font-medium ${khmerFont} flex items-center justify-center gap-3 relative`}
+                    className={`px-10 py-5 font-bold text-lg md:text-xl ${khmerFont} flex items-center justify-center gap-3 relative`}
                     style={{
-                      color: primaryColor,
+                      color: textColor,
                       backgroundImage: `url(${frameBtn})`,
                       backgroundSize: "contain",
                       backgroundPosition: "center",
                       backgroundRepeat: "no-repeat",
                       backgroundColor: "transparent",
-                      minWidth: "200px",
-                      minHeight: "60px",
+                      minWidth: "240px",
+                      minHeight: "70px",
+                      filter: "drop-shadow(0 6px 20px rgba(139, 115, 85, 0.5))",
+                      textShadow: `0 2px 8px rgba(0, 0, 0, 0.3)`,
                     }}
-                    whileHover={{ scale: 1.05 }}
+                    whileHover={{ 
+                      scale: 1.08,
+                      filter: "drop-shadow(0 8px 24px rgba(139, 115, 85, 0.7))",
+                    }}
                     whileTap={{ scale: 0.95 }}
                   >
                     {showCoupleQR ? (
-                      <X className="relative z-10 w-5 h-5" />
+                      <X className="relative z-10 w-6 h-6" />
                     ) : (
-                      <Heart className="relative z-10 w-5 h-5" />
+                      <Heart className="relative z-10 w-6 h-6" />
                     )}
                     <span className="relative z-10">ចំណងដៃ</span>
                   </motion.button>
@@ -975,54 +1339,92 @@ export default function VintageLaceTemplate() {
                       initial={{ opacity: 0, scale: 0.8, y: -20 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.8, y: -20 }}
-                      transition={{ duration: 0.3 }}
+                      transition={{ 
+                        duration: 0.5,
+                        type: "spring",
+                        stiffness: 200
+                      }}
                     >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                         {/* Khmer QR Code */}
                         {qrCodeCoupleKH && (
-                          <div className="flex flex-col items-center gap-3">
-                            <div className="relative w-48 h-48 md:w-64 md:h-64 p-4 bg-white rounded-lg">
+                          <motion.div 
+                            className="flex flex-col items-center gap-4"
+                            initial={{ opacity: 0, x: -30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.2, duration: 0.5 }}
+                          >
+                            <motion.div 
+                              className="relative w-56 h-56 md:w-72 md:h-72 p-6 bg-white rounded-2xl shadow-2xl"
+                              style={{
+                                boxShadow: `0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 4px rgba(212, 175, 55, 0.2)`,
+                              }}
+                              whileHover={{ 
+                                scale: 1.05,
+                                boxShadow: `0 16px 48px rgba(139, 115, 85, 0.4), 0 0 0 6px rgba(212, 175, 55, 0.3)`,
+                              }}
+                            >
                               <Image
                                 src={qrCodeCoupleKH}
                                 alt="QR Code Khmer"
                                 fill
-                                className="object-contain"
+                                className="object-contain rounded-xl"
                               />
-                            </div>
+                            </motion.div>
                             <p
-                              className={`text-base md:text-lg font-medium ${khmerFont}`}
-                              style={{ color: textColor }}
+                              className={`text-lg md:text-xl font-semibold ${khmerFont}`}
+                              style={{ 
+                                color: textColor,
+                                textShadow: `0 2px 8px rgba(0, 0, 0, 0.3)`
+                              }}
                             >
                               ស្កេនដើម្បី​ចូលរួម​ចំណងដៃ
                             </p>
-                          </div>
+                          </motion.div>
                         )}
 
                         {/* English/US QR Code */}
                         {qrCodeCoupleUS && (
-                          <div className="flex flex-col items-center gap-3">
-                            <div className="relative w-48 h-48 md:w-64 md:h-64 p-4 bg-white rounded-lg">
+                          <motion.div 
+                            className="flex flex-col items-center gap-4"
+                            initial={{ opacity: 0, x: 30 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3, duration: 0.5 }}
+                          >
+                            <motion.div 
+                              className="relative w-56 h-56 md:w-72 md:h-72 p-6 bg-white rounded-2xl shadow-2xl"
+                              style={{
+                                boxShadow: `0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 4px rgba(212, 175, 55, 0.2)`,
+                              }}
+                              whileHover={{ 
+                                scale: 1.05,
+                                boxShadow: `0 16px 48px rgba(139, 115, 85, 0.4), 0 0 0 6px rgba(212, 175, 55, 0.3)`,
+                              }}
+                            >
                               <Image
                                 src={qrCodeCoupleUS}
                                 alt="QR Code English"
                                 fill
-                                className="object-contain"
+                                className="object-contain rounded-xl"
                               />
-                            </div>
+                            </motion.div>
                             <p
-                              className={`text-base md:text-lg font-medium ${khmerFont}`}
-                              style={{ color: textColor }}
+                              className={`text-lg md:text-xl font-semibold ${khmerFont}`}
+                              style={{ 
+                                color: textColor,
+                                textShadow: `0 2px 8px rgba(0, 0, 0, 0.3)`
+                              }}
                             >
                               ស្កេនដើម្បី​ចូលរួម​ចំណងដៃ
                             </p>
-                          </div>
+                          </motion.div>
                         )}
                       </div>
                     </motion.div>
                   )}
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         )}
       </div>
