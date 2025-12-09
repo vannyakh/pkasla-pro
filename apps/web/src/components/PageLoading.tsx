@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { DotLottieReact } from '@lottiefiles/dotlottie-react'
+import { LottiePlayer } from '@/components/LottiePlayer'
 import { cn } from '@/lib/utils'
 
 interface PageLoadingProps {
@@ -84,7 +84,7 @@ function PageLoading({
           variants={animationVariants}
           className={cn(sizeClasses[size])}
         >
-          <DotLottieReact
+          <LottiePlayer
             src={animationUrl}
             loop
             autoplay

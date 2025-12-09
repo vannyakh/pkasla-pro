@@ -33,6 +33,7 @@ interface GuestDrawerProps {
   trigger?: React.ReactNode
   guest?: Guest | null // If provided, it's edit mode
   onSuccess?: () => void
+  eventId?: string // Pre-selected event ID (useful when creating guest from event detail page)
 }
 
 interface GuestFormData {
@@ -55,6 +56,7 @@ export default function GuestDrawer({
   trigger,
   guest,
   onSuccess,
+  eventId,
 }: GuestDrawerProps) {
   const isEditMode = !!guest
   const createMutation = useCreateGuest()
@@ -107,12 +109,12 @@ export default function GuestDrawer({
       setPhotoUploadState(undefined)
       setShowAddress(!!(guest.address || guest.province))
     } else {
-      // Reset form for create mode
+      // Reset form for create mode, pre-select eventId if provided
       setFormData({
         name: '',
         email: '',
         phone: '',
-        eventId: '',
+        eventId: eventId || '',
         occupation: '',
         notes: '',
         tag: '',
@@ -127,7 +129,7 @@ export default function GuestDrawer({
       setShowAddress(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, guest?.id])
+  }, [open, guest?.id, eventId])
 
   const handleInputChange = (field: keyof GuestFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -370,7 +372,7 @@ export default function GuestDrawer({
               <Select
                 value={formData.eventId}
                 onValueChange={(value) => handleInputChange('eventId', value)}
-                disabled={isLoading || isEditMode}
+                disabled={isLoading || isEditMode || !!eventId}
               >
                 <SelectTrigger className="h-10">
                   <SelectValue placeholder="ជ្រើសរើសព្រឹត្តិការណ៍" />
@@ -546,7 +548,7 @@ export default function GuestDrawer({
           </Button>
           <Button
             onClick={handleSave}
-            className="h-10 bg-black hover:bg-gray-800 text-white"
+            className="h-10"
             disabled={!formData.name || !formData.eventId || isLoading}
           >
             {isLoading ? (

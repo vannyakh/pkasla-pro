@@ -1,4 +1,4 @@
-import { SVGProps, ReactNode } from "react";
+import { SVGProps, ReactNode, memo, useId } from "react";
 
 export interface Iphone15ProProps extends SVGProps<SVGSVGElement> {
   width?: number;
@@ -8,21 +8,34 @@ export interface Iphone15ProProps extends SVGProps<SVGSVGElement> {
   children?: ReactNode;
 }
 
-export default function Iphone15Pro({
-  width = 433,
-  height = 882,
+const DEFAULT_WIDTH = 433;
+const DEFAULT_HEIGHT = 882;
+
+const Iphone15Pro = memo(function Iphone15Pro({
+  width,
+  height,
   src,
   videoSrc,
   children,
+  className,
   ...props
 }: Iphone15ProProps) {
+  // If className is provided (for CSS sizing), don't set width/height attributes
+  const hasClassName = className !== undefined;
+  
+  // Generate unique clipPath ID to avoid conflicts when multiple instances exist
+  const uniqueId = useId();
+  const clipPathId = `iphone-clip-${uniqueId}`;
+  
   return (
     <svg
-      width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
+      width={hasClassName ? undefined : width ?? DEFAULT_WIDTH}
+      height={hasClassName ? undefined : height ?? DEFAULT_HEIGHT}
+      viewBox={`0 0 ${DEFAULT_WIDTH} ${DEFAULT_HEIGHT}`}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      preserveAspectRatio="xMidYMid meet"
+      className={className}
       {...props}
     >
       <path
@@ -76,11 +89,11 @@ export default function Iphone15Pro({
       {/* Priority: children > videoSrc > src */}
       {children ? (
         <foreignObject
-          x="21.25"
-          y="19.25"
-          width="389.5"
-          height="843.5"
-          clipPath="url(#roundedCorners)"
+          x="0"
+          y="-2"
+          width="425"
+          height="885"
+          clipPath={`url(#${clipPathId})`}
         >
           <div className="w-full h-full overflow-hidden">
             {children}
@@ -88,11 +101,11 @@ export default function Iphone15Pro({
         </foreignObject>
       ) : videoSrc ? (
         <foreignObject
-          x="21.25"
-          y="19.25"
+          x="0"
+          y="-2"
           width="389.5"
-          height="843.5"
-          clipPath="url(#roundedCorners)"
+          height="845.5"
+          clipPath={`url(#${clipPathId})`}
         >
           <video
             className="size-full object-cover"
@@ -106,12 +119,12 @@ export default function Iphone15Pro({
       ) : src ? (
         <image
           href={src}
-          x="21.25"
-          y="19.25"
+          x="0"
+          y="-2"
           width="389.5"
           height="843.5"
           preserveAspectRatio="xMidYMid slice"
-          clipPath="url(#roundedCorners)"
+          clipPath={`url(#${clipPathId})`}
         />
       ) : null}
       <path
@@ -127,7 +140,7 @@ export default function Iphone15Pro({
         className="fill-[#E5E5E5] dark:fill-[#404040]"
       />
       <defs>
-        <clipPath id="roundedCorners">
+        <clipPath id={clipPathId}>
           <rect
             x="21.25"
             y="19.25"
@@ -140,4 +153,6 @@ export default function Iphone15Pro({
       </defs>
     </svg>
   );
-}
+});
+
+export default Iphone15Pro;

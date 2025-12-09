@@ -45,6 +45,7 @@ interface EventCardProps {
   onManage: () => void;
   isDeleting?: boolean;
   isUpdating?: boolean;
+  priority?: boolean;
 }
 
 const DEFAULT_EVENT_IMAGE =
@@ -61,6 +62,7 @@ export const EventCard = React.memo(function EventCard({
   onManage,
   isDeleting = false,
   isUpdating = false,
+  priority = false,
 }: EventCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
@@ -104,7 +106,7 @@ export const EventCard = React.memo(function EventCard({
   }, [event.description, event.title]);
 
   return (
-    <Card className="relative overflow-hidden p-0 border-0">
+    <Card className="relative overflow-hidden p-0 gap-0 border-0">
       {/* Background Image */}
       <div className="relative h-64 w-full overflow-hidden">
         <Image
@@ -113,7 +115,7 @@ export const EventCard = React.memo(function EventCard({
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           className="object-cover"
-          priority={false}
+          priority={priority}
         />
         {/* Overlay Gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/80 z-10" />

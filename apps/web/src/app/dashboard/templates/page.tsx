@@ -205,7 +205,7 @@ function TemplateCard({ purchase, searchInput, onViewPreview }: TemplateCardProp
   }
 
   return (
-    <Card className="border border-gray-200 shadow-none overflow-hidden p-0">
+    <Card className="border border-gray-200 gap-0 shadow-none overflow-hidden p-0">
       <div className="relative w-full aspect-3/2 bg-linear-to-br from-amber-50 to-orange-50 overflow-hidden">
         {template.previewImage ? (
           <Image

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { DotLottieReact } from '@lottiefiles/dotlottie-react'
+import { LottiePlayer } from '@/components/LottiePlayer'
 
 export default function Loading() {
   const containerVariants = {
@@ -39,7 +39,7 @@ export default function Loading() {
           variants={animationVariants}
           className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96"
         >
-          <DotLottieReact
+          <LottiePlayer
             src="/anim/InviteLoading.lottie"
             loop
             autoplay

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { DotLottieReact } from '@lottiefiles/dotlottie-react'
+import { LottiePlayer } from '@/components/LottiePlayer'
 import { Home, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
@@ -58,7 +58,7 @@ export default function NotFound() {
           className="mb-8 flex items-center justify-center"
         >
           <div className="w-64 h-64 md:w-80 md:h-80">
-            <DotLottieReact
+            <LottiePlayer
               src="/anim/404.lottie"
               loop
               autoplay

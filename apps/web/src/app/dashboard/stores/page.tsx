@@ -5,7 +5,6 @@ import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react'
 import confetti from 'canvas-confetti'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Spinner } from '@/components/ui/shadcn-io/spinner'
 import {
   Select,
   SelectContent,

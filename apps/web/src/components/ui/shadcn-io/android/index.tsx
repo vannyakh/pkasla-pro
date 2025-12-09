@@ -1,6 +1,6 @@
 "use client";
 
-import { SVGProps, ReactNode } from "react";
+import { SVGProps, ReactNode, memo, useId } from "react";
 
 export interface AndroidProps extends SVGProps<SVGSVGElement> {
   width?: number;
@@ -13,7 +13,7 @@ export interface AndroidProps extends SVGProps<SVGSVGElement> {
 const DEFAULT_WIDTH = 378;
 const DEFAULT_HEIGHT = 830;
 
-export const Android = ({
+export const Android = memo(function Android({
   width,
   height,
   src,
@@ -21,9 +21,13 @@ export const Android = ({
   children,
   className,
   ...props
-}: AndroidProps) => {
+}: AndroidProps) {
   // If className is provided (for CSS sizing), don't set width/height attributes
   const hasClassName = className !== undefined;
+  
+  // Generate unique clipPath ID to avoid conflicts when multiple instances exist
+  const uniqueId = useId();
+  const clipPathId = `android-clip-${uniqueId}`;
   
   return (
     <svg
@@ -53,7 +57,7 @@ export const Android = ({
         className="fill-white dark:fill-[#262626]"
       />
 
-      <g clipPath="url(#android-clip)">
+      <g clipPath={`url(#${clipPathId})`}>
         <path
           d="M9.25 48C9.25 29.3604 24.3604 14.25 43 14.25H335C353.64 14.25 368.75 29.3604 368.75 48V780C368.75 798.64 353.64 813.75 335 813.75H43C24.3604 813.75 9.25 798.64 9.25 780V48Z"
           className="fill-[#E5E5E5] stroke-[#E5E5E5] stroke-[0.5] dark:fill-[#404040] dark:stroke-[#404040]"
@@ -75,11 +79,11 @@ export const Android = ({
       {/* Priority: children > videoSrc > src */}
       {children ? (
         <foreignObject
-          x="9"
-          y="14"
-          width="360"
-          height="800"
-          clipPath="url(#android-clip)"
+          x="0"
+          y="-2"
+          width="380"
+          height="840"
+          clipPath={`url(#${clipPathId})`}
         >
           <div className="w-full h-full overflow-hidden">
             {children}
@@ -91,7 +95,7 @@ export const Android = ({
           y="14"
           width="360"
           height="800"
-          clipPath="url(#android-clip)"
+          clipPath={`url(#${clipPathId})`}
         >
           <video
             className="size-full object-cover"
@@ -109,11 +113,11 @@ export const Android = ({
           height="800"
           className="size-full object-cover"
           preserveAspectRatio="xMidYMid slice"
-          clipPath="url(#android-clip)"
+          clipPath={`url(#${clipPathId})`}
         />
       ) : null}
       <defs>
-        <clipPath id="android-clip">
+        <clipPath id={clipPathId}>
           <rect
             width="360"
             height="800"
@@ -126,4 +130,4 @@ export const Android = ({
       </defs>
     </svg>
   );
-};
+});

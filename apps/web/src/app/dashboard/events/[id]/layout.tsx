@@ -128,7 +128,7 @@ function EventDetailLayout({ children }: { children: React.ReactNode }) {
         </Link>
         <div className="flex items-center gap-4">
           {/* Avatar Group for Collaborators/Hosts */}
-          <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-0.5 rounded-full">
+          {/* <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-0.5 rounded-full">
             <div className="bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 dark:from-indigo-950 dark:via-purple-950 dark:to-pink-950 p-1.5 rounded-full">
               <AvatarGroup variant="css">
                 {AVATARS.map((avatar, index) => (
@@ -142,7 +142,7 @@ function EventDetailLayout({ children }: { children: React.ReactNode }) {
                 ))}
               </AvatarGroup>
             </div>
-          </div>
+          </div> */}
           {/* Preview Drawer Button */}
           <PreviewDrawer />
         </div>

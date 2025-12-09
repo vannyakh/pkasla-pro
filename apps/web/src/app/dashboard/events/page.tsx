@@ -134,7 +134,7 @@ export default function EventPage() {
         <EmptyEvent animationUrl='/anim/Email.json' onCreateEvent={handleCreateEvent} />
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-          {events.map((event) => (
+          {events.map((event, index) => (
             <EventCard
               key={event.id}
               event={event}
@@ -147,6 +147,7 @@ export default function EventPage() {
               onManage={() => handleManageEvent(event)}
               isDeleting={deleteEvent.isPending}
               isUpdating={updateEvent.isPending}
+              priority={index < 3}
             />
           ))}
         </div>

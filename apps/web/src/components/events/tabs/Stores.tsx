@@ -26,30 +26,12 @@ export default function Stores({
   onViewSample,
   onBuyNow,
 }: StoresProps) {
-  const defaultTemplates: Template[] = [
-    {
-      id: '1',
-      name: 'សិរីមង្គលអាពាហ៍ពិពាហ៍',
-      image: '/placeholder-template-1.jpg',
-      price: 11.11,
-      category: 'ប្រភេទ៖ ពិធីរៀបមង្គលការ',
-    },
-    {
-      id: '2',
-      name: 'សុវត្ថារ៉ូ & អេងលី',
-      image: '/placeholder-template-2.jpg',
-      price: 11.11,
-      category: 'ប្រភេទ៖ ពិធីរៀបមង្គលការ',
-    },
-  ]
-
-  const displayTemplates = templates.length > 0 ? templates : defaultTemplates
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayTemplates.map((template) => (
-          <Card key={template.id} className="border border-gray-200 shadow-none overflow-hidden p-0">
+        {templates.map((template) => (
+          <Card key={template.id} className="border gap-0 border-gray-200 shadow-none overflow-hidden p-0">
             <div className="relative w-full aspect-3/2 bg-linear-to-br from-amber-50 to-orange-50 overflow-hidden">
               {/* Template Preview Image */}
               {template.image ? (
@@ -108,11 +90,6 @@ export default function Stores({
         ))}
       </div>
 
-      {displayTemplates.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-sm text-gray-600">មិនទាន់មានគំរូ</p>
-        </div>
-      )}
     </div>
   )
 }

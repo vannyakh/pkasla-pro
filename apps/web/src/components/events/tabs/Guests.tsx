@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useCallback } from 'react'
 import { type ColumnDef } from '@tanstack/react-table'
-import { Filter, Plus, CheckCircle2, Eye, QrCode, MoreVertical, Trash2, Share2, ImageIcon } from 'lucide-react'
+import { Filter, Plus, CheckCircle2, Eye, QrCode, MoreVertical, Trash2, Share2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent } from '@/components/ui/card'
@@ -410,7 +410,7 @@ export default function Guests({
                 <Button variant="outline" size="sm" className="text-xs h-9 hidden sm:flex">
                   <span className="hidden md:inline">នាំចូល</span>
                 </Button>
-                <Button 
+                {/* <Button 
                   variant="outline" 
                   size="sm" 
                   className="text-xs h-9"
@@ -419,7 +419,7 @@ export default function Guests({
                   <ImageIcon className="h-3.5 w-3.5 mr-1.5" />
                   <span className="hidden md:inline">ធៀបអញ្ជើញ</span>
                   <span className="md:hidden">ធៀប</span>
-                </Button>
+                </Button> */}
                 <CreateGuestDrawer
                   open={isGuestDrawerOpen}
                   onOpenChange={(open) => {
@@ -429,6 +429,7 @@ export default function Guests({
                     }
                   }}
                   guest={editingGuest || undefined}
+                  eventId={eventId}
                   onSuccess={() => {
                     // Guest creation/update is handled by CreateGuestDrawer internally
                     // This callback is just for notification purposes

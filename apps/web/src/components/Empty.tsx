@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { DotLottieReact } from '@lottiefiles/dotlottie-react'
+import { LottiePlayer } from '@/components/LottiePlayer'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ReactNode } from 'react'
@@ -123,7 +123,7 @@ function Empty({
         variants={animationVariants}
         className={cn('mb-6 flex items-center justify-center', sizeClasses[size])}
       >
-        <DotLottieReact
+        <LottiePlayer
           src={animationUrl}
           loop
           autoplay

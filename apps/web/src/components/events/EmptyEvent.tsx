@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { DotLottieReact } from '@lottiefiles/dotlottie-react'
+import { LottiePlayer } from '@/components/LottiePlayer'
 import { Button } from '@/components/ui/button'
 import { ArrowRight } from 'lucide-react'
 import Link from 'next/link'
@@ -33,7 +33,7 @@ function EmptyEvent({ onCreateEvent, animationUrl }: EmptyEventProps) {
     >
       {/* Lottie Animation */}
       <div className="mb-6 w-64 h-64 md:w-80 md:h-80 flex items-center justify-center">
-        <DotLottieReact
+        <LottiePlayer
           src={animationUrl || "https://lottie.host/embed/6b8b5c5e-3f4a-4b5c-9d1e-2f3a4b5c6d7e/empty-calendar.json"}
           loop
           autoplay

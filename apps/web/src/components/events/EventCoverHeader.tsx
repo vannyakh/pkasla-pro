@@ -9,7 +9,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { TextGenerateEffect } from "@/components/ui/shadcn-io/text-generate-effect";
 import type { Event, EventStatus, UpdateEventDto } from "@/types/event";
 import {
   getEventStatusColor,
@@ -67,9 +68,13 @@ export function EventCoverHeader({
           <div className="flex items-start justify-between gap-2 sm:gap-4 px-3 sm:px-4 py-3 sm:py-4">
             <div className="flex-1 space-y-2 min-w-0">
               <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-                <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg wrap-break-word">
-                  {event.title}
-                </CardTitle>
+                <TextGenerateEffect
+                  words={event.title}
+                  className="text-xl sm:text-2xl md:text-3xl font-bold text-white drop-shadow-lg"
+                  filter={true}
+                  duration={0.4}
+                  staggerDelay={0.08}
+                />
                 <Badge
                   variant={getEventStatusColor(event.status)}
                   className="capitalize text-xs px-2.5 py-1 bg-white/10 backdrop-blur-sm border-white/20 text-white"
@@ -133,10 +138,26 @@ export function EventCoverHeader({
           {event.description && (
             <div className="px-3 sm:px-4 pb-3 sm:pb-4">
               <div className="border-t border-white/20 mb-3 sm:mb-4"></div>
-              <div className="w-full overflow-hidden">
-                <p className="text-xs sm:text-sm md:text-base text-white/95 drop-shadow-md whitespace-nowrap">
-                  {event.description}
-                </p>
+              <div className="w-full overflow-hidden relative">
+                <div 
+                  className="inline-block whitespace-nowrap"
+                  style={{ animation: 'marquee-scroll 25s linear infinite' }}
+                >
+                  <TextGenerateEffect
+                    words={event.description}
+                    className="text-xs sm:text-sm md:text-base text-white/95 drop-shadow-md inline-block pr-8"
+                    filter={false}
+                    duration={0.3}
+                    staggerDelay={0.05}
+                  />
+                  <TextGenerateEffect
+                    words={event.description}
+                    className="text-xs sm:text-sm md:text-base text-white/95 drop-shadow-md inline-block pr-8"
+                    filter={false}
+                    duration={0.3}
+                    staggerDelay={0.05}
+                  />
+                </div>
               </div>
             </div>
           )}

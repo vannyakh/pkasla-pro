@@ -359,7 +359,9 @@ export function useUpdateEvent() {
       queryClient.invalidateQueries({ queryKey: eventKeys.my() });
       // Update the event in cache
       queryClient.setQueryData(eventKeys.detail(event.id), event);
-      toast.success('Event updated successfully');
+      // toast.success('Event updated successfully');
+      // Trigger confetti celebration
+      triggerConfetti();
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to update event');
@@ -387,6 +389,8 @@ export function useDeleteEvent() {
       queryClient.invalidateQueries({ queryKey: eventKeys.lists() });
       queryClient.invalidateQueries({ queryKey: eventKeys.my() });
       toast.success('Event deleted successfully');
+      // Trigger confetti celebration
+      triggerConfetti();
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to delete event');
@@ -415,6 +419,8 @@ export function useGenerateEventQRToken() {
       // Invalidate event detail to refresh with new token
       queryClient.invalidateQueries({ queryKey: eventKeys.detail(eventId) });
       toast.success('QR code token generated successfully');
+      // Trigger confetti celebration
+      triggerConfetti();
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to generate QR code token');

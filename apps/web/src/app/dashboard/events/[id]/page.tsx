@@ -272,53 +272,49 @@ export default function EventDetailPage({
           </TabsList>
         </div>
 
-        {/* Mobile Bottom Navigation - 5 items with drawer for more */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 shadow-lg">
-          <TabsList className="grid grid-cols-5 w-full h-16 gap-0 bg-transparent p-0">
-            <TabsTrigger
-              value="overview"
-              className="flex flex-col items-center justify-center h-full text-[10px] px-1 data-[state=active]:bg-gray-100 rounded-none"
-            >
-              <Info className="h-4 w-4 mb-0.5" />
-              <span>ទូទៅ</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="guests"
-              className="flex flex-col items-center justify-center h-full text-[10px] px-1 data-[state=active]:bg-gray-100 rounded-none"
-            >
-              <UserCheck className="h-4 w-4 mb-0.5" />
-              <span>ភ្ញៀវ</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="payments"
-              className="flex flex-col items-center justify-center h-full text-[10px] px-1 data-[state=active]:bg-gray-100 rounded-none"
-            >
-              <DollarSign className="h-4 w-4 mb-0.5" />
-              <span>ចំណងដៃ</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="settings"
-              className="flex flex-col items-center justify-center h-full text-[10px] px-1 data-[state=active]:bg-gray-100 rounded-none"
-            >
-              <SettingsIcon className="h-4 w-4 mb-0.5" />
-              <span>កែប្រែ</span>
-            </TabsTrigger>
-            <Drawer open={isTabsDrawerOpen} onOpenChange={setIsTabsDrawerOpen}>
-              <DrawerTrigger asChild>
-                <button
-                  className={`flex flex-col items-center justify-center h-full text-[10px] px-1 rounded-none ${
-                    activeTab === "schedule" ||
-                    activeTab === "templates" ||
-                    activeTab === "stores" ||
-                    activeTab === "qr"
-                      ? "bg-gray-100"
-                      : ""
-                  }`}
-                >
-                  <MoreHorizontal className="h-4 w-4 mb-0.5" />
-                  <span>ច្រើនទៀត</span>
-                </button>
-              </DrawerTrigger>
+        {/* Mobile Bottom Navigation - Modern Toolbar Style */}
+        <div className="md:hidden fixed bottom-4 left-4 right-4 z-50">
+          <div className="bg-gray-900/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-800">
+            <TabsList className="grid grid-cols-5 w-full h-14 gap-0 bg-transparent p-1">
+              <TabsTrigger
+                value="overview"
+                className="flex items-center justify-center h-full rounded-xl data-[state=active]:bg-white/10 data-[state=inactive]:text-gray-400 data-[state=active]:text-white transition-all"
+              >
+                <Info className="h-5 w-5" />
+              </TabsTrigger>
+              <TabsTrigger
+                value="guests"
+                className="flex items-center justify-center h-full rounded-xl data-[state=active]:bg-white/10 data-[state=inactive]:text-gray-400 data-[state=active]:text-white transition-all"
+              >
+                <UserCheck className="h-5 w-5" />
+              </TabsTrigger>
+              <TabsTrigger
+                value="payments"
+                className="flex items-center justify-center h-full rounded-xl data-[state=active]:bg-white/10 data-[state=inactive]:text-gray-400 data-[state=active]:text-white transition-all"
+              >
+                <DollarSign className="h-5 w-5" />
+              </TabsTrigger>
+              <TabsTrigger
+                value="settings"
+                className="flex items-center justify-center h-full rounded-xl data-[state=active]:bg-white/10 data-[state=inactive]:text-gray-400 data-[state=active]:text-white transition-all"
+              >
+                <SettingsIcon className="h-5 w-5" />
+              </TabsTrigger>
+              <Drawer open={isTabsDrawerOpen} onOpenChange={setIsTabsDrawerOpen}>
+                <DrawerTrigger asChild>
+                  <button
+                    className={`flex items-center justify-center h-full rounded-xl transition-all ${
+                      activeTab === "schedule" ||
+                      activeTab === "templates" ||
+                      activeTab === "stores" ||
+                      activeTab === "qr"
+                        ? "bg-white/10 text-white"
+                        : "text-gray-400 hover:text-white"
+                    }`}
+                  >
+                    <MoreHorizontal className="h-5 w-5" />
+                  </button>
+                </DrawerTrigger>
               <DrawerContent>
                 <DrawerHeader>
                   <DrawerTitle>ជ្រើសរើសផ្ទាំង</DrawerTitle>
@@ -382,10 +378,11 @@ export default function EventDetailPage({
               </DrawerContent>
             </Drawer>
           </TabsList>
+          </div>
         </div>
 
         {/* ទូទៅ Tab - View Only */}
-        <TabsContent value="overview" className="mt-4 md:mt-4 mb-16 md:mb-4">
+        <TabsContent value="overview" className="mt-4 md:mt-4 mb-24 md:mb-4">
           <Overview
             event={event}
             guestsWithGifts={guestsWithGifts}
@@ -394,7 +391,7 @@ export default function EventDetailPage({
         </TabsContent>
 
         {/* Guests Tab */}
-        <TabsContent value="guests" className="mt-4 md:mt-4 mb-16 md:mb-4">
+        <TabsContent value="guests" className="mt-4 md:mt-4 mb-24 md:mb-4">
           <Guests
             displayGuests={displayGuests}
             searchQuery={searchQuery}
@@ -430,17 +427,17 @@ export default function EventDetailPage({
           />
         </TabsContent>
         {/* Payments Tab */}
-        <TabsContent value="payments" className="mt-4 md:mt-4 mb-16 md:mb-4">
+        <TabsContent value="payments" className="mt-4 md:mt-4 mb-24 md:mb-4">
           <Payments eventId={id} />
         </TabsContent>
 
         {/* Schedule Tab */}
-        <TabsContent value="schedule" className="mt-4 md:mt-4 mb-16 md:mb-4">
+        <TabsContent value="schedule" className="mt-4 md:mt-4 mb-24 md:mb-4">
           <Agenda eventId={id} />
         </TabsContent>
 
         {/* Settings Tab */}
-        <TabsContent value="settings" className="mt-4 md:mt-4 mb-16 md:mb-4">
+        <TabsContent value="settings" className="mt-4 md:mt-4 mb-24 md:mb-4">
           <Settings
             event={event}
             onUpdateStatus={handleUpdateStatus}
@@ -449,12 +446,12 @@ export default function EventDetailPage({
         </TabsContent>
 
         {/* Templates Tab */}
-        <TabsContent value="templates" className="mt-4 md:mt-4 mb-16 md:mb-4">
+        <TabsContent value="templates" className="mt-4 md:mt-4 mb-24 md:mb-4">
           <Templates eventId={id} />
         </TabsContent>
 
         {/* QR Code Tab */}
-        <TabsContent value="qr" className="mt-4 md:mt-4 mb-16 md:mb-4">
+        <TabsContent value="qr" className="mt-4 md:mt-4 mb-24 md:mb-4">
           <QRGenerate eventId={id} />
         </TabsContent>
       </Tabs>
