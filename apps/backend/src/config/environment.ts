@@ -168,7 +168,12 @@ export const env = {
         : `http://localhost:${parsedEnv.data.PORT || 4000}`),
   },
   cors: {
-    origin: parsedEnv.data.CORS_ORIGIN,
+    // Parse CORS_ORIGIN: if it contains commas, split into array; if '*', keep as string; if empty, use undefined
+    origin: parsedEnv.data.CORS_ORIGIN 
+      ? (parsedEnv.data.CORS_ORIGIN === '*' 
+          ? parsedEnv.data.CORS_ORIGIN 
+          : parsedEnv.data.CORS_ORIGIN.split(',').map(o => o.trim()))
+      : undefined,
   },
   isProduction: parsedEnv.data.NODE_ENV === 'production',
   isDevelopment: parsedEnv.data.NODE_ENV === 'development',

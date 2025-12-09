@@ -31,7 +31,7 @@ export class AgendaRepository {
     return AgendaItemModel.findByIdAndDelete(id);
   }
 
-  deleteByEventId(eventId: string) {
+  deleteByEventId(eventId: string): Promise<{ acknowledged: boolean; deletedCount: number }> {
     return AgendaItemModel.deleteMany({ eventId });
   }
 

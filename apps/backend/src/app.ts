@@ -19,7 +19,18 @@ export const createApp = (): Application => {
   // Configure CORS first
   const corsOptions = {
     credentials: true,
-    origin: env.cors.origin || (env.isDevelopment ? true : false),
+    origin: (() => {
+      // If CORS_ORIGIN is explicitly set and not wildcard, use it
+      if (env.cors.origin && env.cors.origin !== '*') {
+        return env.cors.origin;
+      }
+      // In development, allow any origin (returns the requesting origin)
+      if (env.isDevelopment) {
+        return true;
+      }
+      // In production, if no CORS_ORIGIN is set, only allow same-origin
+      return false;
+    })(),
     exposedHeaders: ['Content-Type', 'Content-Length'],
   };
   app.use(cors(corsOptions));
