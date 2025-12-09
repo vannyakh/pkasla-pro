@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import UserSidebar from '@/components/layout/Sidebar'
 import Topbar from '@/components/layout/Topbar'
-import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import type { User } from '@/types'
 import PageLoading from '@/components/PageLoading'
 

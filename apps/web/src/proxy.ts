@@ -70,7 +70,7 @@ function hasRequiredRole(userRole: UserRole, requiredRoles: UserRole[]): boolean
   return requiredRoles.includes(userRole);
 }
 
-export async function middleware(request: NextRequest) {
+export default async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Early return for static files and API routes

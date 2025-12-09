@@ -27,6 +27,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from '@/components/ui/sidebar'
 
 const menuItems = [
@@ -43,11 +44,11 @@ const menuItems = [
   { href: '/dashboard/settings', label: 'ការកំណត់', icon: Settings },
 ]
 
-export default function UserSidebar() {
+export default function UserSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <Link href="/dashboard" className="flex items-center space-x-2 px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:w-full">
           <Image
@@ -95,6 +96,7 @@ export default function UserSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   )
 }
