@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import html2canvas from 'html2canvas'
+import html2canvas from 'html2canvas-pro'
 import { X, Download, Copy, Mail, Image as ImageIcon, Type, Upload, Loader2, Palette, Eye, QrCode, RotateCcw, Settings2, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'

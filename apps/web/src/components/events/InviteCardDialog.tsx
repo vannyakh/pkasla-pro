@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import html2canvas from 'html2canvas'
+import html2canvas from 'html2canvas-pro'
 import {
   Dialog,
   DialogContent,

@@ -11,7 +11,7 @@
 module.exports = {
   apps: [
     {
-      name: 'backend',
+      name: 'Phkasla-backend',
       script: './apps/backend/dist/server.js',
       cwd: process.cwd(),
       instances: 1,
@@ -31,7 +31,7 @@ module.exports = {
       min_uptime: '10s',
     },
     {
-      name: 'web',
+      name: 'Phkasla-web',
       script: './apps/web/.next/standalone/apps/web/server.js',
       cwd: process.cwd(),
       instances: 1,

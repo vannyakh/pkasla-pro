@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import html2canvas from "html2canvas";
+import html2canvas from "html2canvas-pro";
 import Image from "next/image";
 import {
   Sheet,
