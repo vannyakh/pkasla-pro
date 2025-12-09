@@ -1,12 +1,13 @@
 "use client";
 
-import { SVGProps } from "react";
+import { SVGProps, ReactNode } from "react";
 
 export interface AndroidProps extends SVGProps<SVGSVGElement> {
   width?: number;
   height?: number;
   src?: string;
   videoSrc?: string;
+  children?: ReactNode;
 }
 
 const DEFAULT_WIDTH = 378;
@@ -17,6 +18,7 @@ export const Android = ({
   height,
   src,
   videoSrc,
+  children,
   className,
   ...props
 }: AndroidProps) => {
@@ -69,17 +71,21 @@ export const Android = ({
         r="4"
         className="fill-[#E5E5E5] dark:fill-[#404040]"
       />
-      {src && (
-        <image
-          href={src}
+      
+      {/* Priority: children > videoSrc > src */}
+      {children ? (
+        <foreignObject
+          x="9"
+          y="14"
           width="360"
           height="800"
-          className="size-full object-cover"
-          preserveAspectRatio="xMidYMid slice"
           clipPath="url(#android-clip)"
-        />
-      )}
-      {videoSrc && (
+        >
+          <div className="w-full h-full overflow-hidden">
+            {children}
+          </div>
+        </foreignObject>
+      ) : videoSrc ? (
         <foreignObject
           x="9"
           y="14"
@@ -96,7 +102,16 @@ export const Android = ({
             playsInline
           />
         </foreignObject>
-      )}
+      ) : src ? (
+        <image
+          href={src}
+          width="360"
+          height="800"
+          className="size-full object-cover"
+          preserveAspectRatio="xMidYMid slice"
+          clipPath="url(#android-clip)"
+        />
+      ) : null}
       <defs>
         <clipPath id="android-clip">
           <rect

@@ -36,10 +36,10 @@ export async function generateMetadata({
     let guestData = null;
 
     try {
-      if (resolvedSearchParams.event && typeof resolvedSearchParams.event === 'string') {
+      if (resolvedSearchParams?.event && typeof resolvedSearchParams.event === 'string') {
         eventData = JSON.parse(resolvedSearchParams.event);
       }
-      if (resolvedSearchParams.guest && typeof resolvedSearchParams.guest === 'string') {
+      if (resolvedSearchParams?.guest && typeof resolvedSearchParams.guest === 'string') {
         guestData = JSON.parse(resolvedSearchParams.guest);
       }
     } catch (error) {
@@ -91,7 +91,7 @@ export default async function TemplateLayout({ children, params, searchParams }:
   // Parse event data for structured data
   let eventData = null;
   try {
-    if (resolvedSearchParams.event && typeof resolvedSearchParams.event === 'string') {
+    if (resolvedSearchParams?.event && typeof resolvedSearchParams.event === 'string') {
       eventData = JSON.parse(resolvedSearchParams.event);
     }
   } catch (error) {

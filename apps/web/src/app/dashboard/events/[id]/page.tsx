@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useMemo, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Calendar,
   Settings as SettingsIcon,
@@ -66,6 +66,7 @@ export default function EventDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   // Unwrap params Promise
   const { id } = React.use(params);
 
@@ -89,7 +90,22 @@ export default function EventDetailPage({
     useState<DisplayGuest | null>(null);
   const [selectedGuestForView, setSelectedGuestForView] =
     useState<DisplayGuest | null>(null);
-  const [activeTab, setActiveTab] = useState("overview");
+  
+  // Initialize activeTab from URL search params, fallback to "overview"
+  const validTabs = useMemo(() => ["overview", "guests", "payments", "schedule", "templates", "qr", "settings", "stores"] as const, []);
+  type ValidTab = typeof validTabs[number];
+  const tabFromUrl = searchParams?.get("tab");
+  const initialTab: ValidTab = (tabFromUrl && validTabs.includes(tabFromUrl as ValidTab)) ? (tabFromUrl as ValidTab) : "overview";
+  const [activeTab, setActiveTab] = useState<ValidTab>(initialTab);
+
+  // Update activeTab when URL search params change
+  useEffect(() => {
+    const newTabFromUrl = searchParams?.get("tab");
+    if (newTabFromUrl && validTabs.includes(newTabFromUrl as ValidTab) && newTabFromUrl !== activeTab) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActiveTab(newTabFromUrl as ValidTab);
+    }
+  }, [searchParams, activeTab, validTabs]);
 
   // Transform guests for display (add tag and gift info if needed)
   const displayGuests: DisplayGuest[] = useMemo(() => {
@@ -221,7 +237,7 @@ export default function EventDetailPage({
         updateEventMutation={updateEventMutation}
       />
       {/* Tabs Section */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ValidTab)} className="w-full">
         {/* Desktop/Tablet Tabs - Hidden on mobile */}
         <div className="hidden md:block w-full mb-4 bg-gray-100 p-1 rounded-lg">
           <TabsList className="grid w-full md:grid-cols-4 lg:grid-cols-8 gap-2 bg-transparent p-0 h-auto">

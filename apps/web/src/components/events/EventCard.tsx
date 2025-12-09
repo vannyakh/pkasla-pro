@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Settings,
-  User,
   Eye,
   Edit,
   Trash2,
@@ -32,6 +32,7 @@ import CountdownTimer from "@/components/CountdownTimer";
 import { Event } from "@/types/event";
 import { formatDate, formatTime, formatDateTime } from "@/helpers/format";
 import { getEventStatusColor } from "@/helpers/event";
+import { TextGenerateEffect } from "@/components/ui/shadcn-io/text-generate-effect";
 
 interface EventCardProps {
   event: Event;
@@ -62,6 +63,8 @@ export const EventCard = React.memo(function EventCard({
   isUpdating = false,
 }: EventCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const textRef = useRef<HTMLHeadingElement>(null);
 
   // Memoize computed values
   const eventImage = useMemo(
@@ -86,15 +89,34 @@ export const EventCard = React.memo(function EventCard({
     [event.status]
   );
 
+  // Check if text is overflowing
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (textRef.current) {
+        const isOverflow = textRef.current.scrollWidth > textRef.current.clientWidth;
+        setIsOverflowing(isOverflow);
+      }
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, [event.description, event.title]);
+
   return (
     <Card className="relative overflow-hidden p-0 border-0">
       {/* Background Image */}
-      <div
-        className="relative h-64 bg-cover bg-center"
-        style={{ backgroundImage: `url(${eventImage})` }}
-      >
+      <div className="relative h-64 w-full overflow-hidden">
+        <Image
+          src={eventImage}
+          alt={event.title}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover"
+          priority={false}
+        />
         {/* Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/40 to-black/80 z-10" />
 
         {/* Countdown Timer and Event Title - Centered Column */}
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 w-full px-4">
@@ -106,9 +128,13 @@ export const EventCard = React.memo(function EventCard({
 
             {/* Event Title */}
             <div className="text-center">
-              <h3 className="text-white text-lg font-semibold mb-1 drop-shadow-lg">
-                {event.title}
-              </h3>
+              <TextGenerateEffect
+                words={event.title}
+                className="text-white text-lg font-semibold mb-1 drop-shadow-lg"
+                filter={true}
+                duration={0.4}
+                staggerDelay={0.08}
+              />
               <p className="text-white/90 text-xs drop-shadow">
                 {formattedDate} at {formattedTime}
               </p>
@@ -121,9 +147,23 @@ export const EventCard = React.memo(function EventCard({
       <div className="p-4 bg-white">
         <div className="mb-3">
           <div className="flex items-start justify-between gap-2 mb-1">
-            <h4 className="text-sm font-semibold text-black truncate">
-              {event.description || event.title}
-            </h4>
+            <div className="flex-1 overflow-hidden relative">
+              <h4 
+                ref={textRef}
+                className={`text-sm font-semibold text-black whitespace-nowrap ${
+                  isOverflowing 
+                    ? 'inline-block' 
+                    : 'truncate'
+                }`}
+                style={isOverflowing ? {
+                  paddingRight: '2rem',
+                  animation: 'marquee-scroll 25s linear infinite'
+                } : undefined}
+              >
+                {event.description || event.title}
+                {isOverflowing && <span className="ml-8">{event.description || event.title}</span>}
+              </h4>
+            </div>
             <Badge
               variant={statusColor}
               className="text-xs shrink-0 capitalize"

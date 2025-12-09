@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import html2canvas from 'html2canvas'
-import { X, Download, Copy, Mail, Image as ImageIcon, Type, Upload, Loader2, Palette, Eye, QrCode, RotateCcw, Settings2, AlignLeft, AlignCenter, AlignRight, ChevronDown } from 'lucide-react'
+import { X, Download, Copy, Mail, Image as ImageIcon, Type, Upload, Loader2, Palette, Eye, QrCode, RotateCcw, Settings2, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Slider } from '@/components/ui/slider'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion'
 import {
   Sheet,
   SheetContent,
@@ -68,15 +68,7 @@ function InviteCardDrawer({ open, onOpenChange, guest, event }: InviteCardDrawer
   const [isGenerating, setIsGenerating] = useState(false)
   const [uploadingImage, setUploadingImage] = useState<'background' | 'profile' | 'logo' | null>(null)
   const [activeTab, setActiveTab] = useState<'customize' | 'preview'>('customize')
-  const [openSections, setOpenSections] = useState({
-    template: true,
-    images: false,
-    textContent: false,
-    qrCode: false,
-    textStyling: false,
-    colors: false,
-    layout: false,
-  })
+  const [openSections, setOpenSections] = useState<string[]>(['template'])
   const defaultCustomization: CardCustomization = {
     template: 'elegant',
     greetingText: 'You Are Cordially Invited',
@@ -455,7 +447,7 @@ function InviteCardDrawer({ open, onOpenChange, guest, event }: InviteCardDrawer
   if (!guest) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right" className="w-full sm:max-w-3xl lg:max-w-4xl overflow-y-auto">
+        <SheetContent side="right" className="w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Invitation Card</SheetTitle>
             <SheetDescription>No guest selected</SheetDescription>
@@ -537,20 +529,16 @@ function InviteCardDrawer({ open, onOpenChange, guest, event }: InviteCardDrawer
 
             {/* Customize Tab */}
             <TabsContent value="customize" className="space-y-3 mt-4">
-              <div className="space-y-2">
+              <Accordion type="multiple" value={openSections} onValueChange={setOpenSections} className="space-y-2">
                 {/* Template Selection */}
-                <Collapsible
-                  open={openSections.template}
-                  onOpenChange={(open) => setOpenSections({ ...openSections, template: open })}
-                >
-                  <CollapsibleTrigger className="w-full flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                <AccordionItem value="template" className="border rounded-lg">
+                  <AccordionTrigger className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors hover:no-underline">
                     <div className="flex items-center gap-2">
                       <Palette className="h-4 w-4" />
                       <Label className="text-sm font-medium">Template</Label>
                     </div>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${openSections.template ? 'rotate-180' : ''}`} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-3">
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                       {Object.entries(CARD_TEMPLATES).map(([key, template]) => (
                         <button
@@ -595,22 +583,18 @@ function InviteCardDrawer({ open, onOpenChange, guest, event }: InviteCardDrawer
                         </button>
                       ))}
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  </AccordionContent>
+                </AccordionItem>
 
                 {/* Image Uploads */}
-                <Collapsible
-                  open={openSections.images}
-                  onOpenChange={(open) => setOpenSections({ ...openSections, images: open })}
-                >
-                  <CollapsibleTrigger className="w-full flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                <AccordionItem value="images" className="border rounded-lg">
+                  <AccordionTrigger className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors hover:no-underline">
                     <div className="flex items-center gap-2">
                       <ImageIcon className="h-4 w-4" />
                       <Label className="text-sm font-medium">Images</Label>
                     </div>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${openSections.images ? 'rotate-180' : ''}`} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-3">
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
                     <div className="space-y-2">
                     {/* Background Image */}
                     <div className="p-2 border rounded-lg space-y-2">
@@ -788,22 +772,18 @@ function InviteCardDrawer({ open, onOpenChange, guest, event }: InviteCardDrawer
                       )}
                     </div>
                   </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  </AccordionContent>
+                </AccordionItem>
 
                 {/* Text Customization */}
-                <Collapsible
-                  open={openSections.textContent}
-                  onOpenChange={(open) => setOpenSections({ ...openSections, textContent: open })}
-                >
-                  <CollapsibleTrigger className="w-full flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                <AccordionItem value="textContent" className="border rounded-lg">
+                  <AccordionTrigger className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors hover:no-underline">
                     <div className="flex items-center gap-2">
                       <Type className="h-4 w-4" />
                       <Label className="text-sm font-medium">Text Content</Label>
                     </div>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${openSections.textContent ? 'rotate-180' : ''}`} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-3">
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
                     <div className="space-y-2">
                     <div>
                       <Label htmlFor="greeting" className="text-xs">Greeting</Label>
@@ -843,22 +823,18 @@ function InviteCardDrawer({ open, onOpenChange, guest, event }: InviteCardDrawer
                       />
                     </div>
                   </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  </AccordionContent>
+                </AccordionItem>
 
                 {/* QR Code Customization */}
-                <Collapsible
-                  open={openSections.qrCode}
-                  onOpenChange={(open) => setOpenSections({ ...openSections, qrCode: open })}
-                >
-                  <CollapsibleTrigger className="w-full flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                <AccordionItem value="qrCode" className="border rounded-lg">
+                  <AccordionTrigger className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors hover:no-underline">
                     <div className="flex items-center gap-2">
                       <QrCode className="h-4 w-4" />
                       <Label className="text-sm font-medium">QR Code</Label>
                     </div>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${openSections.qrCode ? 'rotate-180' : ''}`} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-3">
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
                     <div className="space-y-3">
                     <div>
                       <div className="flex items-center justify-between mb-2">
@@ -929,22 +905,18 @@ function InviteCardDrawer({ open, onOpenChange, guest, event }: InviteCardDrawer
                       </Select>
                     </div>
                   </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  </AccordionContent>
+                </AccordionItem>
 
                 {/* Text Styling */}
-                <Collapsible
-                  open={openSections.textStyling}
-                  onOpenChange={(open) => setOpenSections({ ...openSections, textStyling: open })}
-                >
-                  <CollapsibleTrigger className="w-full flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                <AccordionItem value="textStyling" className="border rounded-lg">
+                  <AccordionTrigger className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors hover:no-underline">
                     <div className="flex items-center gap-2">
                       <Type className="h-4 w-4" />
                       <Label className="text-sm font-medium">Text Styling</Label>
                     </div>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${openSections.textStyling ? 'rotate-180' : ''}`} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-3">
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
                     <div className="space-y-3">
                     <div>
                       <div className="flex items-center justify-between mb-2">
@@ -1018,22 +990,18 @@ function InviteCardDrawer({ open, onOpenChange, guest, event }: InviteCardDrawer
                       </div>
                     </div>
                   </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  </AccordionContent>
+                </AccordionItem>
 
                 {/* Color Customization */}
-                <Collapsible
-                  open={openSections.colors}
-                  onOpenChange={(open) => setOpenSections({ ...openSections, colors: open })}
-                >
-                  <CollapsibleTrigger className="w-full flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                <AccordionItem value="colors" className="border rounded-lg">
+                  <AccordionTrigger className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors hover:no-underline">
                     <div className="flex items-center gap-2">
                       <Palette className="h-4 w-4" />
                       <Label className="text-sm font-medium">Colors</Label>
                     </div>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${openSections.colors ? 'rotate-180' : ''}`} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-3">
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
                     <div className="space-y-3">
                     <div>
                       <Label className="text-xs mb-2 block">Text Color</Label>
@@ -1130,22 +1098,18 @@ function InviteCardDrawer({ open, onOpenChange, guest, event }: InviteCardDrawer
                       />
                     </div>
                   </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  </AccordionContent>
+                </AccordionItem>
 
                 {/* Layout Controls */}
-                <Collapsible
-                  open={openSections.layout}
-                  onOpenChange={(open) => setOpenSections({ ...openSections, layout: open })}
-                >
-                  <CollapsibleTrigger className="w-full flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors">
+                <AccordionItem value="layout" className="border rounded-lg">
+                  <AccordionTrigger className="w-full flex items-center justify-between p-3 hover:bg-gray-50 transition-colors hover:no-underline">
                     <div className="flex items-center gap-2">
                       <Settings2 className="h-4 w-4" />
                       <Label className="text-sm font-medium">Layout</Label>
                     </div>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${openSections.layout ? 'rotate-180' : ''}`} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-3">
+                  </AccordionTrigger>
+                  <AccordionContent className="px-3 pb-3">
                     <div className="space-y-3">
                     <div>
                       <div className="flex items-center justify-between mb-2">
@@ -1187,20 +1151,20 @@ function InviteCardDrawer({ open, onOpenChange, guest, event }: InviteCardDrawer
                       />
                     </div>
                   </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
-                {/* Reset Button */}
-                <Button
+              {/* Reset Button */}
+              <Button
                   variant="outline"
                   size="sm"
                   onClick={resetCustomization}
                   className="w-full"
                 >
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Reset to Defaults
-                </Button>
-              </div>
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reset to Defaults
+              </Button>
             </TabsContent>
 
             {/* Preview Tab */}

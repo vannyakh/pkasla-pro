@@ -1,10 +1,11 @@
-import { SVGProps } from "react";
+import { SVGProps, ReactNode } from "react";
 
 export interface Iphone15ProProps extends SVGProps<SVGSVGElement> {
   width?: number;
   height?: number;
   src?: string;
   videoSrc?: string;
+  children?: ReactNode;
 }
 
 export default function Iphone15Pro({
@@ -12,6 +13,7 @@ export default function Iphone15Pro({
   height = 882,
   src,
   videoSrc,
+  children,
   ...props
 }: Iphone15ProProps) {
   return (
@@ -21,7 +23,7 @@ export default function Iphone15Pro({
       viewBox={`0 0 ${width} ${height}`}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      {...(props as any)}
+      {...props}
     >
       <path
         d="M2 73C2 32.6832 34.6832 0 75 0H357C397.317 0 430 32.6832 430 73V809C430 849.317 397.317 882 357 882H75C34.6832 882 2 849.317 2 809V73Z"
@@ -57,8 +59,8 @@ export default function Iphone15Pro({
         className="fill-[#E5E5E5] stroke-[#E5E5E5] stroke-[0.5] dark:fill-[#404040] dark:stroke-[#404040]"
       />
 
-      {/* Default background when no image/video */}
-      {!src && !videoSrc && (
+      {/* Default background when no content */}
+      {!src && !videoSrc && !children && (
         <rect
           x="21.25"
           y="19.25"
@@ -71,18 +73,20 @@ export default function Iphone15Pro({
         />
       )}
 
-      {src && (
-        <image
-          href={src}
+      {/* Priority: children > videoSrc > src */}
+      {children ? (
+        <foreignObject
           x="21.25"
           y="19.25"
           width="389.5"
           height="843.5"
-          preserveAspectRatio="xMidYMid slice"
           clipPath="url(#roundedCorners)"
-        />
-      )}
-      {videoSrc && (
+        >
+          <div className="w-full h-full overflow-hidden">
+            {children}
+          </div>
+        </foreignObject>
+      ) : videoSrc ? (
         <foreignObject
           x="21.25"
           y="19.25"
@@ -99,7 +103,17 @@ export default function Iphone15Pro({
             playsInline
           />
         </foreignObject>
-      )}
+      ) : src ? (
+        <image
+          href={src}
+          x="21.25"
+          y="19.25"
+          width="389.5"
+          height="843.5"
+          preserveAspectRatio="xMidYMid slice"
+          clipPath="url(#roundedCorners)"
+        />
+      ) : null}
       <path
         d="M154 48.5C154 38.2827 162.283 30 172.5 30H259.5C269.717 30 278 38.2827 278 48.5C278 58.7173 269.717 67 259.5 67H172.5C162.283 67 154 58.7173 154 48.5Z"
         className="fill-[#F5F5F5] dark:fill-[#262626]"
