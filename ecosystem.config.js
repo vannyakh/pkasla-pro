@@ -33,8 +33,8 @@ module.exports = {
     },
     {
       name: 'Phkasla-web',
-      script: './apps/web/.next/standalone/apps/web/server.js',
-      cwd: process.cwd(),
+      script: 'server.js',
+      cwd: './apps/web/.next/standalone/apps/web',
       instances: 1,
       exec_mode: 'fork',
       watch: false,
@@ -42,7 +42,6 @@ module.exports = {
       env: {
         NODE_ENV: 'production',
         PORT: 3000,
-        ENV_FILE: './apps/web/.env.production',
       },
       error_file: './logs/web-error.log',
       out_file: './logs/web-out.log',
@@ -51,48 +50,7 @@ module.exports = {
       autorestart: true,
       max_restarts: 10,
       min_uptime: '10s',
-    },
-    // Development instances (optional, for dev server)
-    // {
-    //   name: 'backend-dev',
-    //   script: './apps/backend/dist/server.js',
-    //   cwd: process.cwd(),
-    //   instances: 1,
-    //   exec_mode: 'fork',
-    //   watch: false,
-    //   max_memory_restart: '1G',
-    //   env: {
-    //     NODE_ENV: 'development',
-    //     PORT: 4001,
-    //   },
-    //   error_file: './logs/backend-dev-error.log',
-    //   out_file: './logs/backend-dev-out.log',
-    //   log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-    //   merge_logs: true,
-    //   autorestart: true,
-    //   max_restarts: 10,
-    //   min_uptime: '10s',
-    // },
-    // {
-    //   name: 'web-dev',
-    //   script: './apps/web/.next/standalone/apps/web/server.js',
-    //   cwd: process.cwd(),
-    //   instances: 1,
-    //   exec_mode: 'fork',
-    //   watch: false,
-    //   max_memory_restart: '1G',
-    //   env: {
-    //     NODE_ENV: 'development',
-    //     PORT: 3001,
-    //   },
-    //   error_file: './logs/web-dev-error.log',
-    //   out_file: './logs/web-dev-out.log',
-    //   log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-    //   merge_logs: true,
-    //   autorestart: true,
-    //   max_restarts: 10,
-    //   min_uptime: '10s',
-    // },
+    }
   ],
 };
 
