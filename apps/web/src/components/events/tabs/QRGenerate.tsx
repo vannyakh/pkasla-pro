@@ -236,7 +236,7 @@ export default function QRGenerate({ eventId }: QRGenerateProps) {
           <ToolContentPanel selectedTool={selectedTool} qrCodeUrl={qrCodeUrl} />
 
           {/* Canvas Preview Panel */}
-          <div className="flex-1 bg-linear-to-br from-gray-50 to-gray-100 overflow-hidden">
+          <div className="flex-1 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
             <div className="h-full flex flex-col">
               <div className="flex items-center justify-between px-6 py-3 border-b bg-white/80 backdrop-blur-sm">
                 <div className="flex items-center gap-2">
@@ -253,31 +253,33 @@ export default function QRGenerate({ eventId }: QRGenerateProps) {
                   <TooltipContent className="max-w-sm">
                     <div className="space-y-2">
                       <p className="text-xs font-semibold">
-                        ReactFlow Canvas Controls:
+                        Infinite Canvas Controls:
                       </p>
                       <ul className="text-xs space-y-1 list-disc list-inside">
                         <li>
-                          <strong>Drag:</strong> Move elements around
+                          <strong>Drag Elements:</strong> Click and drag to move
                         </li>
                         <li>
-                          <strong>Scroll:</strong> Zoom in/out
+                          <strong>Zoom:</strong> Scroll or use controls
                         </li>
                         <li>
-                          <strong>Pan:</strong> Click empty space and drag
+                          <strong>Pan Canvas:</strong> Middle-click + drag or right-click + drag
                         </li>
                         <li>
-                          <strong>Select:</strong> Click element to edit or
-                          delete
+                          <strong>Select:</strong> Click element to edit
                         </li>
                         <li>
-                          <strong>Controls:</strong> Use bottom-right buttons
+                          <strong>Deselect:</strong> Click empty space
+                        </li>
+                        <li>
+                          <strong>Mini Map:</strong> Quick navigation (bottom-left)
                         </li>
                       </ul>
                     </div>
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <div className="flex-1 flex items-center justify-center p-6">
+              <div className="flex-1 overflow-hidden">
                 <DraggableCanvas qrCodeUrl={qrCodeUrl} />
               </div>
             </div>

@@ -240,18 +240,18 @@ export function DesignPanel() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="h-full flex flex-col p-4">
       {/* Header */}
-      <div className="flex items-center justify-between pb-2 border-b">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between pb-3 border-b mb-4 shrink-0">
+        <div className="flex items-center gap-2">
           <Palette className="h-5 w-5 text-primary" />
           <Label className="text-sm font-semibold">Colors</Label>
         </div>
         <span className="text-xs text-gray-500">{usedColors.length} colors</span>
       </div>
       
-      {/* Colors List */}
-      <div className="space-y-2">
+      {/* Colors List - Scrollable */}
+      <div className="flex-1 overflow-y-auto space-y-2 pr-1">
         {usedColors.length === 0 ? (
           <div className="text-center py-8 text-sm text-gray-500">
             No colors in use

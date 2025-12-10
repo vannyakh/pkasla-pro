@@ -84,15 +84,18 @@ export function DraggableCanvas({ qrCodeUrl }: DraggableCanvasProps) {
     return customization.qrSize;
   }, [customization.qrSize]);
 
-  // Create default elements for initial canvas setup
+  // Create default elements for initial canvas setup - positioned relative to center
   const createDefaultElements = useCallback((): QRElement[] => {
     const qrSize = getResponsiveQRSize();
+    const centerX = 0;
+    const centerY = 0;
+    
     return [
       {
         id: "qr-code",
         type: "qr",
-        x: 150,
-        y: 150,
+        x: centerX - qrSize / 2,
+        y: centerY - qrSize / 2,
         visible: true,
         locked: false,
         zIndex: 1,
@@ -102,8 +105,8 @@ export function DraggableCanvas({ qrCodeUrl }: DraggableCanvasProps) {
       {
         id: "title",
         type: "title",
-        x: 150,
-        y: 80,
+        x: centerX - 100,
+        y: centerY - qrSize / 2 - 80,
         visible: true,
         locked: false,
         zIndex: 2,
@@ -114,8 +117,8 @@ export function DraggableCanvas({ qrCodeUrl }: DraggableCanvasProps) {
       {
         id: "subtitle",
         type: "subtitle",
-        x: 150,
-        y: 450,
+        x: centerX - 100,
+        y: centerY + qrSize / 2 + 30,
         visible: true,
         locked: false,
         zIndex: 3,
@@ -178,10 +181,28 @@ export function DraggableCanvas({ qrCodeUrl }: DraggableCanvasProps) {
   ]);
 
   return (
-    <div
-      id="qr-preview-card"
-      className="relative rounded-lg w-full max-w-full mx-auto overflow-hidden"
-    >
+    <div className="relative w-full h-full">
+      {/* Artboard Background Layer */}
+      <div
+        id="qr-preview-card"
+        className="absolute pointer-events-none"
+        style={{
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          width: `${customization.canvasWidth}px`,
+          height: `${customization.canvasHeight}px`,
+          backgroundColor: customization.backgroundColor,
+          border: customization.customBorderColor
+            ? `2px solid ${customization.customBorderColor}`
+            : "2px solid #e5e7eb",
+          borderRadius: "8px",
+          boxShadow: "0 10px 40px rgba(0, 0, 0, 0.15)",
+          zIndex: 0,
+        }}
+      />
+
+      {/* ReactFlow Infinite Canvas */}
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -192,43 +213,64 @@ export function DraggableCanvas({ qrCodeUrl }: DraggableCanvasProps) {
         nodeTypes={nodeTypes}
         fitView
         fitViewOptions={{
-          padding: 0.2,
+          padding: 0.3,
           includeHiddenNodes: false,
+          maxZoom: 1,
+          minZoom: 0.5,
         }}
-        minZoom={0.3}
-        maxZoom={2}
-        defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
+        minZoom={0.1}
+        maxZoom={4}
+        defaultViewport={{ x: 0, y: 0, zoom: 1 }}
         proOptions={{ hideAttribution: true }}
-        panOnScroll
-        selectionOnDrag
+        panOnScroll={true}
+        selectionOnDrag={true}
         panOnDrag={[1, 2]}
         selectNodesOnDrag={false}
+        zoomOnDoubleClick={false}
+        preventScrolling={true}
+        className="bg-gray-50"
       >
+        {/* Infinite Grid Background */}
         <Background
           color="#d1d5db"
           gap={20}
           size={1}
-          style={{ backgroundColor: "#f9fafb" }}
+          className="bg-gray-50"
         />
+
+        {/* Enhanced Controls */}
         <Controls
           showInteractive={false}
           position="bottom-right"
-          className="bg-white/90! backdrop-blur-sm! rounded-xl! shadow-xl! border! border-gray-200!"
+          className="bg-white! shadow-lg! rounded-lg! border! border-gray-200! m-4!"
         />
+
+        {/* Mini Map */}
         <MiniMap
           nodeColor={(node) => {
             if (node.selected) return "#3b82f6";
             const nodeData = node.data as QRElementData;
             if (nodeData.type === "qr") return "#8b5cf6";
             if (nodeData.type === "logo") return "#10b981";
+            if (nodeData.type === "title") return "#f59e0b";
+            if (nodeData.type === "subtitle") return "#6b7280";
             return "#e5e7eb";
           }}
-          className="bg-white/90! backdrop-blur-sm! rounded-xl! shadow-xl! border! border-gray-200!"
+          className="bg-white! shadow-lg! rounded-lg! border! border-gray-200! m-4!"
           position="bottom-left"
           pannable
           zoomable
         />
       </ReactFlow>
+
+      {/* Artboard Info Overlay */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-none z-10">
+        <div className="bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg shadow-sm border border-gray-200">
+          <span className="text-xs font-medium text-gray-700">
+            {customization.canvasWidth} × {customization.canvasHeight}px
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

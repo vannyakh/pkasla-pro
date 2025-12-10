@@ -11,7 +11,7 @@ import {
   Layers,
   Palette,
   Settings,
-  MountainSnow
+  LayoutTemplate
 } from "lucide-react";
 import {
   Tooltip,
@@ -19,7 +19,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-export type ToolType = "select" | "move" | "qr" | "text" | "image" | "background" | "layers" | "design" | "settings";
+export type ToolType = "select" | "move" | "qr" | "text" | "image" | "frame" | "layers" | "design" | "settings";
 
 interface Tool {
   id: ToolType;
@@ -66,6 +66,13 @@ const tools: Tool[] = [
     shortcut: "I",
   },
   {
+    id: "frame",
+    icon: LayoutTemplate,
+    label: "Frame",
+    description: "Social platform sizes",
+    shortcut: "F",
+  },
+  {
     id: "layers",
     icon: Layers,
     label: "Layers",
@@ -101,8 +108,8 @@ export function ToolbarPanel({ selectedTool, onToolChange }: ToolbarPanelProps) 
         const isActive = selectedTool === tool.id;
         
         // Add separators to group tools visually
-        // After move tools (index 1) and after add tools (index 4)
-        const showSeparator = index === 1 || index === 4;
+        // After move tools (index 1) and after add tools (index 5)
+        const showSeparator = index === 1 || index === 5;
 
         return (
           <React.Fragment key={tool.id}>

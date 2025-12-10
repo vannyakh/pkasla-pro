@@ -122,8 +122,8 @@ export default function DashboardPage() {
         <motion.div
           className="h-full"
         >
-          <Card className="h-full border-border/50 shadow-sm">
-            <CardHeader className="pb-3">
+          <Card className="h-full gap-0 border-border/50 shadow-sm">
+            <CardHeader className="pb-0">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Total Events
@@ -134,7 +134,7 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-light tracking-tight">{totalEvents}</div>
+              <div className="text-3xl p-0 font-light tracking-tight">{totalEvents}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 {publishedEvents} published
               </p>
@@ -145,8 +145,8 @@ export default function DashboardPage() {
         <motion.div
           className="h-full"
         >
-          <Card className="h-full border-border/50 shadow-sm">
-            <CardHeader className="pb-3">
+          <Card className="h-full gap-0 border-border/50 shadow-sm">
+            <CardHeader className="pb-0">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Upcoming
@@ -157,7 +157,7 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-light tracking-tight">
+              <div className="text-3xl p-0 font-light tracking-tight">
                 {upcomingEvents.length}
               </div>
               <p className="text-xs text-muted-foreground mt-1">
@@ -170,8 +170,8 @@ export default function DashboardPage() {
         <motion.div
           className="h-full"
         >
-          <Card className="h-full border-border/50 shadow-sm">
-            <CardHeader className="pb-3">
+          <Card className="h-full gap-0 border-border/50 shadow-sm">
+            <CardHeader className="pb-0">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   Templates
@@ -182,7 +182,7 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-light tracking-tight">
+              <div className="text-3xl p-0 font-light tracking-tight">
                 {events.filter(e => e.templateSlug).length}
               </div>
               <p className="text-xs text-muted-foreground mt-1">

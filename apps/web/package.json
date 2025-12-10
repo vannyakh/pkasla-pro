@@ -9,11 +9,7 @@
     "postbuild": "node scripts/copy-public.js",
     "start": "next start",
     "start:standalone": "node .next/standalone/apps/web/server.js",
-    "lint": "eslint .",
-    "deploy": "npx wrangler pages deploy .next",
-    "pages:deploy": "npx wrangler pages deploy .next",
-    "cf:deploy": "npx wrangler pages deploy .next",
-    "create-admin": "tsx scripts/create-admin.ts"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@bprogress/next": "^3.2.12",
@@ -51,7 +47,6 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.24",
     "gsap": "^3.13.0",
-    "html2canvas": "^1.4.1",
     "html2canvas-pro": "^1.5.13",
     "jotai": "^2.15.1",
     "lucide-react": "^0.556.0",

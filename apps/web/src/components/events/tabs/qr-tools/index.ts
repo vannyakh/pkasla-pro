@@ -12,6 +12,7 @@ export { ContentPanel } from "./ContentPanel";
 export { CanvasPanel } from "./CanvasPanel";
 export { PropertyPanel } from "./PropertyPanel";
 export { MediaPanel } from "./MediaPanel";
+export { FramePanel } from "./FramePanel";
 export { ToolbarPanel } from "./ToolbarPanel";
 export { ToolContentPanel } from "./ToolContentPanel";
 export type { ToolType } from "./ToolbarPanel";

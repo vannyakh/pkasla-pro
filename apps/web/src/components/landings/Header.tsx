@@ -35,9 +35,9 @@ export function Header() {
             <Image
               src="/logo.png"
               alt="phkasla logo"
-              width={120}
-              height={40}
-              className="h-8 md:h-10 w-auto"
+              width={220}
+              height={220}
+              className="h-12 md:h-16 w-auto"
               priority
             />
           </a>

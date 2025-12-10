@@ -7,6 +7,7 @@ import { ContentPanel } from "./ContentPanel";
 import { PropertyPanel } from "./PropertyPanel";
 import { CanvasPanel } from "./CanvasPanel";
 import { MediaPanel } from "./MediaPanel";
+import { FramePanel } from "./FramePanel";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { QrCode } from "lucide-react";
@@ -64,19 +65,26 @@ export function ToolContentPanel({
       case "image":
         return <MediaPanel />;
 
+      case "frame":
+        return (
+          <div className="h-full flex flex-col">
+            <FramePanel />
+          </div>
+        );
+
       case "layers":
         return <PropertyPanel />;
 
       case "design":
         return (
-          <div className="p-4 space-y-4">
+          <div className="h-full flex flex-col">
             <DesignPanel />
           </div>
         );
 
       case "settings":
         return (
-          <div className="p-4">
+          <div className="h-full flex flex-col p-4">
             <CanvasPanel />
           </div>
         );
@@ -94,7 +102,7 @@ export function ToolContentPanel({
   }
   
   return (
-    <div className="w-80 bg-white border-r border-gray-200 overflow-y-auto">
+    <div className="w-80 h-full bg-white border-r border-gray-200 overflow-y-auto flex flex-col">
       {content}
     </div>
   );

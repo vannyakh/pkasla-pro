@@ -271,9 +271,6 @@ importers:
       gsap:
         specifier: ^3.13.0
         version: 3.13.0
-      html2canvas:
-        specifier: ^1.4.1
-        version: 1.4.1
       html2canvas-pro:
         specifier: ^1.5.13
         version: 1.5.13
@@ -3535,10 +3532,6 @@ packages:
   html2canvas-pro@1.5.13:
     resolution: {integrity: sha512-//ksb3JLA+ewSxFODyb5YH6xqRLpe6Kt1i7Zyr5eqHmfcNt0bm8MpzSQjOK2qu6cCv13wqWtOZrCOpA+//EhaA==}
     engines: {node: '>=16.0.0'}
-
-  html2canvas@1.4.1:
-    resolution: {integrity: sha512-fPU6BHNpsyIhr8yyMpTLLxAbkaK8ArIBcmZIRiBLiDhjeqvXolaEmDGmELFuX9I4xDcaKKcJl+TKZLqruBbmWA==}
-    engines: {node: '>=8.0.0'}
 
   http-errors@2.0.1:
     resolution: {integrity: sha512-4FbRdAX+bSdmo4AUFuS0WNiPz8NgFt+r8ThgNWmlrjQjt1Q7ZR9+zTlce2859x4KSXrwIsaeTqDoKQmtP8pLmQ==}
@@ -9019,11 +9012,6 @@ snapshots:
       hermes-estree: 0.25.1
 
   html2canvas-pro@1.5.13:
-    dependencies:
-      css-line-break: 2.1.0
-      text-segmentation: 1.0.3
-
-  html2canvas@1.4.1:
     dependencies:
       css-line-break: 2.1.0
       text-segmentation: 1.0.3
