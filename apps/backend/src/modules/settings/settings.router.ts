@@ -4,10 +4,12 @@ import {
   getSettingsHandler,
   updateSettingsHandler,
   getSystemInfoHandler,
+  testTelegramHandler,
 } from './settings.controller';
 import {
   updateSettingsSchema,
   getSettingsSchema,
+  testTelegramSchema,
 } from './settings.validation';
 
 const router = Router();
@@ -25,6 +27,11 @@ router
 router
   .route('/system-info')
   .get(getSystemInfoHandler);
+
+// Test Telegram bot connection
+router
+  .route('/test-telegram')
+  .post(validateRequest(testTelegramSchema), testTelegramHandler);
 
 export const settingsRouter: Router = router;
 

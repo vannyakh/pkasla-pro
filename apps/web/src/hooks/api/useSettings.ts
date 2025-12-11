@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { Settings, UpdateSettingsDto, SystemInfo } from '@/types/settings';
 import { api } from '@/lib/axios-client';
 import toast from 'react-hot-toast';
 
@@ -7,132 +8,18 @@ import toast from 'react-hot-toast';
  */
 export const settingsKeys = {
   all: ['settings'] as const,
-  settings: () => [...settingsKeys.all, 'settings'] as const,
+  detail: () => [...settingsKeys.all, 'detail'] as const,
   systemInfo: () => [...settingsKeys.all, 'system-info'] as const,
 };
 
 /**
- * Settings interface matching backend
+ * Get current settings (Admin only)
  */
-export interface Settings {
-  // General Settings
-  siteName: string;
-  siteUrl: string;
-  siteDescription: string;
-  maintenanceMode: boolean;
-  allowRegistration: boolean;
-  
-  // Security Settings
-  sessionTimeout: number;
-  maxLoginAttempts: number;
-  requireEmailVerification: boolean;
-  enable2FA: boolean;
-  passwordMinLength: number;
-  
-  // Storage Settings
-  storageProvider: 'local' | 'r2';
-  storageLocalPath: string;
-  r2AccountId?: string;
-  r2BucketName?: string;
-  r2PublicUrl?: string;
-  
-  // Notification Settings
-  emailEnabled: boolean;
-  emailFrom: string;
-  emailHost: string;
-  emailPort: number;
-  emailUser?: string;
-  notificationOnUserRegistration: boolean;
-  notificationOnUserStatusChange: boolean;
-  
-  // Payment Settings
-  // Stripe Configuration
-  stripeEnabled: boolean;
-  stripeSecretKey?: string;
-  stripePublishableKey?: string;
-  stripeWebhookSecret?: string;
-  // Bakong Configuration
-  bakongEnabled: boolean;
-  bakongAccessToken?: string;
-  bakongMerchantAccountId?: string;
-  bakongWebhookSecret?: string;
-  bakongApiUrl?: string;
-  bakongEnvironment?: 'sit' | 'production';
-  
-  id?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-/**
- * Update settings DTO
- */
-export interface UpdateSettingsDto {
-  // General Settings
-  siteName?: string;
-  siteUrl?: string;
-  siteDescription?: string;
-  maintenanceMode?: boolean;
-  allowRegistration?: boolean;
-  
-  // Security Settings
-  sessionTimeout?: number;
-  maxLoginAttempts?: number;
-  requireEmailVerification?: boolean;
-  enable2FA?: boolean;
-  passwordMinLength?: number;
-  
-  // Storage Settings
-  storageProvider?: 'local' | 'r2';
-  storageLocalPath?: string;
-  r2AccountId?: string;
-  r2BucketName?: string;
-  r2PublicUrl?: string;
-  
-  // Notification Settings
-  emailEnabled?: boolean;
-  emailFrom?: string;
-  emailHost?: string;
-  emailPort?: number;
-  emailUser?: string;
-  emailPassword?: string;
-  notificationOnUserRegistration?: boolean;
-  notificationOnUserStatusChange?: boolean;
-  
-  // Payment Settings
-  // Stripe Configuration
-  stripeEnabled?: boolean;
-  stripeSecretKey?: string;
-  stripePublishableKey?: string;
-  stripeWebhookSecret?: string;
-  // Bakong Configuration
-  bakongEnabled?: boolean;
-  bakongAccessToken?: string;
-  bakongMerchantAccountId?: string;
-  bakongWebhookSecret?: string;
-  bakongApiUrl?: string;
-  bakongEnvironment?: 'sit' | 'production';
-}
-
-/**
- * System information interface
- */
-export interface SystemInfo {
-  nodeEnv: string;
-  version: string;
-  uptime: number;
-  maintenanceMode: boolean;
-}
-
-/**
- * Get current settings
- */
-export function useSettings(includeSensitive: boolean = false) {
+export function useSettings() {
   return useQuery<Settings, Error>({
-    queryKey: settingsKeys.settings(),
+    queryKey: settingsKeys.detail(),
     queryFn: async (): Promise<Settings> => {
-      const params = includeSensitive ? '?includeSensitive=true' : '';
-      const response = await api.get<Settings>(`/admin/settings${params}`);
+      const response = await api.get<Settings>('/admin/settings?includeSensitive=true');
       if (!response.success) {
         throw new Error(response.error || 'Failed to fetch settings');
       }
@@ -142,41 +29,39 @@ export function useSettings(includeSensitive: boolean = false) {
       return response.data;
     },
     retry: false,
-    staleTime: 1000 * 60, // 1 minute
+    staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
 
 /**
- * Update settings mutation
+ * Update settings (Admin only)
  */
 export function useUpdateSettings() {
   const queryClient = useQueryClient();
 
   return useMutation<Settings, Error, UpdateSettingsDto>({
     mutationFn: async (updateData: UpdateSettingsDto): Promise<Settings> => {
-      const response = await api.patch<Settings>('/admin/settings', updateData);
+      const response = await api.put<Settings>('/admin/settings', updateData);
       if (!response.success) {
         throw new Error(response.error || 'Failed to update settings');
       }
       if (!response.data) {
-        throw new Error('Settings data not found');
+        throw new Error('Updated settings data not found');
       }
       return response.data;
     },
-    onSuccess: () => {
-      // Invalidate settings queries to refetch
-      queryClient.invalidateQueries({ queryKey: settingsKeys.settings() });
-      queryClient.invalidateQueries({ queryKey: settingsKeys.systemInfo() });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: settingsKeys.all });
       toast.success('Settings updated successfully');
     },
-    onError: (error) => {
-      toast.error(error instanceof Error ? error.message : 'Failed to update settings');
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update settings');
     },
   });
 }
 
 /**
- * Get system information
+ * Get system information (Admin only)
  */
 export function useSystemInfo() {
   return useQuery<SystemInfo, Error>({
@@ -184,16 +69,45 @@ export function useSystemInfo() {
     queryFn: async (): Promise<SystemInfo> => {
       const response = await api.get<SystemInfo>('/admin/settings/system-info');
       if (!response.success) {
-        throw new Error(response.error || 'Failed to fetch system information');
+        throw new Error(response.error || 'Failed to fetch system info');
       }
       if (!response.data) {
-        throw new Error('System information not found');
+        throw new Error('System info data not found');
       }
       return response.data;
     },
     retry: false,
-    staleTime: 1000 * 30, // 30 seconds
-    refetchInterval: 1000 * 60, // Refetch every minute for uptime
+    staleTime: 1000 * 60, // 1 minute
   });
 }
 
+/**
+ * Test Telegram bot connection (Admin only)
+ */
+export function useTestTelegramBot() {
+  return useMutation<{ success: boolean; message: string }, Error, { botToken: string; chatId: string }>({
+    mutationFn: async ({ botToken, chatId }): Promise<{ success: boolean; message: string }> => {
+      const response = await api.post<{ success: boolean; message: string }>('/admin/settings/test-telegram', {
+        botToken,
+        chatId,
+      });
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to test Telegram bot');
+      }
+      if (!response.data) {
+        throw new Error('Test result not found');
+      }
+      return response.data;
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success(data.message || 'Telegram bot connection successful');
+      } else {
+        toast.error(data.message || 'Telegram bot connection failed');
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to test Telegram bot');
+    },
+  });
+}

@@ -173,7 +173,6 @@ export function useUpdateGuest() {
       }
       // Update the guest in cache
       queryClient.setQueryData(guestKeys.detail(guest.id), guest);
-      toast.success('Guest updated successfully');
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to update guest');

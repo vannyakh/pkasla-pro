@@ -3,6 +3,8 @@ import httpStatus from 'http-status';
 import { buildSuccessResponse } from '@/helpers/http-response';
 import { asyncHandler } from '@/utils/async-handler';
 import { settingsService } from './settings.service';
+import { telegramService } from './telegram.service';
+import { AppError } from '@/common/errors/app-error';
 
 /**
  * Get current settings
@@ -38,6 +40,26 @@ export const getSystemInfoHandler = asyncHandler(async (req: Request, res: Respo
   
   return res.status(httpStatus.OK).json(
     buildSuccessResponse(systemInfo, 'System information retrieved successfully')
+  );
+});
+
+/**
+ * Test Telegram bot connection
+ */
+export const testTelegramHandler = asyncHandler(async (req: Request, res: Response) => {
+  const { botToken, chatId } = req.body;
+
+  if (!botToken || !chatId) {
+    throw new AppError(
+      'Bot Token and Chat ID are required',
+      httpStatus.BAD_REQUEST
+    );
+  }
+
+  const result = await telegramService.testConnection(botToken, chatId);
+
+  return res.status(httpStatus.OK).json(
+    buildSuccessResponse(result, result.message)
   );
 });
 

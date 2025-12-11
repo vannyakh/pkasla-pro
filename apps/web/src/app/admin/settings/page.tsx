@@ -10,6 +10,8 @@ import {
   Save,
   Loader2,
   CreditCard,
+  MessageCircle,
+  Send,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -25,7 +27,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { useSettings, useUpdateSettings, useSystemInfo, type Settings as SettingsType } from '@/hooks/api/useSettings'
+import { useSettings, useUpdateSettings, useSystemInfo, useTestTelegramBot } from '@/hooks/api/useSettings'
+import { Settings as SettingsType } from '@/types'
 
 // Helper to format uptime
 const formatUptime = (seconds: number): string => {
@@ -49,9 +52,12 @@ export default function AdminSettingsPage() {
   const { data: settings, isLoading: isLoadingSettings, error: settingsError } = useSettings()
   const { data: systemInfo } = useSystemInfo()
   const updateSettingsMutation = useUpdateSettings()
+  const testTelegramBot = useTestTelegramBot()
 
   // Local state for form (will be synced with API data)
   const [formData, setFormData] = useState<Partial<SettingsType>>({})
+  const [showTelegramToken, setShowTelegramToken] = useState(false)
+  const [isTesting, setIsTesting] = useState(false)
 
   // Sync form data when settings are loaded
   useEffect(() => {
@@ -65,7 +71,7 @@ export default function AdminSettingsPage() {
     field: keyof SettingsType,
     value: string | number | boolean | undefined
   ) => {
-    setFormData((prev) => ({
+    setFormData((prev: SettingsType) => ({
       ...prev,
       [field]: value,
     }))
@@ -83,6 +89,24 @@ export default function AdminSettingsPage() {
   const handleReset = () => {
     if (settings) {
       setFormData(settings)
+    }
+  }
+
+  const handleTestTelegram = async () => {
+    if (!formData.telegramBotToken || !formData.telegramChatId) {
+      return
+    }
+
+    setIsTesting(true)
+    try {
+      await testTelegramBot.mutateAsync({
+        botToken: formData.telegramBotToken,
+        chatId: formData.telegramChatId,
+      })
+    } catch (error) {
+      // Error handling is done in the mutation
+    } finally {
+      setIsTesting(false)
     }
   }
 
@@ -156,7 +180,7 @@ export default function AdminSettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="general" className="text-xs">
             <Settings className="h-3 w-3 mr-1" />
             General
@@ -172,6 +196,10 @@ export default function AdminSettingsPage() {
           <TabsTrigger value="notifications" className="text-xs">
             <Bell className="h-3 w-3 mr-1" />
             Notifications
+          </TabsTrigger>
+          <TabsTrigger value="integrations" className="text-xs">
+            <MessageCircle className="h-3 w-3 mr-1" />
+            Integrations
           </TabsTrigger>
           <TabsTrigger value="payment" className="text-xs">
             <CreditCard className="h-3 w-3 mr-1" />
@@ -484,6 +512,134 @@ export default function AdminSettingsPage() {
                       placeholder="https://your-bucket.your-domain.com"
                     />
                   </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Integrations Settings */}
+        <TabsContent value="integrations" className="space-y-4">
+          <Card className="border border-gray-200">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <MessageCircle className="h-5 w-5 text-blue-500" />
+                <div>
+                  <CardTitle className="text-sm font-semibold text-black">
+                    Telegram Bot Integration
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Configure Telegram bot for receiving real-time notifications about events and guests (Admin Only)
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="telegramBotEnabled" className="text-xs font-medium">
+                    Enable Telegram Bot
+                  </Label>
+                  <p className="text-xs text-gray-500">
+                    Turn on to receive notifications via Telegram
+                  </p>
+                </div>
+                <Switch
+                  id="telegramBotEnabled"
+                  checked={currentSettings.telegramBotEnabled}
+                  onCheckedChange={(checked) =>
+                    handleInputChange('telegramBotEnabled', checked)
+                  }
+                />
+              </div>
+
+              {currentSettings.telegramBotEnabled && (
+                <>
+                  <Separator />
+                  
+                  {/* Setup Instructions */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                      <div className="space-y-2 text-xs text-blue-900">
+                        <p className="font-medium">How to set up your Telegram Bot:</p>
+                        <ol className="list-decimal list-inside space-y-1 ml-2">
+                          <li>Open Telegram and search for <span className="font-mono bg-blue-100 px-1 rounded">@BotFather</span></li>
+                          <li>Send <span className="font-mono bg-blue-100 px-1 rounded">/newbot</span> and follow the instructions</li>
+                          <li>Copy the Bot Token provided by BotFather</li>
+                          <li>Search for <span className="font-mono bg-blue-100 px-1 rounded">@userinfobot</span> to get your Chat ID</li>
+                          <li>Start a chat with your bot and paste both values below</li>
+                        </ol>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="telegramBotToken" className="text-xs font-medium">
+                      Bot Token
+                    </Label>
+                    <Input
+                      id="telegramBotToken"
+                      type={showTelegramToken ? 'text' : 'password'}
+                      value={currentSettings.telegramBotToken || ''}
+                      onChange={(e) =>
+                        handleInputChange('telegramBotToken', e.target.value)
+                      }
+                      className="text-xs font-mono"
+                      placeholder="1234567890:ABCdefGHIjklMNOpqrsTUVwxyz"
+                    />
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="showTelegramToken"
+                        checked={showTelegramToken}
+                        onChange={(e) => setShowTelegramToken(e.target.checked)}
+                        className="rounded"
+                      />
+                      <label htmlFor="showTelegramToken" className="text-xs text-gray-600 cursor-pointer">
+                        Show token
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="telegramChatId" className="text-xs font-medium">
+                      Chat ID
+                    </Label>
+                    <Input
+                      id="telegramChatId"
+                      value={currentSettings.telegramChatId || ''}
+                      onChange={(e) =>
+                        handleInputChange('telegramChatId', e.target.value)
+                      }
+                      className="text-xs font-mono"
+                      placeholder="123456789"
+                    />
+                    <p className="text-xs text-gray-500">
+                      Your Telegram Chat ID (can be found using @userinfobot)
+                    </p>
+                  </div>
+
+                  {/* Test Connection Button */}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleTestTelegram}
+                    disabled={isTesting || !currentSettings.telegramBotToken || !currentSettings.telegramChatId}
+                    className="w-full text-xs h-8"
+                  >
+                    {isTesting ? (
+                      <>
+                        <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                        Testing Connection...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-3 w-3 mr-2" />
+                        Test Connection
+                      </>
+                    )}
+                  </Button>
                 </>
               )}
             </CardContent>

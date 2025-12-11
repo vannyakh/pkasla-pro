@@ -46,6 +46,15 @@ export const updateSettingsSchema = z.object({
     bakongWebhookSecret: z.string().trim().optional(),
     bakongApiUrl: z.string().url().trim().optional().or(z.literal('')),
     bakongEnvironment: z.enum(['sit', 'production']).optional(),
+    
+    // Integration Settings
+    // Telegram Bot Configuration
+    telegramBotEnabled: z.boolean().optional(),
+    telegramBotToken: z.string().trim().optional(),
+    telegramChatId: z.string().trim().optional(),
+    telegramNotifyOnGuestCheckIn: z.boolean().optional(),
+    telegramNotifyOnNewGuest: z.boolean().optional(),
+    telegramNotifyOnEventCreated: z.boolean().optional(),
   }),
 });
 
@@ -53,5 +62,12 @@ export const getSettingsSchema = z.object({
   query: z.object({
     includeSensitive: z.coerce.boolean().optional().default(false),
   }).optional(),
+});
+
+export const testTelegramSchema = z.object({
+  body: z.object({
+    botToken: z.string().min(1, 'Bot Token is required').trim(),
+    chatId: z.string().min(1, 'Chat ID is required').trim(),
+  }),
 });
 

@@ -46,6 +46,15 @@ export interface SettingsDocument extends Document {
   bakongApiUrl?: string;
   bakongEnvironment?: 'sit' | 'production';
   
+  // Integration Settings
+  // Telegram Bot Configuration
+  telegramBotEnabled: boolean;
+  telegramBotToken?: string;
+  telegramChatId?: string;
+  telegramNotifyOnGuestCheckIn: boolean;
+  telegramNotifyOnNewGuest: boolean;
+  telegramNotifyOnEventCreated: boolean;
+  
   createdAt: Date;
   updatedAt: Date;
 }
@@ -96,6 +105,15 @@ const settingsSchema = new Schema<SettingsDocument>(
     bakongWebhookSecret: { type: String, select: false, trim: true },
     bakongApiUrl: { type: String, trim: true },
     bakongEnvironment: { type: String, enum: ['sit', 'production'], default: 'sit' },
+    
+    // Integration Settings
+    // Telegram Bot Configuration
+    telegramBotEnabled: { type: Boolean, default: false },
+    telegramBotToken: { type: String, select: false, trim: true },
+    telegramChatId: { type: String, trim: true },
+    telegramNotifyOnGuestCheckIn: { type: Boolean, default: true },
+    telegramNotifyOnNewGuest: { type: Boolean, default: true },
+    telegramNotifyOnEventCreated: { type: Boolean, default: false },
   },
   { 
     timestamps: true,
@@ -114,6 +132,7 @@ settingsSchema.set('toJSON', {
     delete result.stripeWebhookSecret; // Never expose webhook secrets
     delete result.bakongAccessToken; // Never expose access tokens
     delete result.bakongWebhookSecret; // Never expose webhook secrets
+    delete result.telegramBotToken; // Never expose bot token
     result.id = result._id;
     delete result._id;
     return result;

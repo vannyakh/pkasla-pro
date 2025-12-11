@@ -94,6 +94,9 @@ const envSchema = z.object({
   BAKONG_MERCHANT_ACCOUNT_ID: z.string().optional(),
   BAKONG_WEBHOOK_SECRET: z.string().optional(),
   BAKONG_ENVIRONMENT: z.enum(['sit', 'production']).default('sit'),
+  // Telegram Bot Configuration (Optional - can be configured via settings UI)
+  TELEGRAM_BOT_TOKEN: z.string().optional(),
+  TELEGRAM_CHAT_ID: z.string().optional(),
   // API Configuration
   API_BASE_URL: z.string().url().optional(),
   API_URL: z.string().url().optional(), // Alias for API_BASE_URL
@@ -159,6 +162,12 @@ export const env = {
         merchantAccountId: parsedEnv.data.BAKONG_MERCHANT_ACCOUNT_ID,
         webhookSecret: parsedEnv.data.BAKONG_WEBHOOK_SECRET,
         environment: parsedEnv.data.BAKONG_ENVIRONMENT,
+      }
+    : undefined,
+  telegram: parsedEnv.data.TELEGRAM_BOT_TOKEN
+    ? {
+        botToken: parsedEnv.data.TELEGRAM_BOT_TOKEN,
+        chatId: parsedEnv.data.TELEGRAM_CHAT_ID,
       }
     : undefined,
   api: {

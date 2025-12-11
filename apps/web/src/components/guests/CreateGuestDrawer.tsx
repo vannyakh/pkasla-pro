@@ -260,7 +260,6 @@ export default function GuestDrawer({
           status: formData.status,
         }
         await updateMutation.mutateAsync({ id: guest.id, data: updateData })
-        toast.success('Guest updated successfully')
       } else {
         const createData: CreateGuestDto = {
           name: formData.name,
@@ -276,7 +275,6 @@ export default function GuestDrawer({
           status: formData.status,
         }
         await createMutation.mutateAsync(createData)
-        toast.success('Guest created successfully')
       }
       onSuccess?.()
       onOpenChange(false)

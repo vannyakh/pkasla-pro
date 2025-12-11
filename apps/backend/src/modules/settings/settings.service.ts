@@ -49,6 +49,15 @@ export interface UpdateSettingsDto {
   bakongWebhookSecret?: string;
   bakongApiUrl?: string;
   bakongEnvironment?: 'sit' | 'production';
+  
+  // Integration Settings
+  // Telegram Bot Configuration
+  telegramBotEnabled?: boolean;
+  telegramBotToken?: string;
+  telegramChatId?: string;
+  telegramNotifyOnGuestCheckIn?: boolean;
+  telegramNotifyOnNewGuest?: boolean;
+  telegramNotifyOnEventCreated?: boolean;
 }
 
 class SettingsService {
@@ -160,6 +169,17 @@ class SettingsService {
       }
     }
 
+    // Validate Telegram settings if Telegram bot is being enabled
+    if (updateData.telegramBotEnabled && !currentSettings.telegramBotEnabled) {
+      // Only require token when enabling for the first time
+      if (!updateData.telegramBotToken) {
+        throw new AppError(
+          'Telegram Bot Token is required when enabling Telegram Bot',
+          httpStatus.BAD_REQUEST
+        );
+      }
+    }
+
     // Filter out empty strings for sensitive fields to preserve existing values
     const filteredUpdateData = { ...updateData };
     const sensitiveFields = [
@@ -168,6 +188,7 @@ class SettingsService {
       'bakongAccessToken',
       'bakongWebhookSecret',
       'emailPassword',
+      'telegramBotToken',
     ] as const;
 
     for (const field of sensitiveFields) {

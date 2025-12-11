@@ -89,7 +89,6 @@ export default function QRGenerate({ eventId }: QRGenerateProps) {
     try {
       await generateQRTokenMutation.mutateAsync(eventId);
       await refetch();
-      toast.success("QR code generated successfully!");
     } catch {
       // Error is handled by mutation
     }
@@ -236,7 +235,7 @@ export default function QRGenerate({ eventId }: QRGenerateProps) {
           <ToolContentPanel selectedTool={selectedTool} qrCodeUrl={qrCodeUrl} />
 
           {/* Canvas Preview Panel */}
-          <div className="flex-1 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+          <div className="flex-1 bg-linear-to-br from-gray-50 to-gray-100 overflow-hidden">
             <div className="h-full flex flex-col">
               <div className="flex items-center justify-between px-6 py-3 border-b bg-white/80 backdrop-blur-sm">
                 <div className="flex items-center gap-2">
