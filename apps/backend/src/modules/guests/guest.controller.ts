@@ -103,8 +103,6 @@ export const getMyGuestsHandler = async (req: Request, res: Response) => {
   }
 
   const eventId = req.query.eventId as string | undefined;
-  console.log("eventId", eventId);
-  console.log("req.user.id", req.user.id);
   const guests = await guestService.findByUserId(req.user.id, eventId);
   return res.status(httpStatus.OK).json(buildSuccessResponse(guests));
 };

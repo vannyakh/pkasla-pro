@@ -30,9 +30,9 @@ class NotificationHelper {
         eventName
       );
     } catch (error) {
-      logger.error('Failed to send guest check-in notification', {
+      logger.error({
         error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      }, 'Failed to send guest check-in notification');
     }
   }
 
@@ -59,9 +59,9 @@ class NotificationHelper {
         eventName
       );
     } catch (error) {
-      logger.error('Failed to send new guest notification', {
+      logger.error({
         error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      }, 'Failed to send new guest notification');
     }
   }
 
@@ -88,9 +88,9 @@ class NotificationHelper {
         eventDate
       );
     } catch (error) {
-      logger.error('Failed to send event created notification', {
+      logger.error({
         error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      }, 'Failed to send event created notification');
     }
   }
 
@@ -115,9 +115,9 @@ class NotificationHelper {
         text,
       });
     } catch (error) {
-      logger.error('Failed to send custom Telegram message', {
+      logger.error({
         error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      }, 'Failed to send custom Telegram message');
     }
   }
 }

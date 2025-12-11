@@ -19,14 +19,14 @@ class TelegramService {
         parse_mode: message.parseMode || 'Markdown',
       });
 
-      logger.info('Telegram message sent successfully', {
+      logger.info({
         chatId: message.chatId,
-      });
+      }, 'Telegram message sent successfully');
       return true;
     } catch (error) {
-      logger.error('Error sending Telegram message', {
+      logger.error({
         error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      }, 'Error sending Telegram message');
       return false;
     }
   }
@@ -70,9 +70,9 @@ class TelegramService {
         };
       }
     } catch (error) {
-      logger.error('Error testing Telegram connection', {
+      logger.error({
         error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      }, 'Error testing Telegram connection');
 
       // Handle grammy API errors
       if (error instanceof Error) {
@@ -186,11 +186,11 @@ class TelegramService {
           parse_mode: 'Markdown',
         });
 
-        logger.info('Chat ID requested', {
+        logger.info({
           chatId,
           chatType,
           userId: ctx.from?.id,
-        });
+        }, 'Chat ID requested');
       });
 
       // Handle /start command with helpful message
@@ -222,9 +222,9 @@ class TelegramService {
       bot.start();
       logger.info('Telegram bot started with chat ID command handler');
     } catch (error) {
-      logger.error('Error starting Telegram bot', {
+      logger.error({
         error: error instanceof Error ? error.message : 'Unknown error',
-      });
+      }, 'Error starting Telegram bot');
       throw error;
     }
   }
