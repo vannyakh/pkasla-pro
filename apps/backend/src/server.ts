@@ -21,13 +21,31 @@ import { connectDatabase, disconnectDatabase } from './config/database';
 import { env } from './config/environment';
 import { logger } from './utils/logger';
 import { cacheService } from './common/services/cache.service';
+import { telegramService } from './modules/settings/telegram.service';
 
 const app = createApp();
 let server: ReturnType<typeof app.listen>;
 
+const initTelegramBot = async () => {
+  if (!env.telegram?.botToken) {
+    logger.info('Telegram bot not configured; skipping bot startup');
+    return;
+  }
+
+  try {
+    await telegramService.startBotWithChatIdCommand(env.telegram.botToken);
+    logger.info('Telegram bot started with chat ID command handler');
+  } catch (error) {
+    logger.error('Failed to start Telegram bot service', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
 const start = async () => {
   try {
     await connectDatabase();
+    await initTelegramBot();
     server = app.listen(env.port, () => {
       logger.info(`🚀 Server ready at http://localhost:${env.port}`);
     });
