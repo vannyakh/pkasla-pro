@@ -163,22 +163,22 @@ class TelegramService {
       bot.command(['getchatid', 'chatid'], async (ctx) => {
         const chatId = ctx.chat.id.toString();
         const chatType = ctx.chat.type;
-        const chatTitle = 'title' in ctx.chat ? ctx.chat.title : undefined;
-        const firstName = 'first_name' in ctx.chat ? ctx.chat.first_name : undefined;
-        const username = 'username' in ctx.chat ? ctx.chat.username : undefined;
+        // const chatTitle = 'title' in ctx.chat ? ctx.chat.title : undefined;
+        // const firstName = 'first_name' in ctx.chat ? ctx.chat.first_name : undefined;
+        // const username = 'username' in ctx.chat ? ctx.chat.username : undefined;
 
-        let responseText = `📋 *Your Chat ID:*\n\n\`${chatId}\`\n\n`;
-        responseText += `*Chat Type:* ${chatType}\n`;
+        let responseText = `📋 *Your Chat ID: *\`${chatId}\`\n`;
+        // responseText += `*Chat Type:* ${chatType}\n`;
 
-        if (chatTitle) {
-          responseText += `*Chat Title:* ${chatTitle}\n`;
-        }
-        if (firstName) {
-          responseText += `*First Name:* ${firstName}\n`;
-        }
-        if (username) {
-          responseText += `*Username:* @${username}\n`;
-        }
+        // if (chatTitle) {
+        //   responseText += `*Chat Title:* ${chatTitle}\n`;
+        // }
+        // if (firstName) {
+        //   responseText += `*First Name:* ${firstName}\n`;
+        // }
+        // if (username) {
+        //   responseText += `*Username:* \`@${username}\`\n`;
+        // }
 
         responseText += `\n💡 *Copy the Chat ID above and use it in your settings.*`;
 
