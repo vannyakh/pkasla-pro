@@ -24,6 +24,7 @@ export function useMe() {
     queryKey: authKeys.me(),
     queryFn: async () => {
       const response = await api.get<User>('/auth/me');
+      console.log("🚀 ~ useMe ~ response:", response)
       if (!response.success) throw new Error(response.error);
       return response.data!;
     },

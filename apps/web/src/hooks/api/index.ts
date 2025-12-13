@@ -6,4 +6,6 @@ export * from './useSettings';
 export * from './useTemplate';
 export * from './useTemplatePurchase';
 export * from './useInvitation';
+export * from './useTelegram';
+export * from './useUser';
 

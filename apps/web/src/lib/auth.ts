@@ -22,6 +22,8 @@ declare module 'next-auth' {
     status: string;
     phone?: string;
     avatar?: string;
+    isTelegramBot?: boolean;
+    telegramChatId?: string;
     createdAt: Date | string;
     updatedAt: Date | string;
     // Tokens are optional - HTTP-only cookies handle authentication

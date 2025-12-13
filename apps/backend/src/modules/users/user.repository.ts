@@ -83,6 +83,10 @@ export class UserRepository {
   countDocuments(filter: FilterQuery<UserDocument> = {}) {
     return UserModel.countDocuments(filter);
   }
+
+  findOne(filter: FilterQuery<UserDocument>) {
+    return UserModel.findOne(filter).lean();
+  }
 }
 
 export const userRepository = new UserRepository();

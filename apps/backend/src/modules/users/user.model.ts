@@ -16,6 +16,9 @@ export interface UserDocument extends Document {
   // OAuth provider fields
   provider?: OAuthProvider;
   providerId?: string;
+  // Telegram bot fields
+  isTelegramBot: boolean;
+  telegramChatId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,6 +44,9 @@ const userSchema = new Schema<UserDocument>(
     // OAuth provider fields
     provider: { type: String, enum: OAUTH_PROVIDERS, index: true },
     providerId: { type: String, index: true },
+    // Telegram bot fields
+    isTelegramBot: { type: Boolean, default: false },
+    telegramChatId: { type: String, index: true, sparse: true },
   },
   { timestamps: true },
 );

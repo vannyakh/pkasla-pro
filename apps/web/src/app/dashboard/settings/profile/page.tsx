@@ -1,34 +1,54 @@
 "use client";
 
-import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useState, useRef, useEffect } from "react";
 import {
   User,
   Mail,
   Phone,
   Save,
   Camera,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import type { User as UserType } from "@/types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useMe } from "@/hooks/api/useAuth";
+import { useUpdateProfile } from "@/hooks/api/useUser";
+import { api } from "@/lib/axios-client";
 import toast from "react-hot-toast";
 
 export default function ProfilePage() {
-  const { data: session, update } = useSession();
-  const user = session?.user as UserType | undefined;
+  const { data: user, isLoading: isLoadingUser } = useMe();
+  const updateProfile = useUpdateProfile();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
+    name: "",
+    email: "",
     phone: "",
-    address: "",
+    avatarFile: null as File | null,
   });
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [uploadedAvatarUrl, setUploadedAvatarUrl] = useState<string | undefined>(undefined);
+  const [avatarPreview, setAvatarPreview] = useState<string | undefined>(undefined);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  // Update form data when user data is loaded
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        avatarFile: null,
+      });
+      setAvatarPreview(user.avatar);
+      setUploadedAvatarUrl(user.avatar);
+    }
+  }, [user]);
 
   const getInitials = () => {
     if (user?.name) {
@@ -45,25 +65,120 @@ export default function ProfilePage() {
     return "U";
   };
 
+  const handleAvatarClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Image size must be less than 10MB");
+      return;
+    }
+
+    // Create preview immediately
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatarPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    // Set file in form data
+    setFormData((prev) => ({ ...prev, avatarFile: file }));
+    setIsUploadingAvatar(true);
+    setUploadProgress(0);
+
+    // Upload file to server
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+
+      const response = await api.upload<{
+        id: string;
+        url: string;
+        key: string;
+        provider: string;
+        filename: string;
+        mimetype: string;
+        size: number;
+        originalSize?: number;
+        compressionRatio?: string;
+        folder: string;
+        createdAt: string;
+      }>("/upload/avatar", uploadFormData, (progress) => {
+        setUploadProgress(progress);
+      });
+
+      if (response.success && response.data) {
+        setUploadedAvatarUrl(response.data.url);
+        setIsUploadingAvatar(false);
+        setUploadProgress(100);
+        toast.success("Avatar uploaded successfully!");
+      } else {
+        throw new Error(response.error || "Failed to upload avatar");
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to upload avatar";
+      setIsUploadingAvatar(false);
+      setUploadProgress(0);
+      setFormData((prev) => ({ ...prev, avatarFile: null }));
+      setAvatarPreview(user?.avatar);
+      toast.error(errorMessage);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+
+    // Check if avatar is still uploading
+    if (isUploadingAvatar) {
+      toast.error("Please wait for avatar upload to complete");
+      return;
+    }
 
     try {
-      // TODO: Replace with actual API call
-      // const response = await api.put('/users/profile', formData)
+      // Only send fields that have values to avoid clearing existing data
+      const updateData: {
+        name?: string;
+        phone?: string;
+        avatar?: string;
+      } = {};
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (formData.name && formData.name.trim()) {
+        updateData.name = formData.name.trim();
+      }
 
-      // Update session if needed
-      await update();
+      if (formData.phone && formData.phone.trim()) {
+        updateData.phone = formData.phone.trim();
+      } else if (formData.phone === "" && user?.phone) {
+        // Only explicitly clear phone if user had one and intentionally cleared it
+        // For now, don't send empty phone to preserve existing value
+      }
 
-      toast.success("Profile updated successfully");
+      if (uploadedAvatarUrl && uploadedAvatarUrl !== user?.avatar) {
+        updateData.avatar = uploadedAvatarUrl;
+      }
+
+      // Only make the request if there are changes
+      if (Object.keys(updateData).length > 0) {
+        await updateProfile.mutateAsync(updateData);
+      } else {
+        toast.error("No changes to save");
+      }
     } catch (error) {
-      toast.error("Failed to update profile");
-    } finally {
-      setIsLoading(false);
+      console.error("Profile update error:", error);
     }
   };
 
@@ -85,16 +200,42 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col h-24 w-24 mb-4 relative">
-              <Avatar className="h-24 w-24 ">
+              <Avatar className="h-24 w-24">
+                <AvatarImage src={avatarPreview} alt={user?.name} />
                 <AvatarFallback className="bg-gray-200 text-black text-2xl font-medium">
                   {getInitials()}
                 </AvatarFallback>
               </Avatar>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
               <div className="absolute right-0 bottom-0">
-                <Button variant="outline" size="icon" className="rounded-full" >
-                  <Camera />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={handleAvatarClick}
+                  disabled={isUploadingAvatar}
+                  type="button"
+                >
+                  {isUploadingAvatar ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
+              {isUploadingAvatar && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                  <div className="text-white text-xs font-semibold">
+                    {uploadProgress}%
+                  </div>
+                </div>
+              )}
             </div>
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
@@ -166,13 +307,18 @@ export default function ProfilePage() {
 
               <Button
                 type="submit"
-                disabled={isLoading}
+                disabled={updateProfile.isPending || isLoadingUser || isUploadingAvatar}
                 className="w-full h-11 text-sm font-medium disabled:opacity-50"
               >
-                {isLoading ? (
+                {updateProfile.isPending ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Saving...
+                  </>
+                ) : isUploadingAvatar ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Uploading Avatar...
                   </>
                 ) : (
                   <>

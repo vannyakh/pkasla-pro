@@ -23,3 +23,21 @@ export const listUsersHandler = async (req: Request, res: Response) => {
   return res.status(httpStatus.OK).json(result);
 };
 
+export const updateTelegramHandler = async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  const updated = await userService.updateTelegram(userId!, req.body);
+  return res.status(httpStatus.OK).json(buildSuccessResponse(updated, 'Telegram connected successfully'));
+};
+
+export const disconnectTelegramHandler = async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  const updated = await userService.disconnectTelegram(userId!);
+  return res.status(httpStatus.OK).json(buildSuccessResponse(updated, 'Telegram disconnected successfully'));
+};
+
+export const getTelegramBotStatusHandler = async (req: Request, res: Response) => {
+  const userId = req.user?.id;
+  const status = await userService.getTelegramBotStatus(userId!);
+  return res.status(httpStatus.OK).json(buildSuccessResponse(status, 'Telegram bot status fetched successfully'));
+};
+

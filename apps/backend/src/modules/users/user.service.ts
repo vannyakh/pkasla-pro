@@ -31,6 +31,8 @@ export interface UserResponse {
   status: UserStatus;
   provider?: OAuthProvider;
   providerId?: string;
+  isTelegramBot?: boolean;
+  telegramChatId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -196,6 +198,72 @@ class UserService {
     }
     return safeUser;
   }
+
+  async updateTelegram(id: string, payload: { telegramChatId: string; isTelegramBot: boolean }) {
+    const currentUser = await userRepository.findById(id);
+    if (!currentUser) {
+      throw new AppError('User not found', httpStatus.NOT_FOUND);
+    }
+
+    // Check if chat ID is already in use by another user
+    const existingUser = await userRepository.findOne({ telegramChatId: payload.telegramChatId });
+    if (existingUser && existingUser._id?.toString() !== id) {
+      throw new AppError('This Telegram account is already connected to another user', httpStatus.CONFLICT);
+    }
+
+    const updated = await userRepository.updateById(id, {
+      $set: {
+        telegramChatId: payload.telegramChatId,
+        isTelegramBot: payload.isTelegramBot,
+      },
+    });
+
+    if (!updated) {
+      throw new AppError('User not found', httpStatus.NOT_FOUND);
+    }
+
+    const safeUser = sanitizeUser(updated as unknown as UserDocument);
+    if (!safeUser) {
+      throw new AppError('Unable to update Telegram integration', httpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return safeUser;
+  }
+
+  async disconnectTelegram(id: string) {
+    const updated = await userRepository.updateById(id, {
+      $set: {
+        telegramChatId: null,
+        isTelegramBot: false,
+      },
+    });
+
+    if (!updated) {
+      throw new AppError('User not found', httpStatus.NOT_FOUND);
+    }
+
+    const safeUser = sanitizeUser(updated as unknown as UserDocument);
+    if (!safeUser) {
+      throw new AppError('Unable to disconnect Telegram', httpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return safeUser;
+  }
+
+  async getTelegramBotStatus(id: string) {
+    const user = await userRepository.findById(id);
+    if (!user) {
+      throw new AppError('User not found', httpStatus.NOT_FOUND);
+    }
+
+    const isConnected = !!(user.isTelegramBot && user.telegramChatId);
+    
+    return {
+      isConnected,
+      isTelegramBot: user.isTelegramBot || false,
+      telegramChatId: user.telegramChatId || null,
+      status: isConnected ? 'connected' : 'disconnected',
+    };
+  }
+
 
   async list(page: number = 1, pageSize: number = 10) {
     const [users, total] = await Promise.all([

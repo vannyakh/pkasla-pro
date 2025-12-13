@@ -7,8 +7,11 @@ import {
   getCurrentUserHandler,
   listUsersHandler,
   updateCurrentUserHandler,
+  updateTelegramHandler,
+  disconnectTelegramHandler,
+  getTelegramBotStatusHandler,
 } from './user.controller';
-import { updateProfileSchema, listUsersQuerySchema } from './user.validation';
+import { updateProfileSchema, listUsersQuerySchema, updateTelegramSchema } from './user.validation';
 
 const router = Router();
 
@@ -26,6 +29,25 @@ router.get(
   authorize('admin'),
   validateRequest(listUsersQuerySchema),
   asyncHandler(listUsersHandler),
+);
+
+router.post(
+  '/telegram',
+  authenticate,
+  validateRequest(updateTelegramSchema),
+  asyncHandler(updateTelegramHandler),
+);
+
+router.delete(
+  '/telegram',
+  authenticate,
+  asyncHandler(disconnectTelegramHandler),
+);
+
+router.get(
+  '/telegram/status',
+  authenticate,
+  asyncHandler(getTelegramBotStatusHandler),
 );
 
 export const userRouter: Router = router;

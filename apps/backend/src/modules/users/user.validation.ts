@@ -31,6 +31,11 @@ export const updateProfileSchema = z.object({
       )
       .optional()
       .transform((val) => (val === '' ? null : val)), // Convert empty string to null, keep undefined as-is
+    avatar: z
+      .string()
+      .url({ message: 'Avatar must be a valid URL' })
+      .optional()
+      .transform((val) => (val === '' ? null : val)), // Convert empty string to null
   }),
 });
 
@@ -53,4 +58,23 @@ export const listUsersQuerySchema = z.object({
  * Type inference for list users query
  */
 export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>['query'];
+
+/**
+ * Telegram integration validation schema
+ */
+export const updateTelegramSchema = z.object({
+  body: z.object({
+    telegramChatId: z
+      .string()
+      .trim()
+      .min(1, { message: 'Telegram Chat ID is required' })
+      .regex(/^-?\d+$/, { message: 'Telegram Chat ID must be a valid number' }),
+    isTelegramBot: z.boolean().default(true),
+  }),
+});
+
+/**
+ * Type inference for Telegram update input
+ */
+export type UpdateTelegramInput = z.infer<typeof updateTelegramSchema>['body'];
 

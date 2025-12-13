@@ -10,6 +10,8 @@ export interface User {
   name: string;
   role: UserRole;
   status?: UserStatus;
+  isTelegramBot?: boolean;
+  telegramChatId?: string;
   createdAt?: string;
   updatedAt?: string;
 }

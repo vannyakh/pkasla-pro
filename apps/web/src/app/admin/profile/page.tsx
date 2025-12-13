@@ -1,18 +1,26 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Camera, Mail, User as UserIcon, Shield, Bell, Lock, Save } from 'lucide-react'
+import React, { useState, useRef } from 'react'
+import { Camera, Mail, User as UserIcon, Shield, Bell, Lock, Save, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useMe } from '@/hooks/api/useAuth'
+import { useUpdateProfile, useUpdateAvatar } from '@/hooks/api/useUser'
 import { Skeleton } from '@/components/ui/skeleton'
+import toast from 'react-hot-toast'
 
 export default function AdminProfilePage() {
   const { data: user, isLoading } = useMe()
+  const updateProfile = useUpdateProfile()
+  const updateAvatar = useUpdateAvatar()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  
   const [isEditing, setIsEditing] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -36,10 +44,81 @@ export default function AdminProfilePage() {
     })
   }
 
-  const handleSave = () => {
-    // TODO: Implement profile update API call
-    console.log('Saving profile:', formData)
-    setIsEditing(false)
+  const handleAvatarClick = () => {
+    if (isEditing && fileInputRef.current) {
+      fileInputRef.current.click()
+    }
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file')
+      return
+    }
+
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Image size must be less than 10MB')
+      return
+    }
+
+    setIsUploadingAvatar(true)
+    setUploadProgress(0)
+
+    try {
+      await updateAvatar.mutateAsync({
+        file,
+        onProgress: (progress) => {
+          setUploadProgress(progress)
+        },
+      })
+      toast.success('Avatar updated successfully!')
+    } catch (error) {
+      console.error('Avatar upload error:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to update avatar')
+    } finally {
+      setIsUploadingAvatar(false)
+      setUploadProgress(0)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  const handleSave = async () => {
+    try {
+      // Only send fields that have values to avoid clearing existing data
+      const updateData: {
+        name?: string;
+        phone?: string;
+      } = {};
+
+      if (formData.name && formData.name.trim()) {
+        updateData.name = formData.name.trim();
+      }
+
+      if (formData.phone && formData.phone.trim()) {
+        updateData.phone = formData.phone.trim();
+      } else if (formData.phone === "" && user?.phone) {
+        // Only explicitly clear phone if user had one and intentionally cleared it
+        // For now, don't send empty phone to preserve existing value
+      }
+
+      // Only make the request if there are changes
+      if (Object.keys(updateData).length > 0) {
+        await updateProfile.mutateAsync(updateData);
+        setIsEditing(false);
+      } else {
+        toast.error('No changes to save');
+        setIsEditing(false);
+      }
+    } catch (error) {
+      console.error('Profile update error:', error)
+    }
   }
 
   const handleCancel = () => {
@@ -120,11 +199,29 @@ export default function AdminProfilePage() {
                 </Button>
               ) : (
                 <div className="flex gap-2">
-                  <Button onClick={handleSave} size="sm">
-                    <Save className="h-4 w-4 mr-2" />
-                    Save
+                  <Button 
+                    onClick={handleSave} 
+                    size="sm"
+                    disabled={updateProfile.isPending}
+                  >
+                    {updateProfile.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="h-4 w-4 mr-2" />
+                        Save
+                      </>
+                    )}
                   </Button>
-                  <Button onClick={handleCancel} variant="outline" size="sm">
+                  <Button 
+                    onClick={handleCancel} 
+                    variant="outline" 
+                    size="sm"
+                    disabled={updateProfile.isPending}
+                  >
                     Cancel
                   </Button>
                 </div>
@@ -142,13 +239,35 @@ export default function AdminProfilePage() {
                   </AvatarFallback>
                 </Avatar>
                 {isEditing && (
-                  <Button
-                    size="icon"
-                    variant="secondary"
-                    className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full shadow-md"
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full shadow-md"
+                      onClick={handleAvatarClick}
+                      disabled={isUploadingAvatar}
+                    >
+                      {isUploadingAvatar ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Camera className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </>
+                )}
+                {isUploadingAvatar && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                    <div className="text-white text-xs font-semibold">
+                      {uploadProgress}%
+                    </div>
+                  </div>
                 )}
               </div>
               <div className="flex-1">
