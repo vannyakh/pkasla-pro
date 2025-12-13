@@ -7,6 +7,7 @@ import { apiRouter } from './routes';
 import { notFoundHandler } from './common/middlewares/not-found-handler';
 import { errorHandler } from './common/middlewares/error-handler';
 import { checkMaintenanceMode } from './common/middlewares/check-settings';
+import { generalRateLimiter } from './common/middlewares/rate-limit';
 import { sessionConfig } from './config/session';
 import { env } from './config/environment';
 import type { Application } from 'express';
@@ -46,6 +47,9 @@ export const createApp = (): Application => {
   app.use(cookieParser());
   app.use(compression());
   app.use(sessionConfig);
+
+  // Apply rate limiting to all API routes
+  app.use('/api/v1', generalRateLimiter);
 
   // Check maintenance mode for all API routes (admins can bypass)
   app.use('/api/v1', checkMaintenanceMode);

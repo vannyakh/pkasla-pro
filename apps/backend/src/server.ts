@@ -34,7 +34,6 @@ const initTelegramBot = async () => {
 
   try {
     await telegramService.startBotWithChatIdCommand(env.telegram.botToken);
-    logger.info('Telegram bot started with chat ID command handler');
   } catch (error) {
     logger.error({
       error: error instanceof Error ? error.message : 'Unknown error',

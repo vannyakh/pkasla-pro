@@ -134,15 +134,12 @@ export default function AdminPage() {
       <DashboardHeader />
 
       <DashboardKPICards kpiData={kpiData} isLoading={isLoading} />
-
-      <UserGrowthChart data={lineChartData} isLoading={isLoading} />
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <UserRolesRadarChart data={radarData} isLoading={isLoading} />
         <UserStatusDonutChart data={donutData} isLoading={isLoading} />
         <UsersByRoleBarChart data={barChartData} isLoading={isLoading} />
       </div>
-
+      <UserGrowthChart data={lineChartData} isLoading={isLoading} />
       <QuickActionsCards />
     </div>
   )

@@ -59,19 +59,8 @@ export function PaymentLogToolbar({
   onStatusFilterChange,
 }: PaymentLogToolbarProps) {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col sm:flex-row gap-3">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search by transaction ID, user ID..."
-            value={searchTerm}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 h-9 text-xs"
-          />
-        </div>
-      </div>
+    <div className="flex flex-row items-center justify-between gap-4">
+      
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
@@ -131,7 +120,18 @@ export function PaymentLogToolbar({
           </SelectContent>
         </Select>
       </div>
+      <div className="flex flex-col sm:flex-row gap-3">
+        {/* Search */}
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search by transaction ID, user ID..."
+            value={searchTerm}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-8 h-9 text-xs border-gray-200"
+          />
+        </div>
+      </div>
     </div>
-  )
+  );
 }
-

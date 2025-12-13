@@ -102,6 +102,39 @@ const envSchema = z.object({
   API_URL: z.string().url().optional(), // Alias for API_BASE_URL
   // CORS Configuration
   CORS_ORIGIN: z.string().optional(), // Comma-separated list of allowed origins, or '*' for all, or leave empty for same-origin
+  // Rate Limiting Configuration
+  RATE_LIMIT_WINDOW_MS: z
+    .string()
+    .optional()
+    .transform((val) => Number(val ?? 900000)), // Default 15 minutes
+  RATE_LIMIT_MAX: z
+    .string()
+    .optional()
+    .transform((val) => Number(val ?? 100)), // Default 100 requests
+  RATE_LIMIT_AUTH_WINDOW_MS: z
+    .string()
+    .optional()
+    .transform((val) => Number(val ?? 900000)), // Default 15 minutes
+  RATE_LIMIT_AUTH_MAX: z
+    .string()
+    .optional()
+    .transform((val) => Number(val ?? 5)), // Default 5 requests
+  RATE_LIMIT_UPLOAD_WINDOW_MS: z
+    .string()
+    .optional()
+    .transform((val) => Number(val ?? 900000)), // Default 15 minutes
+  RATE_LIMIT_UPLOAD_MAX: z
+    .string()
+    .optional()
+    .transform((val) => Number(val ?? 20)), // Default 20 requests
+  RATE_LIMIT_WEBHOOK_WINDOW_MS: z
+    .string()
+    .optional()
+    .transform((val) => Number(val ?? 60000)), // Default 1 minute
+  RATE_LIMIT_WEBHOOK_MAX: z
+    .string()
+    .optional()
+    .transform((val) => Number(val ?? 100)), // Default 100 requests
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
@@ -183,6 +216,16 @@ export const env = {
           ? parsedEnv.data.CORS_ORIGIN 
           : parsedEnv.data.CORS_ORIGIN.split(',').map(o => o.trim()))
       : undefined,
+  },
+  rateLimit: {
+    windowMs: parsedEnv.data.RATE_LIMIT_WINDOW_MS,
+    max: parsedEnv.data.RATE_LIMIT_MAX,
+    authWindowMs: parsedEnv.data.RATE_LIMIT_AUTH_WINDOW_MS,
+    authMax: parsedEnv.data.RATE_LIMIT_AUTH_MAX,
+    uploadWindowMs: parsedEnv.data.RATE_LIMIT_UPLOAD_WINDOW_MS,
+    uploadMax: parsedEnv.data.RATE_LIMIT_UPLOAD_MAX,
+    webhookWindowMs: parsedEnv.data.RATE_LIMIT_WEBHOOK_WINDOW_MS,
+    webhookMax: parsedEnv.data.RATE_LIMIT_WEBHOOK_MAX,
   },
   isProduction: parsedEnv.data.NODE_ENV === 'production',
   isDevelopment: parsedEnv.data.NODE_ENV === 'development',

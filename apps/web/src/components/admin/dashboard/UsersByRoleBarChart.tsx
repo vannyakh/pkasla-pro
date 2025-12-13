@@ -2,9 +2,10 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { Spinner } from '@/components/ui/shadcn-io/spinner'
 
 interface BarChartDataItem {
   name: string
@@ -35,11 +36,17 @@ export function UsersByRoleBarChart({ data, isLoading = false }: UsersByRoleBarC
         <div className="h-[200px] md:h-[250px] w-full">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
-              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              <Spinner />
             </div>
           ) : data.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.9}/>
+                    <stop offset="100%" stopColor="#60a5fa" stopOpacity={0.7}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200" />
                 <XAxis
                   dataKey="name"
@@ -57,8 +64,19 @@ export function UsersByRoleBarChart({ data, isLoading = false }: UsersByRoleBarC
                   className="text-xs"
                   width={40}
                 />
-                <Tooltip />
-                <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.96)', 
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                />
+                <Bar 
+                  dataKey="value" 
+                  radius={[8, 8, 0, 0]}
+                  fill="url(#colorGradient)"
+                />
               </BarChart>
             </ResponsiveContainer>
           ) : (

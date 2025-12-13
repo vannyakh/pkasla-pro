@@ -6,6 +6,10 @@ import path from "path";
 const assetPrefix = process.env.NEXT_PUBLIC_ASSET_PREFIX || '';
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
+// Backend API URL for proxy configuration
+// This allows the frontend to make API calls to /api/* which will be proxied to the backend
+const backendApiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+
 const nextConfig: NextConfig = {
   // Standalone output for server deployment
   // This creates a minimal server.js file that can run independently
@@ -88,6 +92,19 @@ const nextConfig: NextConfig = {
     // serverActions: {
     //   bodySizeLimit: '2mb',
     // },
+  },
+  
+  // API Proxy Configuration
+  // Rewrites allow proxying API requests to the backend server
+  // This helps avoid CORS issues and keeps the backend URL hidden from the client
+  // Note: We use /backend-api/* to avoid conflicts with Next.js API routes (e.g., /api/auth/*)
+  async rewrites() {
+    return [
+      {
+        source: '/backend-api/:path*',
+        destination: `${backendApiUrl}/:path*`,
+      },
+    ];
   },
 };
 

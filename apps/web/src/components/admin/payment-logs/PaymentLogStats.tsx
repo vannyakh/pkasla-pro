@@ -22,21 +22,21 @@ export function PaymentLogStats({ stats }: PaymentLogStatsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
       {/* Total Logs */}
-      <Card className="border border-gray-200">
-        <CardHeader className="pb-3">
+      <Card className="border  gap-0 border-gray-200">
+        <CardHeader>
           <CardTitle className="text-sm font-semibold text-gray-700">Total Logs</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className='py-0'>
           <div className="text-2xl font-bold text-black">{stats.total.toLocaleString()}</div>
         </CardContent>
       </Card>
 
       {/* Total Revenue */}
-      <Card className="border border-gray-200">
-        <CardHeader className="pb-3">
+      <Card className="border  gap-0 border-gray-200">
+        <CardHeader>
           <CardTitle className="text-sm font-semibold text-gray-700">Total Revenue</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className='py-0'>
           <div className="text-2xl font-bold text-green-600">
             {formatAmount(stats.totalAmount)}
           </div>
@@ -44,11 +44,11 @@ export function PaymentLogStats({ stats }: PaymentLogStatsProps) {
       </Card>
 
       {/* By Status */}
-      <Card className="border border-gray-200">
+      <Card className="border  gap-0 border-gray-200">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-semibold text-gray-700">By Status</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className='py-0'>
           <div className="space-y-2">
             {Object.entries(stats.byStatus).map(([status, count]) => (
               <div key={status} className="flex items-center justify-between">
@@ -73,11 +73,11 @@ export function PaymentLogStats({ stats }: PaymentLogStatsProps) {
       </Card>
 
       {/* By Payment Method */}
-      <Card className="border border-gray-200">
+      <Card className="border  gap-0 border-gray-200">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-semibold text-gray-700">By Payment Method</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className='py-0'>
           <div className="space-y-2">
             {Object.entries(stats.byPaymentMethod).map(([method, count]) => (
               <div key={method} className="flex items-center justify-between">
@@ -100,11 +100,11 @@ export function PaymentLogStats({ stats }: PaymentLogStatsProps) {
       </Card>
 
       {/* By Payment Type */}
-      <Card className="border border-gray-200">
+      <Card className="border  gap-0 border-gray-200">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-semibold text-gray-700">By Payment Type</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className='py-0'>
           <div className="space-y-2">
             {Object.entries(stats.byPaymentType).map(([type, count]) => (
               <div key={type} className="flex items-center justify-between">
@@ -117,11 +117,11 @@ export function PaymentLogStats({ stats }: PaymentLogStatsProps) {
       </Card>
 
       {/* By Event Type */}
-      <Card className="border border-gray-200">
+      <Card className="border  gap-0 border-gray-200">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-semibold text-gray-700">By Event Type</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className='py-0'>
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {Object.entries(stats.byEventType).map(([eventType, count]) => (
               <div key={eventType} className="flex items-center justify-between">
@@ -135,6 +135,6 @@ export function PaymentLogStats({ stats }: PaymentLogStatsProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 

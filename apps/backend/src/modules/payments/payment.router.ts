@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { asyncHandler } from '@/utils/async-handler';
 import { authenticate } from '@/common/middlewares/authenticate';
+import { webhookRateLimiter } from '@/common/middlewares/rate-limit';
 import { 
   createSubscriptionPaymentIntentHandler, 
   createTemplatePaymentIntentHandler,
@@ -16,12 +17,14 @@ const router = Router();
 // Webhook endpoints (must be before body parsing middleware)
 router.post(
   '/webhook/stripe',
+  webhookRateLimiter,
   express.raw({ type: 'application/json' }),
   asyncHandler(stripeWebhookHandler),
 );
 
 router.post(
   '/webhook/bakong',
+  webhookRateLimiter,
   express.json(),
   asyncHandler(bakongWebhookHandler),
 );

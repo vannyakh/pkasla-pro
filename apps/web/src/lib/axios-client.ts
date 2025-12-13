@@ -1,7 +1,14 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from 'axios';
 import type { ApiResponse } from '@/types/axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
+/**
+ * Use Next.js proxy for backend API requests
+ * We use /backend-api/* to avoid conflicts with Next.js API routes (e.g., /api/auth/*)
+ * In development: /backend-api/* → http://localhost:4000/api/v1/*
+ * In production: /backend-api/* → your backend URL
+ * This avoids CORS issues and keeps the backend URL hidden from the client
+ */
+const API_BASE_URL = '/backend-api';
 
 /**
  * Create Axios instance with default configuration
@@ -68,6 +75,7 @@ axiosInstance.interceptors.response.use(
       try {
         // Refresh token endpoint reads refreshToken from HTTP-only cookie
         // No need to send token in body - cookies are sent automatically
+        // Using proxy: /backend-api/auth/refresh → backend API
         const refreshResponse = await axios.post(
           `${API_BASE_URL}/auth/refresh`,
           {}, // Empty body - backend reads refreshToken from cookie

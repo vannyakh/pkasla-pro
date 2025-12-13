@@ -5,25 +5,48 @@ import Link from 'next/link'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface UserGrowthChartProps {
   data: Array<{ day: string; expected: number; actual: number }>
   isLoading?: boolean
+  selectedPeriod?: string
+  onPeriodChange?: (period: string) => void
 }
 
-export function UserGrowthChart({ data, isLoading = false }: UserGrowthChartProps) {
+export function UserGrowthChart({ 
+  data, 
+  isLoading = false,
+  selectedPeriod = '7d',
+  onPeriodChange 
+}: UserGrowthChartProps) {
   return (
     <Card className="border border-gray-200 shadow-none">
       <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <CardTitle className="text-sm font-semibold text-black">User Growth Trend</CardTitle>
-          <Link
-            href="/admin/analytics"
-            className="text-xs text-gray-600 hover:text-gray-900 flex items-center gap-1 group"
-          >
-            View Report
-            <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <Select value={selectedPeriod} onValueChange={onPeriodChange}>
+              <SelectTrigger size="sm" className="w-[130px] h-8 text-xs">
+                <SelectValue placeholder="Select period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="7d">Last 7 days</SelectItem>
+                <SelectItem value="14d">Last 14 days</SelectItem>
+                <SelectItem value="30d">Last 30 days</SelectItem>
+                <SelectItem value="90d">Last 90 days</SelectItem>
+                <SelectItem value="180d">Last 6 months</SelectItem>
+                <SelectItem value="365d">Last year</SelectItem>
+              </SelectContent>
+            </Select>
+            
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-3 md:p-6">

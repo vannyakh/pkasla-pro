@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { TrendingUp, TrendingDown, ArrowRight, Loader2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import type { LucideIcon } from 'lucide-react'
+import { Spinner } from '@/components/ui/shadcn-io/spinner'
 
 interface KPIData {
   label: string
@@ -27,7 +28,7 @@ export function DashboardKPICards({ kpiData, isLoading = false }: DashboardKPICa
           <Card key={index} className="border border-gray-200 shadow-none">
             <CardContent className="p-4">
               <div className="flex items-center justify-center h-20">
-                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                <Spinner />
               </div>
             </CardContent>
           </Card>
@@ -46,7 +47,7 @@ export function DashboardKPICards({ kpiData, isLoading = false }: DashboardKPICa
         const TrendIcon = isPositive ? TrendingUp : TrendingDown
 
         return (
-          <Card key={index} className="border border-gray-200 shadow-none">
+          <Card key={index} className="border p-0 border-gray-200 shadow-none">
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">

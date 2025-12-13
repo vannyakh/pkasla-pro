@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { ArrowRight, Loader2 } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   RadarChart,
@@ -13,6 +13,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
+import { Spinner } from '@/components/ui/shadcn-io/spinner'
 
 interface UserRolesRadarChartProps {
   data: Array<{
@@ -43,29 +44,47 @@ export function UserRolesRadarChart({ data, isLoading = false }: UserRolesRadarC
         <div className="h-[200px] md:h-[250px] w-full">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
-              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              <Spinner />
             </div>
           ) : data.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart data={data} margin={{ top: 10, right: 10, bottom: 10, left: 10 }}>
-                <PolarGrid className="stroke-gray-200" />
-                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9 }} className="text-xs" />
-                <PolarRadiusAxis angle={90} domain={[0, 150]} tick={{ fontSize: 9 }} className="text-xs" />
+                <PolarGrid className="stroke-gray-200" strokeWidth={1} />
+                <PolarAngleAxis 
+                  dataKey="subject" 
+                  tick={{ fontSize: 9, fill: '#6b7280' }} 
+                  className="text-xs" 
+                />
+                <PolarRadiusAxis 
+                  angle={90} 
+                  domain={[0, 150]} 
+                  tick={{ fontSize: 9, fill: '#9ca3af' }} 
+                  className="text-xs" 
+                />
                 <Radar
                   name="Current"
                   dataKey="A"
-                  stroke="hsl(var(--chart-1))"
-                  fill="hsl(var(--chart-1))"
-                  fillOpacity={0.6}
+                  stroke="#3b82f6"
+                  fill="#3b82f6"
+                  fillOpacity={0.5}
+                  strokeWidth={2}
                 />
                 <Radar
                   name="Target"
                   dataKey="B"
-                  stroke="hsl(var(--chart-2))"
-                  fill="hsl(var(--chart-2))"
-                  fillOpacity={0.6}
+                  stroke="#8b5cf6"
+                  fill="#8b5cf6"
+                  fillOpacity={0.5}
+                  strokeWidth={2}
                 />
-                <Tooltip />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'rgba(255, 255, 255, 0.96)', 
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                />
               </RadarChart>
             </ResponsiveContainer>
           ) : (

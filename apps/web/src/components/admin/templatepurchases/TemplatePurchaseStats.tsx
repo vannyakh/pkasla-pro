@@ -53,7 +53,7 @@ export function TemplatePurchaseStats({
       {stats.map((stat) => {
         const Icon = stat.icon
         return (
-          <Card key={stat.title} className="border border-gray-200">
+          <Card key={stat.title} className="border p-0 border-gray-200">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
