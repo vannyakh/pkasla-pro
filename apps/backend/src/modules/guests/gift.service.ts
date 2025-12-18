@@ -4,6 +4,7 @@ import { AppError } from '@/common/errors/app-error';
 import { giftRepository } from './gift.repository';
 import { guestService } from './guest.service';
 import { eventService } from '@/modules/events/event.service';
+import { notificationHelper } from '@/modules/settings/notification.helper';
 import type { GiftDocument, PaymentMethod, Currency } from './gift.model';
 
 export interface CreateGiftInput {
@@ -152,6 +153,22 @@ class GiftService {
     if (!safeGift) {
       throw new AppError('Unable to create gift', httpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    // Send Telegram notification if user has connected Telegram
+    if (userId) {
+      const guestName = guest.name;
+      const eventTitle = event.title || 'Unknown Event';
+      
+      await notificationHelper.notifyUserGiftAdded(
+        userId,
+        guestName,
+        eventTitle,
+        payload.amount,
+        payload.currency,
+        payload.paymentMethod
+      );
+    }
+
     return safeGift;
   }
 

@@ -151,6 +151,27 @@ class TelegramService {
   }
 
   /**
+   * Send notification for gift added
+   */
+  async notifyGiftAdded(
+    botToken: string,
+    chatId: string,
+    guestName: string,
+    eventName: string,
+    amount: number,
+    currency: string,
+    paymentMethod: string
+  ): Promise<boolean> {
+    const message = {
+      chatId,
+      text: `🎁 *Gift Added *\n\n👤 *Guest:* ${guestName}\n📅 *Event:* ${eventName}\n💰 *Amount:* ${amount} ${currency}\n💳 *Payment Method:* ${paymentMethod}\n⏰ *Time:* ${new Date().toLocaleString()}`,
+      parseMode: 'Markdown' as const,
+    };
+
+    return await this.sendMessage(botToken, message);
+  }
+
+  /**
    * Start bot with command handler to get chat ID
    * This method sets up a bot that listens for /getchatid command
    * and returns the chat ID to the user

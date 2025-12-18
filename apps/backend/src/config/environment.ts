@@ -97,6 +97,13 @@ const envSchema = z.object({
   // Telegram Bot Configuration (Optional - can be configured via settings UI)
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_CHAT_ID: z.string().optional(),
+  // Google Sheets Configuration (Optional - for guest sync)
+  GOOGLE_SHEETS_ENABLED: z
+    .string()
+    .optional()
+    .transform((val) => val === 'true' || val === '1'),
+  GOOGLE_SHEETS_CLIENT_EMAIL: z.string().email().optional(),
+  GOOGLE_SHEETS_PRIVATE_KEY: z.string().optional(),
   // API Configuration
   API_BASE_URL: z.string().url().optional(),
   API_URL: z.string().url().optional(), // Alias for API_BASE_URL
@@ -203,6 +210,15 @@ export const env = {
         chatId: parsedEnv.data.TELEGRAM_CHAT_ID,
       }
     : undefined,
+  googleSheets: parsedEnv.data.GOOGLE_SHEETS_ENABLED && 
+                parsedEnv.data.GOOGLE_SHEETS_CLIENT_EMAIL && 
+                parsedEnv.data.GOOGLE_SHEETS_PRIVATE_KEY
+    ? {
+        enabled: true,
+        clientEmail: parsedEnv.data.GOOGLE_SHEETS_CLIENT_EMAIL,
+        privateKey: parsedEnv.data.GOOGLE_SHEETS_PRIVATE_KEY,
+      }
+    : { enabled: false },
   api: {
     baseUrl: parsedEnv.data.API_BASE_URL || parsedEnv.data.API_URL || 
       (parsedEnv.data.NODE_ENV === 'production' 

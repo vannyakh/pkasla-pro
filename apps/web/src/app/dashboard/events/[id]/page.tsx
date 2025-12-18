@@ -2,26 +2,9 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Calendar,
-  Settings as SettingsIcon,
-  FileText,
-  QrCode,
-  Info,
-  UserCheck,
-  ArrowLeft,
-  DollarSign,
-  MoreHorizontal,
-} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useEvent, useUpdateEvent } from "@/hooks/api/useEvent";
 import type { EventStatus } from "@/types/event";
 import {
@@ -37,10 +20,9 @@ import {
   Agenda,
   Settings,
   Templates,
-  QRGenerate,
   Payments,
 } from "@/components/events/tabs";
-import { EventCoverHeader } from "@/components/events";
+import { EventCoverHeader, EventTabsNavigation } from "@/components/events";
 import { getGuestTagColor } from "@/helpers";
 import PageLoading from "@/components/PageLoading";
 
@@ -90,18 +72,38 @@ export default function EventDetailPage({
     useState<DisplayGuest | null>(null);
   const [selectedGuestForView, setSelectedGuestForView] =
     useState<DisplayGuest | null>(null);
-  
+
   // Initialize activeTab from URL search params, fallback to "overview"
-  const validTabs = useMemo(() => ["overview", "guests", "payments", "schedule", "templates", "qr", "settings", "stores"] as const, []);
-  type ValidTab = typeof validTabs[number];
+  const validTabs = useMemo(
+    () =>
+      [
+        "overview",
+        "guests",
+        "payments",
+        "schedule",
+        "templates",
+        "qr",
+        "settings",
+        "stores",
+      ] as const,
+    []
+  );
+  type ValidTab = (typeof validTabs)[number];
   const tabFromUrl = searchParams?.get("tab");
-  const initialTab: ValidTab = (tabFromUrl && validTabs.includes(tabFromUrl as ValidTab)) ? (tabFromUrl as ValidTab) : "overview";
+  const initialTab: ValidTab =
+    tabFromUrl && validTabs.includes(tabFromUrl as ValidTab)
+      ? (tabFromUrl as ValidTab)
+      : "overview";
   const [activeTab, setActiveTab] = useState<ValidTab>(initialTab);
 
   // Update activeTab when URL search params change
   useEffect(() => {
     const newTabFromUrl = searchParams?.get("tab");
-    if (newTabFromUrl && validTabs.includes(newTabFromUrl as ValidTab) && newTabFromUrl !== activeTab) {
+    if (
+      newTabFromUrl &&
+      validTabs.includes(newTabFromUrl as ValidTab) &&
+      newTabFromUrl !== activeTab
+    ) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveTab(newTabFromUrl as ValidTab);
     }
@@ -237,149 +239,17 @@ export default function EventDetailPage({
         updateEventMutation={updateEventMutation}
       />
       {/* Tabs Section */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ValidTab)} className="w-full">
-        {/* Desktop/Tablet Tabs - Hidden on mobile */}
-        <div className="hidden md:block w-full mb-4 bg-gray-100 p-1 rounded-lg">
-          <TabsList className="grid w-full md:grid-cols-4 lg:grid-cols-8 gap-2 bg-transparent p-0 h-auto">
-            <TabsTrigger value="overview" className="text-xs">
-              <Info className="h-3.5 w-3.5 mr-1.5" />
-              ទូទៅ
-            </TabsTrigger>
-            <TabsTrigger value="guests" className="text-xs">
-              <UserCheck className="h-3.5 w-3.5 mr-1.5" />
-              ភ្ញៀវកិត្តយស
-            </TabsTrigger>
-            <TabsTrigger value="payments" className="text-xs">
-              <DollarSign className="h-3.5 w-3.5 mr-1.5" />
-              ចំណងដៃ
-            </TabsTrigger>
-            <TabsTrigger value="schedule" className="text-xs">
-              <Calendar className="h-3.5 w-3.5 mr-1.5" />
-              កាលវិភាគ
-            </TabsTrigger>
-            <TabsTrigger value="templates" className="text-xs">
-              <FileText className="h-3.5 w-3.5 mr-1.5" />
-              គំរូធៀបខ្ញុំ
-            </TabsTrigger>
-            <TabsTrigger value="qr" className="text-xs">
-              <QrCode className="h-3.5 w-3.5 mr-1.5" />
-              បង្កើតQR
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="text-xs">
-              <SettingsIcon className="h-3.5 w-3.5 mr-1.5" />
-              កែប្រែ
-            </TabsTrigger>
-          </TabsList>
-        </div>
-
-        {/* Mobile Bottom Navigation - Modern Toolbar Style */}
-        <div className="md:hidden fixed bottom-4 left-4 right-4 z-50">
-          <div className="bg-gray-900/95 backdrop-blur-lg rounded-2xl shadow-2xl border border-gray-800">
-            <TabsList className="grid grid-cols-5 w-full h-14 gap-0 bg-transparent p-1">
-              <TabsTrigger
-                value="overview"
-                className="flex items-center justify-center h-full rounded-xl data-[state=active]:bg-white/10 data-[state=inactive]:text-gray-400 data-[state=active]:text-white transition-all"
-              >
-                <Info className="h-5 w-5" />
-              </TabsTrigger>
-              <TabsTrigger
-                value="guests"
-                className="flex items-center justify-center h-full rounded-xl data-[state=active]:bg-white/10 data-[state=inactive]:text-gray-400 data-[state=active]:text-white transition-all"
-              >
-                <UserCheck className="h-5 w-5" />
-              </TabsTrigger>
-              <TabsTrigger
-                value="payments"
-                className="flex items-center justify-center h-full rounded-xl data-[state=active]:bg-white/10 data-[state=inactive]:text-gray-400 data-[state=active]:text-white transition-all"
-              >
-                <DollarSign className="h-5 w-5" />
-              </TabsTrigger>
-              <TabsTrigger
-                value="settings"
-                className="flex items-center justify-center h-full rounded-xl data-[state=active]:bg-white/10 data-[state=inactive]:text-gray-400 data-[state=active]:text-white transition-all"
-              >
-                <SettingsIcon className="h-5 w-5" />
-              </TabsTrigger>
-              <Drawer open={isTabsDrawerOpen} onOpenChange={setIsTabsDrawerOpen}>
-                <DrawerTrigger asChild>
-                  <button
-                    className={`flex items-center justify-center h-full rounded-xl transition-all ${
-                      activeTab === "schedule" ||
-                      activeTab === "templates" ||
-                      activeTab === "stores" ||
-                      activeTab === "qr"
-                        ? "bg-white/10 text-white"
-                        : "text-gray-400 hover:text-white"
-                    }`}
-                  >
-                    <MoreHorizontal className="h-5 w-5" />
-                  </button>
-                </DrawerTrigger>
-              <DrawerContent>
-                <DrawerHeader>
-                  <DrawerTitle>ជ្រើសរើសផ្ទាំង</DrawerTitle>
-                </DrawerHeader>
-                <div className="p-4 space-y-2">
-                  <button
-                    onClick={() => {
-                      setActiveTab("schedule");
-                      setIsTabsDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg text-left ${
-                      activeTab === "schedule"
-                        ? "bg-gray-100"
-                        : "hover:bg-gray-50"
-                    }`}
-                  >
-                    <Calendar className="h-5 w-5" />
-                    <span className="text-sm font-medium">កាលវិភាគ</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveTab("templates");
-                      setIsTabsDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg text-left ${
-                      activeTab === "templates"
-                        ? "bg-gray-100"
-                        : "hover:bg-gray-50"
-                    }`}
-                  >
-                    <FileText className="h-5 w-5" />
-                    <span className="text-sm font-medium">គំរូធៀបខ្ញុំ</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveTab("stores");
-                      setIsTabsDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg text-left ${
-                      activeTab === "stores"
-                        ? "bg-gray-100"
-                        : "hover:bg-gray-50"
-                    }`}
-                  >
-                    <FileText className="h-5 w-5" />
-                    <span className="text-sm font-medium">ហាងគំរូធៀប</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveTab("qr");
-                      setIsTabsDrawerOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg text-left ${
-                      activeTab === "qr" ? "bg-gray-100" : "hover:bg-gray-50"
-                    }`}
-                  >
-                    <QrCode className="h-5 w-5" />
-                    <span className="text-sm font-medium">បង្កើតQR</span>
-                  </button>
-                </div>
-              </DrawerContent>
-            </Drawer>
-          </TabsList>
-          </div>
-        </div>
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as ValidTab)}
+        className="w-full"
+      >
+        <EventTabsNavigation
+          activeTab={activeTab}
+          onTabChange={(tab) => setActiveTab(tab)}
+          isTabsDrawerOpen={isTabsDrawerOpen}
+          onTabsDrawerOpenChange={setIsTabsDrawerOpen}
+        />
 
         {/* ទូទៅ Tab - View Only */}
         <TabsContent value="overview" className="mt-4 md:mt-4 mb-24 md:mb-4">
@@ -399,9 +269,9 @@ export default function EventDetailPage({
             filteredGuests={filteredGuests}
             isGuestDrawerOpen={isGuestDrawerOpen}
             onGuestDrawerOpenChange={(open) => {
-              setIsGuestDrawerOpen(open)
+              setIsGuestDrawerOpen(open);
               if (!open) {
-                setEditingGuest(null)
+                setEditingGuest(null);
               }
             }}
             editingGuest={editingGuest}
@@ -448,11 +318,6 @@ export default function EventDetailPage({
         {/* Templates Tab */}
         <TabsContent value="templates" className="mt-4 md:mt-4 mb-24 md:mb-4">
           <Templates eventId={id} />
-        </TabsContent>
-
-        {/* QR Code Tab */}
-        <TabsContent value="qr" className="mt-4 md:mt-4 mb-24 md:mb-4">
-          <QRGenerate eventId={id} />
         </TabsContent>
       </Tabs>
     </div>

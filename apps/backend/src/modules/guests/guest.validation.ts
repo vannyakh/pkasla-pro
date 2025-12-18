@@ -181,3 +181,17 @@ export const joinEventByQRSchema = z.object({
   }),
 });
 
+/**
+ * Sync to Google Sheets validation schema
+ */
+export const syncToSheetsSchema = z.object({
+  params: z.object({
+    eventId: z.string().min(1, { message: 'Event ID is required' }),
+  }),
+  body: z.object({
+    spreadsheetId: z.string().optional(),
+    sheetName: z.string().optional().default('Guests'),
+    autoCreate: z.boolean().optional().default(false),
+  }),
+});
+

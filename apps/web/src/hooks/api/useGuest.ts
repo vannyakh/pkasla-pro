@@ -13,6 +13,7 @@ export const guestKeys = {
   detail: (id: string) => [...guestKeys.all, 'detail', id] as const,
   byEvent: (eventId: string) => [...guestKeys.all, 'event', eventId] as const,
   my: () => [...guestKeys.all, 'my'] as const,
+  sheetsConfig: (eventId: string) => [...guestKeys.all, 'sheets-config', eventId] as const,
 };
 
 /**
@@ -205,6 +206,86 @@ export function useDeleteGuest() {
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to delete guest');
+    },
+  });
+}
+
+/**
+ * Google Sheets sync configuration response
+ */
+export interface GoogleSheetsSyncConfig {
+  enabled: boolean;
+  message: string;
+}
+
+/**
+ * Google Sheets sync request
+ */
+export interface SyncToSheetsDto {
+  spreadsheetId?: string;
+  sheetName?: string;
+  autoCreate?: boolean;
+}
+
+/**
+ * Google Sheets sync response
+ */
+export interface SyncToSheetsResponse {
+  synced: number;
+  spreadsheetId: string;
+  spreadsheetUrl: string;
+  sheetName: string;
+}
+
+/**
+ * Get Google Sheets sync configuration for an event
+ */
+export function useGoogleSheetsSyncConfig(eventId: string) {
+  return useQuery<GoogleSheetsSyncConfig, Error>({
+    queryKey: guestKeys.sheetsConfig(eventId),
+    queryFn: async (): Promise<GoogleSheetsSyncConfig> => {
+      const response = await api.get<GoogleSheetsSyncConfig>(
+        `/guests/event/${eventId}/sheets-config`
+      );
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to fetch Google Sheets config');
+      }
+      if (!response.data) {
+        throw new Error('Config data not found');
+      }
+      return response.data;
+    },
+    enabled: !!eventId,
+    retry: false,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
+
+/**
+ * Sync guests to Google Sheets mutation
+ */
+export function useSyncGuestsToSheets(eventId: string) {
+  return useMutation<SyncToSheetsResponse, Error, SyncToSheetsDto>({
+    mutationFn: async (data): Promise<SyncToSheetsResponse> => {
+      const response = await api.post<SyncToSheetsResponse>(
+        `/guests/event/${eventId}/sync-to-sheets`,
+        data
+      );
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to sync guests to Google Sheets');
+      }
+      if (!response.data) {
+        throw new Error('Sync response data not found');
+      }
+      return response.data;
+    },
+    onSuccess: (data) => {
+      toast.success(`Successfully synced ${data.synced} guests to Google Sheets!`, {
+        duration: 5000,
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to sync guests to Google Sheets');
     },
   });
 }

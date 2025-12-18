@@ -40,7 +40,7 @@ export default function Loading() {
           className="w-64 h-64 md:w-80 md:h-80 lg:w-96 lg:h-96"
         >
           <LottiePlayer
-            src="/anim/InviteLoading.lottie"
+            src="/anim/HandFlying.lottie"
             loop
             autoplay
             className="w-full h-full"

@@ -3,6 +3,9 @@ import httpStatus from 'http-status';
 import { guestService } from './guest.service';
 import { eventService } from '@/modules/events/event.service';
 import { buildSuccessResponse } from '@/helpers/http-response';
+import { googleSheetsService } from './google-sheets.service';
+import { env } from '@/config/environment';
+import { AppError } from '@/common/errors/app-error';
 
 /**
  * Create a new guest
@@ -189,5 +192,110 @@ export const joinEventByQRHandler = async (req: Request, res: Response) => {
   );
 
   return res.status(httpStatus.CREATED).json(buildSuccessResponse(guest, 'Successfully joined the event!'));
+};
+
+/**
+ * Sync guests to Google Sheets
+ */
+export const syncGuestsToSheetsHandler = async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Authentication required' });
+  }
+
+  // Check if Google Sheets is enabled
+  if (!env.googleSheets || !env.googleSheets.enabled) {
+    throw new AppError('Google Sheets integration is not enabled', httpStatus.SERVICE_UNAVAILABLE);
+  }
+
+  const { eventId } = req.params;
+  const { spreadsheetId, sheetName = 'Guests', autoCreate = false } = req.body;
+
+  // Verify event exists and user owns it
+  const event = await eventService.findById(eventId);
+  if (!event) {
+    throw new AppError('Event not found', httpStatus.NOT_FOUND);
+  }
+
+  const eventHostId = typeof event.hostId === 'string' ? event.hostId : event.hostId.id;
+  if (eventHostId !== req.user.id) {
+    throw new AppError('You can only sync guests for your own events', httpStatus.FORBIDDEN);
+  }
+
+  // Initialize Google Sheets service
+  if (!env.googleSheets.clientEmail || !env.googleSheets.privateKey) {
+    throw new AppError('Google Sheets credentials not configured', httpStatus.SERVICE_UNAVAILABLE);
+  }
+
+  await googleSheetsService.initialize({
+    spreadsheetId: spreadsheetId || '',
+    sheetName,
+    credentials: {
+      clientEmail: env.googleSheets.clientEmail,
+      privateKey: env.googleSheets.privateKey,
+    },
+  });
+
+  let finalSpreadsheetId = spreadsheetId;
+
+  // Create spreadsheet if autoCreate is true and no spreadsheetId provided
+  if (!spreadsheetId && autoCreate) {
+    finalSpreadsheetId = await googleSheetsService.createSpreadsheet(event.title);
+  }
+
+  if (!finalSpreadsheetId) {
+    throw new AppError('Spreadsheet ID is required or enable autoCreate', httpStatus.BAD_REQUEST);
+  }
+
+  // Get all guests for the event
+  const guests = await guestService.findByEventId(eventId);
+
+  // Sync to Google Sheets
+  const result = await googleSheetsService.syncGuests(finalSpreadsheetId, guests, sheetName);
+
+  return res.status(httpStatus.OK).json(
+    buildSuccessResponse(
+      {
+        ...result,
+        spreadsheetId: finalSpreadsheetId,
+        spreadsheetUrl: googleSheetsService.getSpreadsheetUrl(finalSpreadsheetId),
+        sheetName,
+      },
+      `Successfully synced ${result.synced} guests to Google Sheets`
+    )
+  );
+};
+
+/**
+ * Get Google Sheets sync configuration for an event
+ */
+export const getSheetsSyncConfigHandler = async (req: Request, res: Response) => {
+  if (!req.user) {
+    return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Authentication required' });
+  }
+
+  const { eventId } = req.params;
+
+  // Verify event exists and user owns it
+  const event = await eventService.findById(eventId);
+  if (!event) {
+    throw new AppError('Event not found', httpStatus.NOT_FOUND);
+  }
+
+  const eventHostId = typeof event.hostId === 'string' ? event.hostId : event.hostId.id;
+  if (eventHostId !== req.user.id) {
+    throw new AppError('You can only access sync config for your own events', httpStatus.FORBIDDEN);
+  }
+
+  // Check if Google Sheets is enabled
+  const enabled = env.googleSheets && env.googleSheets.enabled;
+
+  return res.status(httpStatus.OK).json(
+    buildSuccessResponse({
+      enabled,
+      message: enabled 
+        ? 'Google Sheets integration is enabled' 
+        : 'Google Sheets integration is not enabled. Please configure GOOGLE_SHEETS_* environment variables.',
+    })
+  );
 };
 

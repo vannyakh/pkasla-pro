@@ -13,6 +13,8 @@ import {
   createGuestsFromCSVHandler,
   regenerateTokenHandler,
   joinEventByQRHandler,
+  syncGuestsToSheetsHandler,
+  getSheetsSyncConfigHandler,
 } from './guest.controller';
 import {
   createGuestSchema,
@@ -21,6 +23,7 @@ import {
   deleteGuestSchema,
   listGuestsQuerySchema,
   joinEventByQRSchema,
+  syncToSheetsSchema,
 } from './guest.validation';
 import { giftRouter } from './gift.router';
 
@@ -96,6 +99,20 @@ router.delete(
   authenticate,
   validateRequest(deleteGuestSchema),
   asyncHandler(deleteGuestHandler),
+);
+
+// Google Sheets sync routes
+router.post(
+  '/event/:eventId/sync-to-sheets',
+  authenticate,
+  validateRequest(syncToSheetsSchema),
+  asyncHandler(syncGuestsToSheetsHandler),
+);
+
+router.get(
+  '/event/:eventId/sheets-config',
+  authenticate,
+  asyncHandler(getSheetsSyncConfigHandler),
 );
 
 // Gift payment routes (nested under guests)

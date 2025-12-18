@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useCallback } from 'react'
 import { type ColumnDef } from '@tanstack/react-table'
-import { Filter, Plus, CheckCircle2, Eye, QrCode, MoreVertical, Trash2, Share2 } from 'lucide-react'
+import { Filter, Plus, CheckCircle2, Eye, QrCode, MoreVertical, Trash2, Share2, Sheet } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent } from '@/components/ui/card'
@@ -14,6 +14,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { DataTable } from '@/components/ui/data-table'
 import CreateGuestDrawer from '@/components/guests/CreateGuestDrawer'
 import GuestDetailsDrawer, { type DisplayGuest } from '@/components/guests/GuestDetailsDrawer'
@@ -22,6 +32,7 @@ import ViewGiftDrawer from '@/components/guests/ViewGiftDrawer'
 import InviteCardDialog from '@/components/events/InviteCardDialog'
 import { useGiftsByGuest } from '@/hooks/api/useGift'
 import { useEvent } from '@/hooks/api/useEvent'
+import { useGoogleSheetsSyncConfig, useSyncGuestsToSheets } from '@/hooks/api/useGuest'
 import toast from 'react-hot-toast'
 import { api } from '@/lib/axios-client'
 import InviteCardDrawer from '@/components/guests/InviteCardDrawer'
@@ -87,8 +98,18 @@ export default function Guests({
   const [isInviteCardDialogOpen, setIsInviteCardDialogOpen] = useState(false)
   const [selectedGuestForInviteCard, setSelectedGuestForInviteCard] = useState<DisplayGuest | null>(null)
   
+  // Google Sheets sync state
+  const [isSyncDialogOpen, setIsSyncDialogOpen] = useState(false)
+  const [spreadsheetId, setSpreadsheetId] = useState('')
+  const [sheetName, setSheetName] = useState('Guests')
+  const [autoCreate, setAutoCreate] = useState(false)
+  
   // Fetch event data for invitation cards
   const { data: event } = useEvent(eventId)
+  
+  // Google Sheets sync hooks
+  const { data: sheetsConfig } = useGoogleSheetsSyncConfig(eventId)
+  const syncMutation = useSyncGuestsToSheets(eventId)
   
   // Fetch raw guests if not provided (convert displayGuests back to Guest type)
   const guestsForInvite = useMemo(() => {
@@ -150,6 +171,41 @@ export default function Guests({
       setSharingGuestId(null)
     }
   }, [eventId])
+
+  // Handle Google Sheets sync
+  const handleSyncToSheets = useCallback(async () => {
+    try {
+      const result = await syncMutation.mutateAsync({
+        spreadsheetId: spreadsheetId || undefined,
+        sheetName: sheetName || 'Guests',
+        autoCreate: autoCreate || !spreadsheetId,
+      })
+      
+      // Show success with link to spreadsheet
+      toast.success(
+        <div className="flex flex-col gap-1">
+          <p>Successfully synced {result.synced} guests!</p>
+          <a 
+            href={result.spreadsheetUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline text-sm"
+          >
+            Open Spreadsheet →
+          </a>
+        </div>,
+        { duration: 7000 }
+      )
+      
+      setIsSyncDialogOpen(false)
+      setSpreadsheetId('')
+      setSheetName('Guests')
+      setAutoCreate(false)
+    } catch (error) {
+      // Error is already handled by the mutation
+      console.error('Sync error:', error)
+    }
+  }, [spreadsheetId, sheetName, autoCreate, syncMutation])
 
   const columns = useMemo<ColumnDef<DisplayGuest>[]>(
     () => [
@@ -410,6 +466,21 @@ export default function Guests({
                 <Button variant="outline" size="sm" className="text-xs h-9 hidden sm:flex">
                   <span className="hidden md:inline">នាំចូល</span>
                 </Button>
+                {sheetsConfig?.enabled && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-xs h-9"
+                    onClick={() => setIsSyncDialogOpen(true)}
+                    disabled={syncMutation.isPending}
+                  >
+                    <Sheet className="h-3.5 w-3.5 mr-1.5" />
+                    <span className="hidden md:inline">
+                      {syncMutation.isPending ? 'Syncing...' : 'Sync to Sheets'}
+                    </span>
+                    <span className="md:hidden">Sync</span>
+                  </Button>
+                )}
                 {/* <Button 
                   variant="outline" 
                   size="sm" 
@@ -523,6 +594,128 @@ export default function Guests({
         } as Guest : undefined}
         event={event}
       />
+
+      {/* Google Sheets Sync Dialog */}
+      <Dialog open={isSyncDialogOpen} onOpenChange={setIsSyncDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sheet className="h-5 w-5" />
+              Sync Guests to Google Sheets
+            </DialogTitle>
+            <DialogDescription>
+              Sync all your event guests to a Google Spreadsheet for easy sharing and collaboration.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="autoCreate"
+                  checked={autoCreate}
+                  onCheckedChange={(checked) => {
+                    setAutoCreate(checked as boolean)
+                    if (checked) {
+                      setSpreadsheetId('')
+                    }
+                  }}
+                />
+                <Label htmlFor="autoCreate" className="text-sm font-medium cursor-pointer">
+                  Create new spreadsheet automatically
+                </Label>
+              </div>
+              <p className="text-xs text-muted-foreground ml-6">
+                A new spreadsheet will be created with your event name
+              </p>
+            </div>
+
+            {!autoCreate && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="spreadsheetId">
+                    Spreadsheet ID <span className="text-muted-foreground text-xs">(optional)</span>
+                  </Label>
+                  <Input
+                    id="spreadsheetId"
+                    placeholder="1ABC...XYZ"
+                    value={spreadsheetId}
+                    onChange={(e) => setSpreadsheetId(e.target.value)}
+                    disabled={autoCreate}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Copy from the spreadsheet URL: docs.google.com/spreadsheets/d/<strong>SPREADSHEET_ID</strong>/edit
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="sheetName">Sheet Name</Label>
+                  <Input
+                    id="sheetName"
+                    placeholder="Guests"
+                    value={sheetName}
+                    onChange={(e) => setSheetName(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Name of the sheet tab within the spreadsheet
+                  </p>
+                </div>
+              </>
+            )}
+
+            <div className="rounded-lg bg-blue-50 dark:bg-blue-950 p-3 space-y-2">
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                📊 What gets synced:
+              </p>
+              <ul className="text-xs text-blue-800 dark:text-blue-200 space-y-1 ml-4 list-disc">
+                <li>All guest information (name, email, phone, etc.)</li>
+                <li>Gift status and details</li>
+                <li>Tags and notes</li>
+                <li>Created and updated timestamps</li>
+              </ul>
+            </div>
+
+            {!autoCreate && !spreadsheetId && (
+              <div className="rounded-lg bg-amber-50 dark:bg-amber-950 p-3">
+                <p className="text-xs text-amber-800 dark:text-amber-200">
+                  💡 <strong>Tip:</strong> If you don&apos;t have a spreadsheet ID, check &quot;Create new spreadsheet automatically&quot; to create one for you.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsSyncDialogOpen(false)
+                setSpreadsheetId('')
+                setSheetName('Guests')
+                setAutoCreate(false)
+              }}
+              disabled={syncMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSyncToSheets}
+              disabled={syncMutation.isPending || (!autoCreate && !spreadsheetId)}
+            >
+              {syncMutation.isPending ? (
+                <>
+                  <span className="mr-2">Syncing...</span>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                </>
+              ) : (
+                <>
+                  <Sheet className="h-4 w-4 mr-2" />
+                  Sync {displayGuests.length} Guests
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
