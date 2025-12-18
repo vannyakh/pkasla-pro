@@ -16,6 +16,10 @@ export interface UserDocument extends Document {
   // OAuth provider fields
   provider?: OAuthProvider;
   providerId?: string;
+  // Google Sheets OAuth tokens
+  googleSheetsAccessToken?: string;
+  googleSheetsRefreshToken?: string;
+  googleSheetsTokenExpiry?: Date;
   // Telegram bot fields
   isTelegramBot: boolean;
   telegramChatId?: string;
@@ -44,6 +48,10 @@ const userSchema = new Schema<UserDocument>(
     // OAuth provider fields
     provider: { type: String, enum: OAUTH_PROVIDERS, index: true },
     providerId: { type: String, index: true },
+    // Google Sheets OAuth tokens (stored securely)
+    googleSheetsAccessToken: { type: String, select: false },
+    googleSheetsRefreshToken: { type: String, select: false },
+    googleSheetsTokenExpiry: { type: Date, select: false },
     // Telegram bot fields
     isTelegramBot: { type: Boolean, default: false },
     telegramChatId: { type: String, index: true, sparse: true },

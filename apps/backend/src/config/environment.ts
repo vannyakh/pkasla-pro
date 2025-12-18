@@ -104,6 +104,10 @@ const envSchema = z.object({
     .transform((val) => val === 'true' || val === '1'),
   GOOGLE_SHEETS_CLIENT_EMAIL: z.string().email().optional(),
   GOOGLE_SHEETS_PRIVATE_KEY: z.string().optional(),
+  // Google OAuth Configuration (for user-specific Google Sheets access)
+  GOOGLE_OAUTH_CLIENT_ID: z.string().optional(),
+  GOOGLE_OAUTH_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_OAUTH_REDIRECT_URI: z.string().url().optional(),
   // API Configuration
   API_BASE_URL: z.string().url().optional(),
   API_URL: z.string().url().optional(), // Alias for API_BASE_URL
@@ -219,6 +223,15 @@ export const env = {
         privateKey: parsedEnv.data.GOOGLE_SHEETS_PRIVATE_KEY,
       }
     : { enabled: false },
+  googleOAuth: parsedEnv.data.GOOGLE_OAUTH_CLIENT_ID &&
+               parsedEnv.data.GOOGLE_OAUTH_CLIENT_SECRET &&
+               parsedEnv.data.GOOGLE_OAUTH_REDIRECT_URI
+    ? {
+        clientId: parsedEnv.data.GOOGLE_OAUTH_CLIENT_ID,
+        clientSecret: parsedEnv.data.GOOGLE_OAUTH_CLIENT_SECRET,
+        redirectUri: parsedEnv.data.GOOGLE_OAUTH_REDIRECT_URI,
+      }
+    : undefined,
   api: {
     baseUrl: parsedEnv.data.API_BASE_URL || parsedEnv.data.API_URL || 
       (parsedEnv.data.NODE_ENV === 'production' 

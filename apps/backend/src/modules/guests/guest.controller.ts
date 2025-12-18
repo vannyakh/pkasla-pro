@@ -4,6 +4,7 @@ import { guestService } from './guest.service';
 import { eventService } from '@/modules/events/event.service';
 import { buildSuccessResponse } from '@/helpers/http-response';
 import { googleSheetsService } from './google-sheets.service';
+import { googleOAuthService } from './google-oauth.service';
 import { env } from '@/config/environment';
 import { AppError } from '@/common/errors/app-error';
 
@@ -195,16 +196,11 @@ export const joinEventByQRHandler = async (req: Request, res: Response) => {
 };
 
 /**
- * Sync guests to Google Sheets
+ * Sync guests to Google Sheets (OAuth version)
  */
 export const syncGuestsToSheetsHandler = async (req: Request, res: Response) => {
   if (!req.user) {
     return res.status(httpStatus.UNAUTHORIZED).json({ error: 'Authentication required' });
-  }
-
-  // Check if Google Sheets is enabled
-  if (!env.googleSheets || !env.googleSheets.enabled) {
-    throw new AppError('Google Sheets integration is not enabled', httpStatus.SERVICE_UNAVAILABLE);
   }
 
   const { eventId } = req.params;
@@ -221,19 +217,35 @@ export const syncGuestsToSheetsHandler = async (req: Request, res: Response) => 
     throw new AppError('You can only sync guests for your own events', httpStatus.FORBIDDEN);
   }
 
-  // Initialize Google Sheets service
-  if (!env.googleSheets.clientEmail || !env.googleSheets.privateKey) {
-    throw new AppError('Google Sheets credentials not configured', httpStatus.SERVICE_UNAVAILABLE);
-  }
+  // Check if user has connected their Google account (OAuth)
+  const isConnected = await googleOAuthService.isConnected(req.user.id);
 
-  await googleSheetsService.initialize({
-    spreadsheetId: spreadsheetId || '',
-    sheetName,
-    credentials: {
-      clientEmail: env.googleSheets.clientEmail,
-      privateKey: env.googleSheets.privateKey,
-    },
-  });
+  if (isConnected) {
+    // Use OAuth (preferred method)
+    const oauth2Client = await googleOAuthService.getUserOAuth2Client(req.user.id);
+    await googleSheetsService.initializeWithOAuth(oauth2Client);
+  } else {
+    // Fallback to service account if configured
+    if (!env.googleSheets || !env.googleSheets.enabled) {
+      throw new AppError(
+        'Please connect your Google account first. Go to Settings > Integrations > Google Sheets.',
+        httpStatus.UNAUTHORIZED
+      );
+    }
+
+    if (!env.googleSheets.clientEmail || !env.googleSheets.privateKey) {
+      throw new AppError('Google Sheets integration not configured', httpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    await googleSheetsService.initialize({
+      spreadsheetId: spreadsheetId || '',
+      sheetName,
+      credentials: {
+        clientEmail: env.googleSheets.clientEmail,
+        privateKey: env.googleSheets.privateKey,
+      },
+    });
+  }
 
   let finalSpreadsheetId = spreadsheetId;
 
@@ -259,6 +271,7 @@ export const syncGuestsToSheetsHandler = async (req: Request, res: Response) => 
         spreadsheetId: finalSpreadsheetId,
         spreadsheetUrl: googleSheetsService.getSpreadsheetUrl(finalSpreadsheetId),
         sheetName,
+        method: isConnected ? 'oauth' : 'service_account',
       },
       `Successfully synced ${result.synced} guests to Google Sheets`
     )
@@ -286,15 +299,29 @@ export const getSheetsSyncConfigHandler = async (req: Request, res: Response) =>
     throw new AppError('You can only access sync config for your own events', httpStatus.FORBIDDEN);
   }
 
-  // Check if Google Sheets is enabled
-  const enabled = env.googleSheets && env.googleSheets.enabled;
+  // Check OAuth connection status
+  const isOAuthConnected = await googleOAuthService.isConnected(req.user.id);
+  
+  // Check if service account fallback is available
+  const hasServiceAccount = env.googleSheets && env.googleSheets.enabled;
+
+  let googleAccountInfo = null;
+  if (isOAuthConnected) {
+    googleAccountInfo = await googleOAuthService.getUserInfo(req.user.id);
+  }
 
   return res.status(httpStatus.OK).json(
     buildSuccessResponse({
-      enabled,
-      message: enabled 
-        ? 'Google Sheets integration is enabled' 
-        : 'Google Sheets integration is not enabled. Please configure GOOGLE_SHEETS_* environment variables.',
+      enabled: isOAuthConnected || hasServiceAccount,
+      oauthConnected: isOAuthConnected,
+      googleEmail: googleAccountInfo?.email,
+      googleName: googleAccountInfo?.name,
+      method: isOAuthConnected ? 'oauth' : hasServiceAccount ? 'service_account' : 'none',
+      message: isOAuthConnected 
+        ? 'Connected to your Google account' 
+        : hasServiceAccount
+        ? 'Using service account (fallback)'
+        : 'Please connect your Google account to sync guests',
     })
   );
 };

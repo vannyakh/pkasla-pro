@@ -32,7 +32,13 @@ import ViewGiftDrawer from '@/components/guests/ViewGiftDrawer'
 import InviteCardDialog from '@/components/events/InviteCardDialog'
 import { useGiftsByGuest } from '@/hooks/api/useGift'
 import { useEvent } from '@/hooks/api/useEvent'
-import { useGoogleSheetsSyncConfig, useSyncGuestsToSheets } from '@/hooks/api/useGuest'
+import { 
+  useGoogleSheetsSyncConfig, 
+  useSyncGuestsToSheets,
+  useGoogleConnectionStatus,
+  useGetGoogleAuthUrl,
+  useDisconnectGoogle 
+} from '@/hooks/api/useGuest'
 import toast from 'react-hot-toast'
 import { api } from '@/lib/axios-client'
 import InviteCardDrawer from '@/components/guests/InviteCardDrawer'
@@ -110,6 +116,11 @@ export default function Guests({
   // Google Sheets sync hooks
   const { data: sheetsConfig } = useGoogleSheetsSyncConfig(eventId)
   const syncMutation = useSyncGuestsToSheets(eventId)
+  
+  // Google OAuth hooks
+  const { data: googleConnection } = useGoogleConnectionStatus()
+  const connectGoogleMutation = useGetGoogleAuthUrl()
+  const disconnectGoogleMutation = useDisconnectGoogle()
   
   // Fetch raw guests if not provided (convert displayGuests back to Guest type)
   const guestsForInvite = useMemo(() => {
@@ -425,6 +436,69 @@ export default function Guests({
 
   return (
     <div className="space-y-4">
+      {/* Google Sheets Connection Banner */}
+      {sheetsConfig?.enabled && !googleConnection?.connected && (
+        <Card className="border border-blue-200 bg-blue-50 dark:bg-blue-950 p-0">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center shrink-0">
+                <Sheet className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                  Connect Google Sheets
+                </h3>
+                <p className="text-xs text-blue-800 dark:text-blue-200 mb-3">
+                  Connect your Google account to sync guests to Google Sheets. Your spreadsheets will be created in your own Google Drive.
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => connectGoogleMutation.mutate()}
+                  disabled={connectGoogleMutation.isPending}
+                  className="h-8 text-xs"
+                >
+                  {connectGoogleMutation.isPending ? 'Connecting...' : 'Connect Google Account'}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Google Connected Status */}
+      {googleConnection?.connected && (
+        <Card className="border border-green-200 bg-green-50 dark:bg-green-950 p-0">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center shrink-0">
+                <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-semibold text-green-900 dark:text-green-100 mb-1">
+                  Google Account Connected
+                </h3>
+                <p className="text-xs text-green-800 dark:text-green-200 mb-2">
+                  Connected as <strong>{googleConnection.googleEmail}</strong>
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    if (confirm('Are you sure you want to disconnect your Google account?')) {
+                      disconnectGoogleMutation.mutate()
+                    }
+                  }}
+                  disabled={disconnectGoogleMutation.isPending}
+                  className="h-7 text-xs border-green-600 text-green-600 hover:bg-green-100"
+                >
+                  {disconnectGoogleMutation.isPending ? 'Disconnecting...' : 'Disconnect'}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Table */}
       <Card className="border border-gray-200 shadow-none p-0">
         <CardContent className="p-4">
@@ -466,7 +540,7 @@ export default function Guests({
                 <Button variant="outline" size="sm" className="text-xs h-9 hidden sm:flex">
                   <span className="hidden md:inline">នាំចូល</span>
                 </Button>
-                {sheetsConfig?.enabled && (
+                {sheetsConfig?.enabled && googleConnection?.connected && (
                   <Button 
                     variant="outline" 
                     size="sm" 

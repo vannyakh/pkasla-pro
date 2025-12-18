@@ -17,6 +17,12 @@ import {
   getSheetsSyncConfigHandler,
 } from './guest.controller';
 import {
+  getGoogleAuthUrlHandler,
+  googleOAuthCallbackHandler,
+  getGoogleConnectionStatusHandler,
+  disconnectGoogleAccountHandler,
+} from './google-oauth.controller';
+import {
   createGuestSchema,
   updateGuestSchema,
   getGuestSchema,
@@ -99,6 +105,30 @@ router.delete(
   authenticate,
   validateRequest(deleteGuestSchema),
   asyncHandler(deleteGuestHandler),
+);
+
+// Google OAuth routes (for user-specific Google Sheets access)
+router.get(
+  '/google/auth-url',
+  authenticate,
+  asyncHandler(getGoogleAuthUrlHandler),
+);
+
+router.get(
+  '/google/callback',
+  asyncHandler(googleOAuthCallbackHandler),
+);
+
+router.get(
+  '/google/status',
+  authenticate,
+  asyncHandler(getGoogleConnectionStatusHandler),
+);
+
+router.post(
+  '/google/disconnect',
+  authenticate,
+  asyncHandler(disconnectGoogleAccountHandler),
 );
 
 // Google Sheets sync routes

@@ -1,4 +1,5 @@
 import { google } from 'googleapis';
+import { OAuth2Client } from 'google-auth-library';
 import { env } from '@/config/environment';
 import { logger } from '@/utils/logger';
 import type { GuestResponse } from './guest.service';
@@ -31,10 +32,26 @@ class GoogleSheetsService {
       // Initialize sheets API
       this.sheets = google.sheets({ version: 'v4', auth: this.auth });
       
-      logger.info('Google Sheets API initialized successfully');
+      logger.info('Google Sheets API initialized with service account');
       return true;
     } catch (error) {
       logger.error({ error }, 'Failed to initialize Google Sheets API');
+      throw error;
+    }
+  }
+
+  /**
+   * Initialize Google Sheets API with user's OAuth2 client
+   */
+  async initializeWithOAuth(oauth2Client: OAuth2Client) {
+    try {
+      this.auth = oauth2Client;
+      this.sheets = google.sheets({ version: 'v4', auth: oauth2Client });
+      
+      logger.info('Google Sheets API initialized with OAuth');
+      return true;
+    } catch (error) {
+      logger.error({ error }, 'Failed to initialize Google Sheets API with OAuth');
       throw error;
     }
   }
@@ -111,6 +128,33 @@ class GoogleSheetsService {
       'Updated At',
     ];
 
+    // Get the actual sheet ID by fetching spreadsheet metadata
+    const spreadsheet = await this.sheets.spreadsheets.get({
+      spreadsheetId,
+    });
+
+    // Find the sheet by name
+    const sheet = spreadsheet.data.sheets?.find(
+      (s: any) => s.properties?.title === sheetName
+    );
+
+    if (!sheet || sheet.properties?.sheetId === undefined) {
+      logger.warn({ sheetName, spreadsheetId }, 'Sheet not found, skipping header formatting');
+      // Still try to set values without formatting
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: `${sheetName}!A1:M1`,
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: [headers],
+        },
+      });
+      return;
+    }
+
+    const sheetId = sheet.properties.sheetId;
+
+    // Set header values
     await this.sheets.spreadsheets.values.update({
       spreadsheetId,
       range: `${sheetName}!A1:M1`,
@@ -128,7 +172,7 @@ class GoogleSheetsService {
           {
             repeatCell: {
               range: {
-                sheetId: 0,
+                sheetId: sheetId,
                 startRowIndex: 0,
                 endRowIndex: 1,
               },
@@ -151,7 +195,7 @@ class GoogleSheetsService {
       },
     });
 
-    logger.info({ sheetName }, 'Setup headers in spreadsheet');
+    logger.info({ sheetName, sheetId }, 'Setup headers in spreadsheet');
   }
 
   /**

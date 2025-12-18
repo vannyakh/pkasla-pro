@@ -290,3 +290,87 @@ export function useSyncGuestsToSheets(eventId: string) {
   });
 }
 
+/**
+ * Google OAuth connection status
+ */
+export interface GoogleConnectionStatus {
+  connected: boolean;
+  googleEmail?: string;
+  googleName?: string;
+}
+
+/**
+ * Get Google OAuth connection status
+ */
+export function useGoogleConnectionStatus() {
+  return useQuery<GoogleConnectionStatus, Error>({
+    queryKey: ['google-connection-status'],
+    queryFn: async (): Promise<GoogleConnectionStatus> => {
+      const response = await api.get<GoogleConnectionStatus>('/guests/google/status');
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to fetch Google connection status');
+      }
+      if (!response.data) {
+        throw new Error('Status data not found');
+      }
+      return response.data;
+    },
+    retry: false,
+    staleTime: 1000 * 60, // 1 minute
+  });
+}
+
+/**
+ * Get Google OAuth authorization URL
+ */
+export function useGetGoogleAuthUrl() {
+  return useMutation<{ authUrl: string }, Error>({
+    mutationFn: async (): Promise<{ authUrl: string }> => {
+      const response = await api.get<{ authUrl: string }>('/guests/google/auth-url');
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to get authorization URL');
+      }
+      if (!response.data) {
+        throw new Error('Auth URL not found');
+      }
+      return response.data;
+    },
+    onSuccess: (data) => {
+      // Save current location to return to after OAuth
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('google_oauth_return_to', window.location.pathname);
+      }
+      // Redirect to Google OAuth
+      window.location.href = data.authUrl;
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to connect Google account');
+    },
+  });
+}
+
+/**
+ * Disconnect Google account
+ */
+export function useDisconnectGoogle() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error>({
+    mutationFn: async (): Promise<void> => {
+      const response = await api.post('/guests/google/disconnect');
+      if (!response.success) {
+        throw new Error(response.error || 'Failed to disconnect Google account');
+      }
+    },
+    onSuccess: () => {
+      // Invalidate connection status
+      queryClient.invalidateQueries({ queryKey: ['google-connection-status'] });
+      queryClient.invalidateQueries({ queryKey: guestKeys.all });
+      toast.success('Google account disconnected successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to disconnect Google account');
+    },
+  });
+}
+
