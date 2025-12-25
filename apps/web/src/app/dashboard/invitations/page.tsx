@@ -258,7 +258,7 @@ export default function InvitationsPage() {
       </div>
 
       {/* Filters */}
-      <Card>
+      <Card className='p-0'>
         <CardContent className="p-4">
           <div className="flex flex-col md:flex-row gap-4">
             {/* View Type Toggle */}

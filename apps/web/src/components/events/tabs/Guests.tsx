@@ -465,40 +465,6 @@ export default function Guests({
         </Card>
       )}
 
-      {/* Google Connected Status */}
-      {googleConnection?.connected && (
-        <Card className="border border-green-200 bg-green-50 dark:bg-green-950 p-0">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center shrink-0">
-                <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-semibold text-green-900 dark:text-green-100 mb-1">
-                  Google Account Connected
-                </h3>
-                <p className="text-xs text-green-800 dark:text-green-200 mb-2">
-                  Connected as <strong>{googleConnection.googleEmail}</strong>
-                </p>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    if (confirm('Are you sure you want to disconnect your Google account?')) {
-                      disconnectGoogleMutation.mutate()
-                    }
-                  }}
-                  disabled={disconnectGoogleMutation.isPending}
-                  className="h-7 text-xs border-green-600 text-green-600 hover:bg-green-100"
-                >
-                  {disconnectGoogleMutation.isPending ? 'Disconnecting...' : 'Disconnect'}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Table */}
       <Card className="border border-gray-200 shadow-none p-0">
         <CardContent className="p-4">

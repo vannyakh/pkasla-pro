@@ -1,4 +1,5 @@
 export { CreateEventForm } from './CreateEventForm';
+export { ClockCountdown } from './ClockCountdown';
 export { EventCard } from './EventCard';
 export { EventCoverHeader } from './EventCoverHeader';
 export { EventForm } from './EventForm';

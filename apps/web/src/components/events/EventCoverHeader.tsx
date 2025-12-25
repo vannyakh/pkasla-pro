@@ -2,9 +2,6 @@
 
 import Image from "next/image";
 import {
-  Calendar,
-  Users,
-  MapPin,
   Settings as SettingsIcon,
   CheckCircle2,
 } from "lucide-react";
@@ -21,11 +18,10 @@ import { TextGenerateEffect } from "@/components/ui/shadcn-io/text-generate-effe
 import type { Event, EventStatus, UpdateEventDto } from "@/types/event";
 import {
   getEventStatusColor,
-  getEventStatusLabel,
-  formatDate,
-  formatDateTime,
+  getEventStatusLabel
 } from "@/helpers";
 import type { UseMutationResult } from "@tanstack/react-query";
+import { ClockCountdown } from "./ClockCountdown";
 
 interface EventCoverHeaderProps {
   event: Event;
@@ -50,7 +46,7 @@ export function EventCoverHeader({
   return (
     <div className="grid grid-cols-3 gap-4 rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-white">
       {/* Cover Image - 2 columns */}
-      <div className="col-span-3 lg:col-span-2 relative h-[300px] lg:h-auto min-h-[300px] overflow-hidden">
+      <div className="col-span-3 lg:col-span-2 relative lg:h-auto min-h-[300px] overflow-hidden">
         {event.coverImage && (
           <Image
             src={event.coverImage}
@@ -62,9 +58,9 @@ export function EventCoverHeader({
           />
         )}
         {/* Overlays background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/0 to-black/60 z-0" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/50 via-black/0 to-black/60 z-0" />
         {/* Card for event title and status */}
-        <Card className="shadow-none border-none bg-transparent z-10 relative w-full h-full flex flex-col justify-between">
+        <Card className="shadow-none border-none p-0 bg-transparent z-10 relative w-full h-full flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2 sm:gap-4 px-3 sm:px-4 py-3 sm:py-4">
             <div className="flex-1 space-y-2 min-w-0">
               <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
@@ -136,85 +132,38 @@ export function EventCoverHeader({
 
           {/* Description with divider */}
           {event.description && (
-            <div className="px-3 sm:px-4 pb-3 sm:pb-4">
-              <div className="border-t border-white/20 mb-3 sm:mb-4"></div>
-              <div className="w-full overflow-hidden relative">
-                <div 
-                  className="inline-block whitespace-nowrap"
-                  style={{ animation: 'marquee-scroll 25s linear infinite' }}
-                >
-                  <TextGenerateEffect
-                    words={event.description}
-                    className="text-xs sm:text-sm md:text-base text-white/95 drop-shadow-md inline-block pr-8"
-                    filter={false}
-                    duration={0.3}
-                    staggerDelay={0.05}
-                  />
-                  <TextGenerateEffect
-                    words={event.description}
-                    className="text-xs sm:text-sm md:text-base text-white/95 drop-shadow-md inline-block pr-8"
-                    filter={false}
-                    duration={0.3}
-                    staggerDelay={0.05}
-                  />
-                </div>
+            <div className="px-4 sm:px-6 pb-2 sm:pb-2">
+            <div className="w-full overflow-hidden relative rounded-lg bg-black/10 backdrop-blur-sm p-2 border border-white/10">
+              <div 
+                className="inline-block whitespace-nowrap"
+                style={{ animation: 'marquee-scroll 25s linear infinite' }}
+              >
+                <TextGenerateEffect
+                  words={event.description}
+                  className="text-sm sm:text-base md:text-lg text-white/98 drop-shadow-lg inline-block pr-8 font-medium"
+                  filter={false}
+                  duration={0.3}
+                  staggerDelay={0.05}
+                />
+                <TextGenerateEffect
+                  words={event.description}
+                  className="text-sm sm:text-base md:text-lg text-white/98 drop-shadow-lg inline-block pr-8 font-medium"
+                  filter={false}
+                  duration={0.3}
+                  staggerDelay={0.05}
+                />
               </div>
             </div>
+          </div>
           )}
         </Card>
       </div>
 
-      {/* Content Info - 1 column */}
-      <div className="col-span-3 lg:col-span-1 p-3 sm:p-4 space-y-3 sm:space-y-4">
-        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:bg-gray-100 transition-colors">
-          <div className="flex items-center gap-2 mb-2">
-            <Calendar className="h-4 w-4 text-gray-600" />
-            <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-              កាលបរិច្ឆេទ
-            </p>
-          </div>
-          <p className="text-base font-bold text-gray-900">
-            {formatDate(
-              typeof event.date === "string" ? event.date : event.date
-            )}
-          </p>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:bg-gray-100 transition-colors">
-          <div className="flex items-center gap-2 mb-2">
-            <MapPin className="h-4 w-4 text-gray-600" />
-            <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-              ទីតាំង
-            </p>
-          </div>
-          <p className="text-base font-bold text-gray-900">{event.venue}</p>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:bg-gray-100 transition-colors">
-          <div className="flex items-center gap-2 mb-2">
-            <Users className="h-4 w-4 text-gray-600" />
-            <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-              ភ្ញៀវ
-            </p>
-          </div>
-          <p className="text-base font-bold text-gray-900">
-            {event.guestCount} នាក់
-          </p>
-        </div>
-        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:bg-gray-100 transition-colors">
-          <div className="flex items-center gap-2 mb-2">
-            <Calendar className="h-4 w-4 text-gray-600" />
-            <p className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-              បានបង្កើត
-            </p>
-          </div>
-          <p className="text-base font-bold text-gray-900">
-            {formatDateTime(
-              typeof event.createdAt === "string"
-                ? event.createdAt
-                : event.createdAt
-            )}
-          </p>
-        </div>
+      {/* Clock countdown */}
+      <div className="col-span-1">
+        {/* <ClockCountdown targetDate={event.date} variant="relative" /> */}
       </div>
+
     </div>
   );
 }
